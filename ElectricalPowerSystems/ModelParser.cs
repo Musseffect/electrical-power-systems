@@ -119,20 +119,27 @@ namespace ElectricalPowerSystems
             while (true)
             {
                 char symbol=text[k];
-                value *= 10.0f;
                 switch(state)
                 {
                     case FloatState.INTEGER:
                         if(Char.IsDigit(symbol))
                         {
+                            value*=10.0f;
+                            value+=(symbol-'0');
                             state=FloatState.INTEGER;
                         }else
                         {
                             switch(symbol)
                             {
                                 case '.':
+                                    state=FloatState.DOT;
+                                    break;
                                 case 'E':
                                 case 'e':
+                                    state=FloatState.EXPONENT;
+                                    break;
+                                default:
+                                    //error
                             
                             }
                         }
@@ -173,7 +180,7 @@ namespace ElectricalPowerSystems
                                 case '.':
                                 case 'E':
                                 case 'e':
-                            
+                                default:
                             }
                         }
                         break;
