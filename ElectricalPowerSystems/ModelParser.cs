@@ -10,6 +10,16 @@ namespace ElectricalPowerSystems
     {
         public State getState(State state, Symbol symbol);
     }
+    public enum FloatState
+    {
+        INTEGER,
+        DOT,
+        FRACTIONAL,
+        EXPONENT,
+        EXPONENTSIGN,
+        EXPONENTPOWER
+
+    }
     class StateMachine<State,Trigger,Symbol> where Trigger: TriggerInterface<State,Symbol>, new()
     {
         State currentState;
@@ -46,9 +56,12 @@ namespace ElectricalPowerSystems
         DIVIDE,
         MULTIPLY,
         COLON,
-        NEWLINE,
         INTEGER,
-        DOT
+        DOT,
+        LEFTSQUAREBRACKET,
+        RIGHTSQUAREBRACKET,
+        LEFTCURLYBRACKET,
+        RIGHTCURLYBRACKET
     }
     public class Token
     {
@@ -92,6 +105,122 @@ namespace ElectricalPowerSystems
     }
     public class Lexer
     {
+        static int parseFloat(string text,int index,ref List<Tokens> tokens)
+        {
+            float value=0.0f;
+            int exponent=0;
+            int j = index;
+            int k = index;
+            if(!Char.IsDigit(text[k]))
+            {
+                return k;
+            }
+            FloatState state=FloatState.INTEGER;
+            while (true)
+            {
+                char symbol=text[k];
+                value *= 10.0f;
+                switch(state)
+                {
+                    case FloatState.INTEGER:
+                        if(Char.IsDigit(symbol))
+                        {
+                            state=FloatState.INTEGER;
+                        }else
+                        {
+                            switch(symbol)
+                            {
+                                case '.':
+                                case 'E':
+                                case 'e':
+                            
+                            }
+                        }
+                        break;
+                    case FloatState.DOT:
+                        if(Char.IsDigit(symbol))
+                        {
+                            state=FloatState.FRACTIONAL;
+                        }else if(Char.IsWhiteSpace())
+                        {
+                            
+                            return ;
+                        }else
+                        {
+                            switch(symbol)
+                            {
+                                case 'E':
+                                case 'e':
+                                    state=FloatState.EXPONENT;
+                                    break;
+                                default:
+                                    //error
+                            }
+                        }
+                        break;
+                    case FloatState.EXPONENT:
+                        if(Char.IsDigit(symbol))
+                        {
+                            state=FloatState.EXPONENTPOWER;
+                        }else if(Char.IsWhiteSpace())
+                        {
+                            //error
+                            return ;
+                        }else
+                        {
+                            switch(symbol)
+                            {
+                                case '.':
+                                case 'E':
+                                case 'e':
+                            
+                            }
+                        }
+                        break;
+                    case FloatState.EXPONENTSIGN:
+                        if(Char.IsDigit(symbol))
+                        {
+                            state=FloatState.EXPONENTPOWER;
+                        }else if(Char.IsWhiteSpace())
+                        {
+                            //error
+                        }else
+                        {
+                            switch(symbol)
+                            {
+                                case 'E':
+                                case 'e':
+                                default:
+                            }
+                        }
+                        break;
+                    case FloatState.EXPONENTPOWER:
+                        if(Char.IsDigit(symbol))
+                        {
+                            state=FloatState.EXPONENTPOWER;
+                        }else if(Char.IsWhiteSpace())
+                        {
+                            //return float
+                            tokens.Add(new Float());
+                            return ;
+                        }else
+                        {
+                            //error
+                        }
+                        break;
+                }
+                k++;
+                if (k == text.Length)
+                {
+                    if(state==FloatState.INTEGER||state==FloatState.DOT||state==FloatState.EXPONENTPOWER)
+                        tokens.Add(new Float(value));
+                    return k;
+                }
+            }
+
+
+
+        }
         static public List<Token> runLexer(string text)
         {
             List<Token> tokens=new List<Token>();
@@ -100,84 +229,91 @@ namespace ElectricalPowerSystems
                 char symbol=text[i];
                 switch (symbol)
                 {
+                    case '=':
+                        tokens.Add(new Token(TokenType.EQUAL));
+                        continue;
                     case '.':
-                        break;
+                        tokens.Add(new Token(TokenType.DOT));
+                        continue;
                     case ',':
+                        tokens.Add(new Token(TokenType.COMMA));
+                        continue;
                         break;
                     case ';':
+                        tokens.Add(new Token(TokenType.SEMICOLON));
+                        continue;
                         break;
+                    case ':':
+                        tokens.Add(new Token(TokenType.COLON));
+                        continue;
                     case '(':
+                        tokens.Add(new Token(TokenType.LEFTBRACKET));
+                        continue;
                         break;
                     case ')':
+                        tokens.Add(new Token(TokenType.RIGHTBRACKER));
+                        continue;
                         break;
                     case '[':
+                        tokens.Add(new Token(TokenType.LEFTSQUAREBRACKET));
+                        continue;
                         break;
                     case ']':
+                        tokens.Add(new Token(TokenType.RIGHTSQUAREBRACKET));
+                        continue;
                         break;
                     case '{':
+                        tokens.Add(new Token(TokenType.LEFTCURLYBRACKET));
+                        continue;
                         break;
                     case '}':
+                        tokens.Add(new Token(TokenType.RIGHTCURLYBRACKET));
+                        continue;
                         break;
                     case '-':
+                        tokens.Add(new Token(TokenType.MINUS));
+                        continue;
                         break;
                     case '+':
+                        tokens.Add(new Token(TokenType.PLUS));
+                        continue;
                         break;
                     case '*':
+                        tokens.Add(new Token(TokenType.MULTIPLY));
+                        continue;
                         break;
                     case '/':
+                        tokens.Add(new Token(TokenType.DIVIDE));
+                        continue;
                         break;
                 }
                 if (Char.IsDigit(symbol))
                 {
-                    float value=0.0f;
-                    int j = i;
-                    int k = i;
-                    while (true)
-                    {
-                        value *= 10.0f;
-                        if (k == text.Length)
-                        {
-                            tokens.Add(new Float(value));       
-                        }
-                        if (Char.IsDigit(symbol))
-                        {
-                            value += (float)(symbol - 'a');
-                        }
-                        switch (symbol)
-                        {
-                            case 'e':
-                            case 'E':
-                            case '';
-                        }
-                        k++;
-                    }
-
+                    
                 }
                 else if (Char.IsLetter(symbol) || symbol == '_')
                 {
-                    string id="";
-                    int j = i;
-                    int k = i;
+                    StringBuilder id=new StringBuilder();
                     while (true)
                     {
-                        if (k == text.Length)
-                        {
-                            id.
-                        }
                         if (Char.IsLetterOrDigit(symbol) || symbol == '_')
                         {
-
+                            id.Append(symbol);
                         } else
                         {
                             tokens.Add(new Identifier(id));
                         }
-                        k++;
+                        i++;
+                        if(Char.isWhiteSpace(symbol)||symbol == text.Length)
+                        {
+                            tokens.Add(new Identifier(id));
+                        }
                     }
-
+                }else
+                {
+                    //error
                 }
-
             }
-
             return tokens;
         }
     }
