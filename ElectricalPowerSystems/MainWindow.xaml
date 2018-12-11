@@ -38,31 +38,31 @@
         </Menu>
         <ToolBar Grid.Row="1" Height="30" VerticalAlignment="Top" Width="Auto">
             <Button x:Name="CreateFile" >
-                <Image Source="bmp\NewFile_6276_32.bmp"/>
+                <Image Source="Resources\NewFile_6276_32.bmp"/>
             </Button>
             <Button x:Name="OpenFile">
-                <Image Source="bmp\Open_6529_32.bmp"/>
+                <Image Source="Resources\Open_6529_32.bmp"/>
             </Button>
             <Separator />
             <Button x:Name="UndoButton">
-                <Image Source="bmp\Undo_16x_32.bmp" />
+                <Image Source="Resources\Undo_16x_32.bmp" />
             </Button>
             <Button x:Name="RedoButton">
-                <Image Source="bmp\Redo_16x_32.bmp" />
+                <Image Source="Resources\Redo_16x_32.bmp" />
             </Button>
             <Separator />
             <Button x:Name="Cut">
-                <Image Source="bmp\Cut_6523_32.bmp" />
+                <Image Source="Resources\Cut_6523_32.bmp" />
             </Button>
             <Button x:Name="Copy">
-                <Image Source="bmp\Copy_6524_32.bmp" />
+                <Image Source="Resources\Copy_6524_32.bmp" />
             </Button>
             <Button x:Name="Paste">
-                <Image Source="bmp\Paste_6520_32.bmp" />
+                <Image Source="Resources\Paste_6520_32.bmp" />
             </Button>
             <Separator />
             <Button x:Name="Start">
-                <Image Source="bmp\startwithoutdebugging_6556_32.bmp" />
+                <Image Source="Resources\startwithoutdebugging_6556_32.bmp" />
             </Button>
             <Separator />
         </ToolBar>
