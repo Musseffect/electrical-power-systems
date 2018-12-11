@@ -1,0 +1,59 @@
+﻿
+
+//keywords
+
+resistor
+voltageSource
+ground
+currentSource
+capacitor
+inductor
+line
+output
+structure
+current
+voltage
+
+ID [A-Za-z_][A-Za-z0-9_]*
+
+constant ([0-9]+{.[0-9]*}|.[0-9]+){[eE][+-]?[0-9]+}
+
+
+statement: expression
+
+expression: expression = expression
+	| id 
+	| const
+	| id (functionArguments)
+
+functionArguments: expression functionArguments'
+
+functionArguments': , functionArguments
+
+
+circuitDescription -> circuitStructure output
+circuitStructure -> 'structure:'cS'
+cS' -> structureExpression ';' cS' | eps
+structureExpression -> id = structureExpression
+structureExpression -> id( functionArguments )
+functionArguments -> eps | const functionArguments'
+functionArguments' ->  eps | , const functionArguments'
+output -> 'output:' outputStatements
+outputStatements -> id(outputArguments) ; outputStatements | eps 
+outputArguments -> (id | const) outputArguments'
+outputArgument' -> , (id | const) outputArguments'
+
+
+Possible format:
+element=resistor(value,nodeLabel1,nodeLabel2)
+element=voltageSource(value,nodeLabel1,nodeLabel2)
+element=ground(nodeLabel)
+element=capacitor(value,nodeLabel1,nodeLabel2)
+element=inductor(value,nodeLabel1,nodeLabel2)
+element=currentSource(value,nodeLabel1,nodeLabel2)
+element=line(nodeLabel1,nodeLabel2) - zero resistance
+output:
+current(element)
+voltage(element) - voltage drop on element
+voltage(node) - relative voltage on node
+voltage(node1,node2) - (phi2-phi1)
