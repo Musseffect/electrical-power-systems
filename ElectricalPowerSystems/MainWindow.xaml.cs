@@ -36,6 +36,34 @@ namespace ElectricalPowerSystems
         private void Run()
         {
             OutputTextBox.Clear();
+            ModelGraphCreator modelGraph=new ModelGraphCreator();
+            modelGraph.addVoltageSource("a2","a1",10.0f);
+            modelGraph.addVoltageSource("a1", "a3", 10.0f);
+            modelGraph.addResistor("a1","a3",5.0f);
+            modelGraph.addResistor("a1", "a4", 15.0f);
+            modelGraph.addResistor("a4", "a2", 4.0f);
+            modelGraph.addGround("a2");
+            List<string> errorList = new List<string>();
+            this.errors.Clear();
+            if (!modelGraph.validate(ref errorList))
+            {
+                foreach (string error in errorList)
+                {
+                    this.errors.Add(new ErrorMessage(error));
+                }
+            }
+            else
+            {
+                List<string> outputList=ModelSolver.Solve(modelGraph);
+                foreach (string output in outputList)
+                {
+                    OutputTextBox.AppendText(output);
+                    OutputTextBox.AppendText("\n");
+                }
+            }
+            return;
+
+            OutputTextBox.Clear();
             List<Token> tokens = Lexer.runLexer(TextBox.Text, ref errors);
             foreach (Token token in tokens)
             {
