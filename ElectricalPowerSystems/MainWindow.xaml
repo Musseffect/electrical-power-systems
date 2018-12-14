@@ -78,7 +78,7 @@
         </TextBox>
         <TabControl Grid.Row="3" >
             <TabItem Header="Output">
-                <TextBox Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto">
+                <TextBox Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
                 </TextBox>
             </TabItem>
             <TabItem Header="Errors">

@@ -196,7 +196,7 @@ namespace ElectricalPowerSystems
             nodesList=new List<Node>();
             groundsCount = 0;
         }
-        int addResistor(string node1, string node2,float resistance)
+        public int addResistor(string node1, string node2,float resistance)
         {
             int node1Id = retrieveNodeId(node1);
             int node2Id = retrieveNodeId(node2);
@@ -205,7 +205,7 @@ namespace ElectricalPowerSystems
             elements.Add(new Resistor(node1Id, node2Id, resistance));
             return elements.Count - 1;
         }
-        int addLine(string node1, string node2)
+        public int addLine(string node1, string node2)
         {
             int node1Id = retrieveNodeId(node1);
             int node2Id = retrieveNodeId(node2);
@@ -214,7 +214,7 @@ namespace ElectricalPowerSystems
             elements.Add(new VoltageSource(node1Id, node2Id,0.0f));
             return elements.Count - 1;
         }
-        int addCapacitor(string node1, string node2,float capacity)
+        public int addCapacitor(string node1, string node2,float capacity)
         {
             int node1Id = retrieveNodeId(node1);
             int node2Id = retrieveNodeId(node2);
@@ -223,7 +223,7 @@ namespace ElectricalPowerSystems
             elements.Add(new Capacitor(node1Id, node2Id, capacity));
             return elements.Count - 1;
         }
-        int addVoltageSource(string node1, string node2,float voltage)
+        public int addVoltageSource(string node1, string node2,float voltage)
         {
             int node1Id = retrieveNodeId(node1);
             int node2Id = retrieveNodeId(node2);
@@ -233,7 +233,7 @@ namespace ElectricalPowerSystems
             elements.Add(new VoltageSource(node1Id, node2Id, voltage));
             return elements.Count - 1;
         }
-        void addCurrentSource(string node1, string node2, float current)
+        public int addCurrentSource(string node1, string node2, float current)
         {
             int node1Id = retrieveNodeId(node1);
             int node2Id = retrieveNodeId(node2);
@@ -241,8 +241,9 @@ namespace ElectricalPowerSystems
             nodesList[node2Id].connectedElements.Add(elements.Count);
             currentSources.Add(elements.Count);
             elements.Add(new CurrentSource(node1Id, node2Id, current));
+            return elements.Count - 1;
         }
-        void addGround(string node)
+        public void addGround(string node)
         {
             int nodeId = retrieveNodeId(node);
             nodesList[nodeId].connectedElements.Add(elements.Count);
@@ -250,17 +251,18 @@ namespace ElectricalPowerSystems
             elements.Add(new Ground(nodeId));
             groundsCount++;
         }
-        void addInductor(string node1, string node2,int inductivity)
+        public int addInductor(string node1, string node2,int inductivity)
         {
             int node1Id = retrieveNodeId(node1);
             int node2Id = retrieveNodeId(node2);
             nodesList[node1Id].connectedElements.Add(elements.Count);
             nodesList[node2Id].connectedElements.Add(elements.Count);
             elements.Add(new Inductor(node1Id, node2Id, inductivity));
+            return elements.Count - 1;
         }
-        bool validate(ref List<string> errors)
+        public bool validate(ref List<string> errors)
         {
-            //no parallel voltage sources
+            //no loops with only voltage sources
             //no series connected current sources
             //each region should have a ground node
             BitArray nodesUsed=new BitArray(nodes.Count);
@@ -277,18 +279,16 @@ namespace ElectricalPowerSystems
                     nodesUsed[node] = true;
                     if (nodesList[node].grounded)
                         hasGround = true;
-                    /*foreach (int elementId in nodesList[node].connectedElements)
+                    foreach (int elementId in nodesList[node].connectedElements)
                     {
                         Element element = elements[elementId];
-                        if (element is Ground)
-                            hasGround = true;
                         foreach (int index in element.nodes)
                         {
-                            if (index != node)
+                            if (index != node&& nodesUsed[index]==false)
                                 nodesStack.Push(index);
                         }
 
-                    }*/
+                    }
                 }
                 if (hasGround == false)
                 {
@@ -299,6 +299,7 @@ namespace ElectricalPowerSystems
             return true;
         }
     }
+
     class ModelGraph
     {
         List<Element> elements;

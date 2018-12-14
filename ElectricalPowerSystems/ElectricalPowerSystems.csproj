@@ -75,6 +75,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="VisualGraphEditor.xaml.cs">
+      <DependentUpon>VisualGraphEditor.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -87,11 +90,17 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="VisualGraphEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MathUtils.cs" />
+    <Compile Include="ModelCode.cs" />
     <Compile Include="ModelException.cs" />
     <Compile Include="ModelGraph.cs" />
+    <Compile Include="ModelGraphAC.cs" />
     <Compile Include="ModelParser.cs" />
     <Compile Include="ModelSolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
