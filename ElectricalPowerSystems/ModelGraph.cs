@@ -105,6 +105,8 @@ namespace ElectricalPowerSystems
         public List<int> currentSources;
         public List<Node> nodesList;
         public List<int> outputCurrents;
+        public List<int> lines;
+        public List<int> inductors;
         public int groundsCount;
         public class NodePair
         {
@@ -194,6 +196,8 @@ namespace ElectricalPowerSystems
             voltageSources=new List<int>();
             currentSources=new List<int>();
             nodesList=new List<Node>();
+            lines = new List<int>();
+            inductors = new List<int>();
             groundsCount = 0;
         }
         public int addResistor(string node1, string node2,float resistance)
@@ -211,7 +215,8 @@ namespace ElectricalPowerSystems
             int node2Id = retrieveNodeId(node2);
             nodesList[node1Id].connectedElements.Add(elements.Count);
             nodesList[node2Id].connectedElements.Add(elements.Count);
-            elements.Add(new VoltageSource(node1Id, node2Id,0.0f));
+            lines.Add(elements.Count);
+            elements.Add(new Line(node1Id, node2Id));
             return elements.Count - 1;
         }
         public int addCapacitor(string node1, string node2,float capacity)
@@ -257,6 +262,7 @@ namespace ElectricalPowerSystems
             int node2Id = retrieveNodeId(node2);
             nodesList[node1Id].connectedElements.Add(elements.Count);
             nodesList[node2Id].connectedElements.Add(elements.Count);
+            inductors.Add(elements.Count);
             elements.Add(new Inductor(node1Id, node2Id, inductivity));
             return elements.Count - 1;
         }
@@ -297,29 +303,6 @@ namespace ElectricalPowerSystems
                 }
             }
             return true;
-        }
-    }
-
-    class ModelGraph
-    {
-        List<Element> elements;
-        List<int> voltageSources;
-        List<int> currentSources;
-        List<Node> nodes;
-        public bool validate()
-        {
-            simplify();
-            //at least one source should be grounded
-
-            return false;
-        }
-        private void simplify()
-        {
-            //remove elements, not connected to anything
-
-        }
-        public void calculate()
-        {
         }
     }
 

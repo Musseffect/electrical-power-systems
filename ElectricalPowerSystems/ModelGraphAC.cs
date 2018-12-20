@@ -75,6 +75,7 @@ namespace ElectricalPowerSystems
             {
                 this.voltage = voltage;
                 this.frequency = frequency;
+                this.phase = phase;
             }
         }
         class CurrentSource : Element2N
@@ -86,6 +87,7 @@ namespace ElectricalPowerSystems
             {
                 this.current = current;
                 this.frequency = frequency;
+                this.phase = phase;
             }
         }
     }
@@ -99,6 +101,7 @@ namespace ElectricalPowerSystems
         public List<int> inductors;
         public List<Node> nodesList;
         public List<int> outputCurrents;
+        public List<int> lines;
         public int groundsCount;
         public class NodePair
         {
@@ -112,8 +115,102 @@ namespace ElectricalPowerSystems
         }
         List<NodePair> outputVoltageDifference;
         List<int> outputNodeVoltage;
-    }
-    class ModelGraphAC
-    {
+        private int retrieveNodeId(string key)
+        {
+            int node = nodeId;
+            try
+            {
+                node = nodes[key];
+            }
+            catch (KeyNotFoundException)
+            {
+                nodes.Add(key, node);
+                nodeId++;
+                Node nd = new Node();
+                nd.label = key;
+                nodesList.Add(nd);
+            }
+            return node;
+        }
+        public ModelGraphCreatorAC()
+        {
+            nodes = new Dictionary<string, int>();
+            elements = new List<ElementsAC.Element>();
+            lines = new List<int>();
+            inductors = new List<int>();
+            nodeId = 0;
+            voltageSources = new List<int>();
+            currentSources = new List<int>();
+            nodesList = new List<Node>();
+            groundsCount = 0;
+        }
+        public int addResistor(string node1, string node2, float resistance)
+        {
+            int node1Id = retrieveNodeId(node1);
+            int node2Id = retrieveNodeId(node2);
+            nodesList[node1Id].connectedElements.Add(elements.Count);
+            nodesList[node2Id].connectedElements.Add(elements.Count);
+            elements.Add(new ElementsAC.Resistor(node1Id, node2Id, resistance));
+            return elements.Count - 1;
+        }
+        public int addLine(string node1, string node2)
+        {
+            int node1Id = retrieveNodeId(node1);
+            int node2Id = retrieveNodeId(node2);
+            nodesList[node1Id].connectedElements.Add(elements.Count);
+            nodesList[node2Id].connectedElements.Add(elements.Count);
+            elements.Add(new ElementsAC.Line(node1Id, node2Id));
+            return elements.Count - 1;
+        }
+        public int addCapacitor(string node1, string node2, float capacity)
+        {
+            int node1Id = retrieveNodeId(node1);
+            int node2Id = retrieveNodeId(node2);
+            nodesList[node1Id].connectedElements.Add(elements.Count);
+            nodesList[node2Id].connectedElements.Add(elements.Count);
+            elements.Add(new ElementsAC.Capacitor(node1Id, node2Id, capacity));
+            return elements.Count - 1;
+        }
+        public int addVoltageSource(string node1, string node2, float voltage,float freq,float phase)
+        {
+            int node1Id = retrieveNodeId(node1);
+            int node2Id = retrieveNodeId(node2);
+            nodesList[node1Id].connectedElements.Add(elements.Count);
+            nodesList[node2Id].connectedElements.Add(elements.Count);
+            voltageSources.Add(elements.Count);
+            elements.Add(new ElementsAC.VoltageSource(node1Id, node2Id, voltage,freq,MathUtils.radians(phase)));
+            return elements.Count - 1;
+        }
+        public int addCurrentSource(string node1, string node2, float current, float freq, float phase)
+        {
+            int node1Id = retrieveNodeId(node1);
+            int node2Id = retrieveNodeId(node2);
+            nodesList[node1Id].connectedElements.Add(elements.Count);
+            nodesList[node2Id].connectedElements.Add(elements.Count);
+            currentSources.Add(elements.Count);
+            elements.Add(new ElementsAC.CurrentSource(node1Id, node2Id, current,freq,phase));
+            return elements.Count - 1;
+        }
+        public void addGround(string node)
+        {
+            int nodeId = retrieveNodeId(node);
+            nodesList[nodeId].connectedElements.Add(elements.Count);
+            nodesList[nodeId].grounded = true;
+            elements.Add(new ElementsAC.Ground(nodeId));
+            groundsCount++;
+        }
+        public int addInductor(string node1, string node2, int inductivity)
+        {
+            int node1Id = retrieveNodeId(node1);
+            int node2Id = retrieveNodeId(node2);
+            nodesList[node1Id].connectedElements.Add(elements.Count);
+            nodesList[node2Id].connectedElements.Add(elements.Count);
+            elements.Add(new ElementsAC.Inductor(node1Id, node2Id, inductivity));
+            return elements.Count - 1;
+        }
+        public bool validate(ref List<string> errors)
+        {
+            return true;
+        }
     }
 }

@@ -36,9 +36,9 @@ namespace ElectricalPowerSystems
         private void Run()
         {
             OutputTextBox.Clear();
-            ModelGraphCreator modelGraph=new ModelGraphCreator();
-            modelGraph.addVoltageSource("a2","a1",10.0f);
-            modelGraph.addVoltageSource("a1", "a3", 10.0f);
+            ModelGraphCreatorAC modelGraph=new ModelGraphCreatorAC();
+            modelGraph.addVoltageSource("a2","a1",10.0f,50.0f,10.0f);
+            modelGraph.addVoltageSource("a1", "a3", 10.0f,50.0f,0.5f);
             modelGraph.addResistor("a1","a3",5.0f);
             modelGraph.addResistor("a1", "a4", 15.0f);
             modelGraph.addResistor("a4", "a2", 4.0f);
@@ -54,7 +54,7 @@ namespace ElectricalPowerSystems
             }
             else
             {
-                List<string> outputList=ModelSolver.Solve(modelGraph);
+                List<string> outputList=ModelSolver.SolveAC(modelGraph);
                 foreach (string output in outputList)
                 {
                     OutputTextBox.AppendText(output);

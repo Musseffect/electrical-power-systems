@@ -14,9 +14,11 @@ namespace ElectricalPowerSystems
         {
             //http://qucs.sourceforge.net/tech/node14.html
             //generate matrix and two vectors than solve
+            int lines = graph.lines.Count;
+            int inductors=graph.inductors.Count;
             int nodes=graph.nodesList.Count-graph.groundsCount;
             int voltageSources = graph.voltageSources.Count;
-            int rank = nodes + voltageSources;
+            int rank = nodes + voltageSources+lines+inductors + lines;
             Vector<float> y= Vector<float>.Build.Dense(rank); ;//size equal to
             for (int i = 0, j = 0; j < nodes; i++)
             {
@@ -43,6 +45,7 @@ namespace ElectricalPowerSystems
             }
             for (int i = 0; i < voltageSources; i++)
             {
+                Element el = graph.elements[graph.voltageSources[i]];
                 y[i+nodes] = ((VoltageSource)(graph.elements[graph.voltageSources[i]])).voltage;
             }
             Matrix<float> A=Matrix<float>.Build.Dense(rank,rank);
@@ -110,6 +113,14 @@ namespace ElectricalPowerSystems
                 If a voltage source is ungrounded, it will have two elements in the B matrix (a 1 and a -1 in the same column). 
                 If it is grounded it will only have one element in the matrix.
              */
+            //C submatrix
+            /*The C matrix is an MxM matrix with only 0, 1 and - 1 elements.
+             * Each location in the matrix corresponds to a particular node(first dimension) or voltage source(second dimension).
+             * If the positive terminal of the ith voltage source is connected to node k, then the element(i, k) in the C matrix is a 1.
+             * If the negative terminal of the ith voltage source is connected to node k, then the element(i, k) in the C matrix is a - 1.
+             * Otherwise, elements of the C matrix are zero.
+                In other words, the C matrix is the transpose of the B matrix. 
+                This is not the case when dependent sources are present.*/
             for (int i = 0; i < voltageSources; i++)
             {
                 for (int j = 0,k=0; k < nodes; j++)
@@ -118,7 +129,7 @@ namespace ElectricalPowerSystems
                     {
                         continue;
                     }
-                    VoltageSource vs = ((VoltageSource)(graph.elements[graph.voltageSources[i]]));
+                    Element vs = (graph.elements[graph.voltageSources[i]]);
                     float value = 0.0f;
                     if (vs.nodes[1] == j)
                     {
@@ -128,38 +139,65 @@ namespace ElectricalPowerSystems
                         value = -1.0f;
                     }
                     A.At(k,i + nodes, value);
+                    A.At(i + nodes, k, value);
                     k++;
                 }
             }
-            //C submatrix
-            /*The C matrix is an MxM matrix with only 0, 1 and - 1 elements.
-             * Each location in the matrix corresponds to a particular node(first dimension) or voltage source(second dimension).
-             * If the positive terminal of the ith voltage source is connected to node k, then the element(i, k) in the C matrix is a 1.
-             * If the negative terminal of the ith voltage source is connected to node k, then the element(i, k) in the C matrix is a - 1.
-             * Otherwise, elements of the C matrix are zero.
-                In other words, the C matrix is the transpose of the B matrix. 
-                This is not the case when dependent sources are present.*/
-            for (int i = 0,k=0; k < nodes; i++)
+            for (int i = 0; i < lines; i++)
             {
-                if (graph.nodesList[i].grounded == true)
+                for (int j = 0, k = 0; k < nodes; j++)
                 {
-                    continue;
+                    if (graph.nodesList[j].grounded == true)
+                    {
+                        continue;
+                    }
+                    Element vs = (graph.elements[graph.lines[i]]);
+                    float value = 0.0f;
+                    if (vs.nodes[1] == j)
+                    {
+                        value = 1.0f;
+                    }
+                    else if (vs.nodes[0] == j)
+                    {
+                        value = -1.0f;
+                    }
+                    A.At(k, i + nodes + voltageSources, value);
+                    A.At(i + nodes + voltageSources, k, value);
+                    k++;
                 }
-                for (int j = 0; j < voltageSources; j++)
+            }
+            for (int i = 0; i < inductors; i++)
+            {
+                for (int j = 0, k = 0; k < nodes; j++)
                 {
-                    A.At(j + nodes , k,A.At(k,j + nodes));
+                    if (graph.nodesList[j].grounded == true)
+                    {
+                        continue;
+                    }
+                    Element vs = (graph.elements[graph.inductors[i]]);
+                    float value = 0.0f;
+                    if (vs.nodes[1] == j)
+                    {
+                        value = 1.0f;
+                    }
+                    else if (vs.nodes[0] == j)
+                    {
+                        value = -1.0f;
+                    }
+                    A.At(k, i + nodes + voltageSources + lines, value);
+                    A.At(i + nodes + voltageSources + lines, k, value);
+                    k++;
                 }
-                k++;
             }
             //D submatrix
             /*The D matrix is an MxM matrix that is composed entirely of zeros.
              * It can be non-zero if dependent sources are considered.
              */
-            for (int i = 0; i < voltageSources; i++)
+            for (int i = 0; i < voltageSources + lines + inductors; i++)
             {
-                for (int j = 0; j < voltageSources; j++)
+                for (int j = 0; j < voltageSources + lines + inductors; j++)
                 {
-                    A.At(nodes+j,nodes+i,0.0f);
+                    A.At(nodes + j, nodes + i, 0.0f);
                 }
             }
             Vector<float> x=A.Solve(y);
@@ -178,6 +216,7 @@ namespace ElectricalPowerSystems
         //returns list of Currents
         static public List<string> SolveAC(ModelGraphCreatorAC graph)
         {
+            int lines = graph.lines.Count;
             int nodes = graph.nodesList.Count - graph.groundsCount;
             int voltageSources = graph.voltageSources.Count;
             int inductorsCount = graph.inductors.Count;
@@ -202,10 +241,16 @@ namespace ElectricalPowerSystems
                     continue;
                 }
                 solution.Add("Voltage for node " + graph.nodesList[i].label + " is ");
+                k++;
             }
             //solve circuit for each frequency
             foreach (float frequency in frequencies)
             {
+                /*
+                  | G B |
+                  | C D |
+                */
+                //submatrix G
                 for (int i = 0, k = 0; k < nodes; i++)
                 {
                     if (graph.nodesList[i].grounded == true)
@@ -252,6 +297,7 @@ namespace ElectricalPowerSystems
                     }
                     k++;
                 }
+                //submatrix B and C
                 for (int i = 0; i < voltageSources; i++)
                 {
                     for (int j = 0, k = 0; k < nodes; j++)
@@ -271,6 +317,26 @@ namespace ElectricalPowerSystems
                             value = -1.0f;
                         }
                         A.At(k, i + nodes, value);
+                        A.At(i + nodes, k, value);
+                        k++;
+                    }
+                }
+                for (int i = 0; i < lines; i++)
+                {
+                    for (int j = 0, k = 0; k < nodes; j++)
+                    {
+                        if (graph.nodesList[j].grounded == true)
+                        {
+                            continue;
+                        }
+                        ElementsAC.Element inductor = graph.elements[graph.lines[i]];
+                        Complex32 value = new Complex32(0.0f, 0.0f);
+                        if (inductor.nodes[0] == k)
+                            value = 1.0f;
+                        else
+                            value = -1.0f;
+                        A.At(k, i + nodes + voltageSources, value);
+                        A.At(i + nodes + voltageSources, k, value);
                         k++;
                     }
                 }
@@ -278,42 +344,32 @@ namespace ElectricalPowerSystems
                 {
                     for (int j = 0, k = 0; k < nodes; j++)
                     {
+                        if (graph.nodesList[j].grounded == true)
+                        {
+                            continue;
+                        }
                         ElementsAC.Element inductor = graph.elements[graph.inductors[i]];
                         Complex32 value = new Complex32(0.0f, 0.0f);
                         if (inductor.nodes[0] == k)
                             value = 1.0f;
                         else
                             value = -1.0f;
-                        A.At(k, i+nodes+voltageSources, A.At(k, i + nodes + voltageSources));
+                        A.At(k, i + nodes + voltageSources + lines, value);
+                        A.At(i + nodes + voltageSources + lines, k, value);
                         k++;
                     }
                 }
-                for (int i = 0, k = 0; k < nodes; i++)
+                //submatrix D
+                for (int i = 0; i < voltageSources+lines + inductorsCount; i++)
                 {
-                    if (graph.nodesList[i].grounded == true)
-                    {
-                        continue;
-                    }
-                    for (int j = 0; j < voltageSources; j++)
-                    {
-                        A.At(j + nodes, k, A.At(k, j + nodes));
-                    }
-                    for (int j = 0; j < inductorsCount; j++)
-                    {
-                        A.At(j+voltageSources + nodes, k, A.At(k, j + nodes+ voltageSources));
-                    }
-                    k++;
-                }
-                for (int i = 0; i < voltageSources; i++)
-                {
-                    for (int j = 0; j < voltageSources; j++)
+                    for (int j = 0; j < voltageSources + lines + inductorsCount; j++)
                     {
                         A.At(nodes + j, nodes + i, 0.0f);
                     }
                 }
                 for (int i = 0; i < inductorsCount; i++)
                 {
-                    int index = nodes + voltageSources + i;
+                    int index = nodes + voltageSources + lines + i;
                     ElementsAC.Inductor inductor = (ElementsAC.Inductor)graph.elements[graph.inductors[i]];
                     A.At(index, index, new Complex32(0.0f, inductor.inductivity));
 
@@ -354,7 +410,7 @@ namespace ElectricalPowerSystems
                         y[i + nodes] = Complex32.FromPolarCoordinates(vs.voltage,vs.phase);
                     }
                 }
-                for (int i = 0; i < inductorsCount; i++)
+                for (int i = 0; i < lines + inductorsCount; i++)
                 {
                     y[i + nodes+voltageSources] = new Complex32(0.0f,0.0f);
                 }
@@ -365,7 +421,7 @@ namespace ElectricalPowerSystems
                     {
                         continue;
                     }
-                    solution[k]+=(x[k].Magnitude.ToString()+"@"+x[k].Phase.ToString()+" w="+frequency+" ");
+                    solution[k]+=(x[k].Magnitude.ToString()+"@"+ MathUtils.degrees(x[k].Phase).ToString()+" w="+frequency+" ");
                     k++;
                 }
             }
@@ -375,7 +431,7 @@ namespace ElectricalPowerSystems
                 {
                     continue;
                 }
-                solution.Add("V");
+                solution[k]+="V";
                 k++;
             }
             return solution;
