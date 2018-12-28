@@ -66,16 +66,20 @@
             </Button>
             <Separator />
         </ToolBar>
-        <TextBox x:Name="TextBox" Grid.Row="2" TextWrapping="Wrap" Height="Auto" Width="Auto" Margin="10" FontFamily="Consolas" Text="/*Possible format:*/&#xA;element=resistor(value,nodeLabel1,nodeLabel2)&#xA;element=voltageSource(value,nodeLabel1,nodeLabel2)&#xA;element=ground(nodeLabel)&#xA;element=capacitor(value,nodeLabel1,nodeLabel2)&#xA;element=inductor(value,nodeLabel1,nodeLabel2)&#xA;element=currentSource(value,nodeLabel1,nodeLabel2)&#xA;element=node(nodeLabel)&#xA;element=line(nodeLabel1,nodeLabel2)/* - zero resistance*/&#xA;output:&#xA;current(element)&#xA;voltage(element)/* - voltage drop on element*/&#xA;voltage(node)/* - relative voltage on node*/&#xA;" VerticalScrollBarVisibility="Auto">
-            <TextBox.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Копировать"></MenuItem>
-                    <MenuItem Header="Вставить"></MenuItem>
-                    <MenuItem Header="Вырезать"></MenuItem>
-                    <MenuItem Header="Удалить"></MenuItem>
-                </ContextMenu>
-            </TextBox.ContextMenu>
-        </TextBox>
+        <TabControl Grid.Row="2" >
+            <TabItem Header="NewFile">
+            <TextBox x:Name="TextBox" TextWrapping="Wrap" Height="Auto" Width="Auto" Margin="0" FontFamily="Consolas" Text="/*Possible format:*/&#xA;element=resistor(value,nodeLabel1,nodeLabel2)&#xA;element=voltageSource(value,nodeLabel1,nodeLabel2)&#xA;element=ground(nodeLabel)&#xA;element=capacitor(value,nodeLabel1,nodeLabel2)&#xA;element=inductor(value,nodeLabel1,nodeLabel2)&#xA;element=currentSource(value,nodeLabel1,nodeLabel2)&#xA;element=node(nodeLabel)&#xA;element=line(nodeLabel1,nodeLabel2)/* - zero resistance*/&#xA;output:&#xA;current(element)&#xA;voltage(element)/* - voltage drop on element*/&#xA;voltage(node)/* - relative voltage on node*/&#xA;" VerticalScrollBarVisibility="Auto">
+                <TextBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Копировать"></MenuItem>
+                        <MenuItem Header="Вставить"></MenuItem>
+                        <MenuItem Header="Вырезать"></MenuItem>
+                        <MenuItem Header="Удалить"></MenuItem>
+                    </ContextMenu>
+                </TextBox.ContextMenu>
+            </TextBox>
+            </TabItem>
+        </TabControl>
         <TabControl Grid.Row="3" >
             <TabItem Header="Output">
                 <TextBox Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">

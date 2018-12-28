@@ -22,19 +22,21 @@ namespace ElectricalPowerSystems
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ObservableCollection<ErrorMessage> errors;
-        public ObservableCollection<ErrorMessage> Errors
+        private ObservableCollection<ModelParsing.ErrorMessage> errors;
+        public ObservableCollection<ModelParsing.ErrorMessage> Errors
         {
             get { return errors; }
         }
         public MainWindow()
         {
-            errors = new ObservableCollection<ErrorMessage>();
+            errors = new ObservableCollection<ModelParsing.ErrorMessage>();
             InitializeComponent();
             DataContext = this;
         }
         private void Run()
         {
+            Test.TestParser.test();
+            return;
             OutputTextBox.Clear();
             ModelGraphCreatorAC modelGraph=new ModelGraphCreatorAC();
             modelGraph.addVoltageSource("a2","a1",10.0f,50.0f,10.0f);
@@ -49,7 +51,7 @@ namespace ElectricalPowerSystems
             {
                 foreach (string error in errorList)
                 {
-                    this.errors.Add(new ErrorMessage(error));
+                    this.errors.Add(new ModelParsing.ErrorMessage(error));
                 }
             }
             else
@@ -64,8 +66,8 @@ namespace ElectricalPowerSystems
             return;
 
             OutputTextBox.Clear();
-            List<Token> tokens = Lexer.runLexer(TextBox.Text, ref errors);
-            foreach (Token token in tokens)
+            List<ModelParsing.Token> tokens = ModelParsing.Lexer.runLexer(TextBox.Text, ref errors);
+            foreach (ModelParsing.Token token in tokens)
             {
                 OutputTextBox.AppendText(token.getTokenString());
                 OutputTextBox.AppendText("\n");
