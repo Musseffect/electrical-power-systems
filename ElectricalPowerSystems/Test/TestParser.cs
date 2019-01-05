@@ -21,7 +21,6 @@ namespace ElectricalPowerSystems.Test
                     element=currentSource(value, nodeLabel1, nodeLabel2);
                     element=node(nodeLabel);
                     element=line(nodeLabel1, nodeLabel2);/* - zero resistance*/
-                    output:
                     current(element);
                     voltage(element);/* - voltage drop on element*/
                     voltage(node);/* - relative voltage on node*/";

@@ -7,23 +7,31 @@ grammar ModelGrammar;
 number		: value=(FLOAT|INT);
 complexExp	: left=number type=(IM| ANGLE) right=number;
 complex		: IM im=number;
-constant	: number  #NumberConstant
-	| complex #ComplexConstant
-	| complexExp #ComplexExprConstant
+constant	: value=number  #NumberConstant
+	| value=complex #ComplexConstant
+	| value=complexExp #ComplexExprConstant
 	| value=STRING #StringConstant
 ;
 
-model: statement model | EOF;
-statement: expression SEMICOLON | SEMICOLON;
+model: (state=statement)*;
 
-binaryOperator: op=(PLUS | MINUS | ASSIGN | ASTERICS | DIVISION);
+
+statement: expression SEMICOLON #StatementRule
+| SEMICOLON #EmptyStatement;
+
 unaryOperator: op=(PLUS | MINUS);
 
-expression: left=expression op=binaryOperator right=expression	#BinaryOperatorExpression
-	| func=ID (functionArguments)	#FunctionExpression
-	| op=unaryOperator expression	#UnaryOperatorExpression
-	| id=ID		#IdentificatorExpression
+expression: op=unaryOperator expression	#UnaryOperatorExpression
+	| left=expression op=(DIVISION|ASTERICS) right=expression	#BinaryOperatorExpression
+	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
+	|<assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
+	|<assoc=right> lvalue=expression ASSIGN rvalue=expression #AssignmentExpression
+	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
+	| id=ID		#IdentifierExpression
 	| value=constant	#ConstantExpression
+	| LPAREN expression RPAREN #BracketExpression
+	| left=expression DOT id=ID #MemberExpression
+	| (id=ID) right=expression #CastExpression
 	;	
 
 functionArguments: expression (COMMA expression)* | ;
@@ -99,3 +107,4 @@ LCRLPAREN			: '{' ;
 RCRLPAREN			: '}' ;
 ANGLE				:'@' ;
 IM					:[Ii];
+CARET				:'^';
