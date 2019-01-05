@@ -26,11 +26,6 @@ using System.Threading.Tasks;
     class Ground: Element
 
 
-class Element
-{
-
-
-}
 function list:
 Resistance Model.resistance(string node1, string node2,float value)
 Capacitor Model.capacitor(string node1, string node2)
@@ -51,10 +46,10 @@ float radians(float val)
 float degrees(float val)
 complex conj(complex val)
 
-void voltage(element el)
-void voltage(string nodeLabel)
-void voltage(string node1,string node2)
-void current(element el)
+void Model.voltage(Element el)
+void Model.voltage(string nodeLabel)
+void Model.voltage(string node1,string node2)
+void Model.current(Element el)
 */
 
 namespace ElectricalPowerSystems.Parser
@@ -127,11 +122,11 @@ namespace ElectricalPowerSystems.Parser
                 }
                 return f.exec(args);
             }
-        public class NativeFunction
+        public class NativeFunction:AbstractFunction
         {
 
         }
-        public class CustomFunction
+        public class CustomFunction : AbstractFunction
         {
 
         }
@@ -209,7 +204,9 @@ namespace ElectricalPowerSystems.Parser
         };
         static Dictionary<string,AbstractFunction> functionTable = new Dictionary<string,AbstractFunction>
         {
-            { },
+            {"print",new NativeFunction(){
+                
+            } },
             { },
             { },
             { },
