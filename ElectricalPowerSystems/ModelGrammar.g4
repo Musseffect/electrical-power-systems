@@ -16,6 +16,45 @@ constant	: value=number  #NumberConstant
 model: (state=statement)*;
 
 
+/*
+	model: (state = modelStatement)*;
+	
+	modelStatement:  statement #ModelStatementRule
+					| classDefinition #ClassDefinitionRule
+					| functionDefinition #functionDefinitionRule
+					;
+
+	classDefinition: CLASS className=id classInheritance LCRLPAREN classDefinitionBody RCRLPAREN ;
+	classInheritance: COLON className=id 
+					| 
+					;
+	classDefinitionBody: (stat=classDefintionStatement)* ;
+	classDefinitionStatement: fieldDefinition #FieldDefinitionRule
+			| methodDefinition #MethodDefinitionRule
+			| access=(PUBLIC|PRIVATE|PROTECTED) COLON #AccessRule
+			;
+	methodDefinition: functionDefinition #FunctionRule
+					| constructorDefinition #ConstructorRule
+					;
+	constructorDefinition: CONSTRUCTOR LPAREN functionArgsDefinition RPAREN;
+	fieldDefinition: fieldModificator typeName=id fieldName=id SEMICOLON;
+	fieldModificator: (STATIC|CONST)*;
+
+	functionDefinition: FUNCTION functionName=id LPAREN functionArgsDefinition RPAREN LCRLPAREN (state=statement)* RCRLPAREN ;
+	functionArgsDefinition: functionArgDefinition (COMMA functionArgDefinition)* | ;
+	functionArgDefinition: typeName=id argName=id ;
+
+	CONSTRUCTOR:"constructor";
+	FUNCTION:"function";
+	PUBLIC:"public";
+	PRIVATE:"private";
+	PROTECTED:"protected";
+	CLASS:"class";
+	STATIC:"static";
+	CONST:"const";
+
+*/
+
 statement: expression SEMICOLON #StatementRule
 | SEMICOLON #EmptyStatement;
 

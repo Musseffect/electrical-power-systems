@@ -81,7 +81,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ModelAST.cs" />
     <Compile Include="ModelGrammar.g4.lexer.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
