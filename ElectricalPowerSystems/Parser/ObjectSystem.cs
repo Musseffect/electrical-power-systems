@@ -54,11 +54,11 @@ void Model.current(Element el)
 
 namespace ElectricalPowerSystems.Parser
 {
-    delegate Variable FunctionExec(List<Variable> args);
+        public delegate Object FunctionExec(List<Object> args);
         public class ArgumentSignature
         {
-            public Variable defaultValue;
-            public VariableType type;
+            public Object defaultValue;
+            public Type type;
         }
         public class FunctionSignature
         {
@@ -66,34 +66,32 @@ namespace ElectricalPowerSystems.Parser
             public bool variableLength;
             public int defaultArgs;
         }
-        public class AbstractMethod
+        public abstract class AbstractMethod
         {
-            public abstract Variable exec(List<Variable> args);
+            public abstract Object exec(List<Object> args);
             public FunctionSignature Signature { get; set; }
         }
-        public class NativeMethod
+        public abstract class NativeMethod:AbstractMethod
         {
-            public abstract Variable exec(List<Variable> args);
-            public FunctionSignature Signature { get; set; }
         }
-        public class CustomMethod
+        public abstract class CustomMethod : AbstractMethod
         {
 
         }
         public abstract class AbstractFunction
         {
-            public abstract Variable exec(List<Variable> args);
+            public abstract Object exec(List<Object> args);
             public FunctionSignature Signature { get; set; }
-            static public Variable compute(AbstractFunction f, List<Variable> variables)
+            static public Object compute(AbstractFunction f, List<Object> variables)
             {
-                List<Variable> args = new List<Variable>();
+                List<Object> args = new List<Object>();
                 if (variables.Count < f.Signature.Arguments.Count)
                 {
                     if (f.Signature.defaultArgs >= f.Signature.Arguments.Count - variables.Count)
                     {
                         for (int i = 0; i < variables.Count; i++)
                         {
-                            Variable var = convert(variables[i], max(f.Signature.Arguments[i].type, variables[i].Type));
+                            Object var = MetaStorage.convert(variables[i],f.Signature.Arguments[i].type, variables[i].getType());
                             args.Add(var);
                         }
                         for (int j = variables.Count; j < f.Signature.Arguments.Count; j++)
@@ -107,7 +105,7 @@ namespace ElectricalPowerSystems.Parser
                 }
                 for (int i = 0; i < f.Signature.Arguments.Count; i++)
                 {
-                    Variable var = convert(variables[i], max(f.Signature.Arguments[i].defaultValue.Type, variables[i].Type));
+                    Object var = MetaStorage.convert(variables[i], f.Signature.Arguments[i].defaultValue.getType(), variables[i].getType());
                     args.Add(var);
                 }
                 if (variables.Count > f.Signature.Arguments.Count)
@@ -122,11 +120,11 @@ namespace ElectricalPowerSystems.Parser
                 }
                 return f.exec(args);
             }
-        public class NativeFunction:AbstractFunction
+        public abstract class NativeFunction:AbstractFunction
         {
 
         }
-        public class CustomFunction : AbstractFunction
+        public abstract class CustomFunction : AbstractFunction
         {
 
         }
@@ -134,16 +132,16 @@ namespace ElectricalPowerSystems.Parser
         {
             public FunctionExec Exec { get; set; }
             public FunctionSignature Signature { get; set; }
-            static public Variable compute(FunctionDefinition f, List<Variable> variables)
+            static public Object compute(FunctionDefinition f, List<Object> variables)
             {
-                List<Variable> args = new List<Variable>();
+                List<Object> args = new List<Object>();
                 if (variables.Count < f.Signature.Arguments.Count)
                 {
                     if (f.Signature.defaultArgs >= f.Signature.Arguments.Count - variables.Count)
                     {
                         for (int i = 0; i < variables.Count; i++)
                         {
-                            Variable var = convert(variables[i], max(f.Signature.Arguments[i].type, variables[i].Type));
+                            Object var = MetaStorage.convert(variables[i], f.Signature.Arguments[i].type, variables[i].getType());
                             args.Add(var);
                         }
                         for (int j = variables.Count; j < f.Signature.Arguments.Count; j++)
@@ -157,7 +155,7 @@ namespace ElectricalPowerSystems.Parser
                 }
                 for (int i = 0; i < f.Signature.Arguments.Count; i++)
                 {
-                    Variable var = convert(variables[i], max(f.Signature.Arguments[i].defaultValue.Type, variables[i].Type));
+                    Object var = MetaStorage.convert(variables[i], f.Signature.Arguments[i].defaultValue.getType(), variables[i].getType());
                     args.Add(var);
                 }
                 if (variables.Count > f.Signature.Arguments.Count)
@@ -189,6 +187,33 @@ namespace ElectricalPowerSystems.Parser
     }
     static public class MetaStorage
     {
+        static public Type max(Type a, Type b)//only for simple types and basic operations
+        {
+            return a;
+        }
+        //create graph for basic types dependency
+        static public Object convert(Object obj,Type main, Type secondary)
+        {
+            if (!(main is Class))
+            {
+                if (!(secondary is Class))
+                {
+                    //if secondary can be converted to main return ;
+                    //else throw error
+                    throw new Exception("Invalid type conversion");
+
+                }
+                else
+                {
+                    //throw error
+                    throw new Exception("Invalid type conversion");
+                }
+            }
+            //if main is a class then look for constructor main(secondary)
+
+            //if secondary is inhereted from main or a is inhereted from b return a or b
+            return obj;
+        }
         static public List<Type> basicTypes = new List<Type>
         {
             new Type("Array"),
@@ -202,16 +227,11 @@ namespace ElectricalPowerSystems.Parser
             new Class("Model",true)
 
         };
-        static Dictionary<string,AbstractFunction> functionTable = new Dictionary<string,AbstractFunction>
+        static Dictionary<string, AbstractFunction> functionTable = new Dictionary<string, AbstractFunction>
         {
-            {"print",new NativeFunction(){
-                
-            } },
-            { },
-            { },
-            { },
-            { },
-        }
+            /* {"print",new NativeFunction();
+             },*/
+        };
         static public void addNewClass(Class classType)
         {
 
@@ -240,10 +260,10 @@ namespace ElectricalPowerSystems.Parser
         }
         public Dictionary<string, Type> Props { get; protected set; }
         public Dictionary<string, Type> StaticProps { get; protected set; }
-        public Dictionary<string> Methods { get; protected set; }
+        public Dictionary<string,AbstractMethod> Methods { get; protected set; }
         public Dictionary<string, AbstractFunction> StaticMethods { get; protected set; }
     }
-    abstract class Object
+    public abstract class Object
     {
         protected bool isConst;
         protected Type type;
@@ -354,7 +374,7 @@ namespace ElectricalPowerSystems.Parser
             this.type = MetaStorage.basicTypes[4];
         }
     }
-    abstract class Value
+    public abstract class Value
     {
     }
     abstract class LValue : Value
