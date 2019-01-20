@@ -35,9 +35,22 @@ namespace ElectricalPowerSystems
         }
         private void Run()
         {
-            Test.TestParser.test();
-            return;
+            this.errors.Clear();
+            List<ModelParsing.ErrorMessage> errorList = new List<ModelParsing.ErrorMessage>();
             OutputTextBox.Clear();
+            List<string> outputList = new List<string>();
+            Test.TestParser.test(TextBox.Text,ref errorList,ref outputList);
+            foreach (ModelParsing.ErrorMessage error in errorList)
+            {
+                this.errors.Add(error);
+            }
+            foreach (var output in outputList)
+            {
+                OutputTextBox.AppendText(output);
+                OutputTextBox.AppendText("\n");
+            }
+            return;
+            /*
             ModelGraphCreatorAC modelGraph=new ModelGraphCreatorAC();
             modelGraph.addVoltageSource("a2","a1",10.0f,50.0f,10.0f);
             modelGraph.addVoltageSource("a1", "a3", 10.0f,50.0f,0.5f);
@@ -45,7 +58,6 @@ namespace ElectricalPowerSystems
             modelGraph.addResistor("a1", "a4", 15.0f);
             modelGraph.addResistor("a4", "a2", 4.0f);
             modelGraph.addGround("a2");
-            List<string> errorList = new List<string>();
             this.errors.Clear();
             if (!modelGraph.validate(ref errorList))
             {
@@ -71,13 +83,18 @@ namespace ElectricalPowerSystems
             {
                 OutputTextBox.AppendText(token.getTokenString());
                 OutputTextBox.AppendText("\n");
-            }
+            }*/
         }
         private void RunMenuButton_Click(object sender, RoutedEventArgs e)
         {
             RunMenuButton.IsEnabled = false;
             Run();
             RunMenuButton.IsEnabled = true;
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 }

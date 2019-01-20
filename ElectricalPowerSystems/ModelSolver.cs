@@ -408,7 +408,8 @@ namespace ElectricalPowerSystems
                     if (frequency == vs.frequency)
                     {
                         y[i + nodes] = Complex32.FromPolarCoordinates(vs.voltage,vs.phase);
-                    }
+                    }else
+                        y[i + nodes] = new Complex32(0.0f,0.0f);
                 }
                 for (int i = 0; i < lines + inductorsCount; i++)
                 {
@@ -436,6 +437,100 @@ namespace ElectricalPowerSystems
             }
             return solution;
         }
-
+        static public List<string> formOutput(ModelGraphCreatorAC graph,Vector<Complex32> x,float frequency)
+        {
+            List<string> output = new List<string>();
+            int nodes = graph.nodesList.Count - graph.groundsCount;
+            List<Complex32> elementsCurrents=new List<Complex32>();
+            List<Complex32> nodesVoltages=new List<Complex32>();
+            for (int i = 0, k = 0; i < graph.nodesList.Count; i++)
+            {
+                if (graph.nodesList[i].grounded)
+                {
+                    nodesVoltages.Add(new Complex32(0.0f, 0.0f));
+                }
+                else
+                {
+                    nodesVoltages.Add(x[k]);
+                    k++;
+                }
+            }
+            for (int i = 0; i < graph.elements.Count; i++)
+            {
+                ElementsAC.Element element = graph.elements[i];
+                switch (element.ElementType)
+                {
+                    case ElementsAC.ElementTypeEnum.Capacitor:
+                        { 
+                            Complex32 voltageDrop = nodesVoltages[element.nodes[1]] - nodesVoltages[element.nodes[0]];
+                            Complex32 current = voltageDrop * new Complex32(0.0f, frequency * ((ElementsAC.Capacitor)element).capacity);
+                            elementsCurrents.Add(current);
+                            break;
+                        }
+                    case ElementsAC.ElementTypeEnum.Resistor:
+                        {
+                            Complex32 voltageDrop = nodesVoltages[element.nodes[1]] - nodesVoltages[element.nodes[0]];
+                            elementsCurrents.Add(voltageDrop / ((ElementsAC.Resistor)element).resistance);
+                            break;
+                        }
+                    case ElementsAC.ElementTypeEnum.Inductor:
+                        {
+                            Complex32 voltageDrop = nodesVoltages[element.nodes[1]] - nodesVoltages[element.nodes[0]];
+                            Complex32 current = voltageDrop / new Complex32(0.0f, -frequency * ((ElementsAC.Inductor)element).inductivity);
+                            elementsCurrents.Add(current);
+                            break;
+                        }
+                    case ElementsAC.ElementTypeEnum.CurrentSource:
+                        ElementsAC.CurrentSource csel = (ElementsAC.CurrentSource)element;
+                        elementsCurrents.Add(Complex32.FromPolarCoordinates(csel.current, csel.phase));
+                        break;
+                    case ElementsAC.ElementTypeEnum.Ground:
+                    case ElementsAC.ElementTypeEnum.Line:
+                    case ElementsAC.ElementTypeEnum.VoltageSource:
+                        elementsCurrents.Add(new Complex32());//empty 
+                        break;
+                }
+            }
+            int voltageSources = graph.voltageSources.Count;
+            int inductorsCount = graph.inductors.Count;
+            int lines = graph.lines.Count;
+            for (int i = 0; i < voltageSources; i++)
+            {
+                Complex32 current = x[i + nodes];
+                elementsCurrents[graph.voltageSources[i]]=current;
+            }
+            for (int i = 0; i < lines; i++)
+            {
+                Complex32 current = x[i + nodes+voltageSources];
+                elementsCurrents[graph.lines[i]] = current;
+            }
+            for (int i = 0; i < inductorsCount; i++)
+            {
+                Complex32 current = x[i + nodes + voltageSources+lines];
+                elementsCurrents[graph.inductors[i]] = current;
+            }
+            foreach (var element in graph.outputCurrent)
+            {
+                Complex32 current = elementsCurrents[element];
+                output.Add($"Current [id={element}] = {current.Magnitude}@{MathUtils.degrees(current.Phase)}");
+            }
+            foreach (var element in graph.outputNodeVoltage)
+            {
+                ElementsAC.Element el = graph.elements[element];
+                if (el is ElementsAC.Element2N)
+                {
+                    Complex32 voltageDrop = nodesVoltages[el.nodes[1]] - nodesVoltages[el.nodes[1]];
+                    output.Add($"Voltage difference [id={element}] = {voltageDrop.Magnitude}@{MathUtils.degrees(voltageDrop.Phase)}");
+                }
+            }
+            foreach (var nodePair in graph.outputVoltageDifference)
+            {
+                Complex32 diff = nodesVoltages[nodePair.node2] - nodesVoltages[nodePair.node1];
+                output.Add($"Voltage difference [n1={graph.nodesList[nodePair.node1].label}, n2={graph.nodesList[nodePair.node2].label}] = " +
+                    $"{diff.Magnitude}@{MathUtils.degrees(diff.Phase)}"
+                    );
+            }
+            return output;
+        }
     }
 }

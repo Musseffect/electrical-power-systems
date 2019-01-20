@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace ElectricalPowerSystems
 {
 
-    class Element
+    public class Element
     {
         public int[] nodes;
         public Element()
@@ -18,21 +18,21 @@ namespace ElectricalPowerSystems
             nodes = null;
         }
     }
-    class Element2N: Element
+    public class Element2N : Element
     {
         public Element2N(int node1, int node2)
         {
             nodes = new int []{ node1,node2};
         }
     }
-    class Element1N : Element
+    public class Element1N : Element
     {
         public Element1N(int node)
         {
             nodes = new int[] { node};
         }
     }
-    class Resistor: Element2N
+    public class Resistor : Element2N
     {
         public float resistance;
         public Resistor(int node1, int node2,float resistance):base(node1,node2)
@@ -40,7 +40,7 @@ namespace ElectricalPowerSystems
             this.resistance = resistance;
         }
     }
-    class Capacitor : Element2N
+    public class Capacitor : Element2N
     {
         public float capacity;
         public Capacitor(int node1, int node2, float capacity) : base(node1, node2)
@@ -48,7 +48,7 @@ namespace ElectricalPowerSystems
             this.capacity = capacity;
         }
     }
-    class Inductor : Element2N
+    public class Inductor : Element2N
     {
         public float inductivity;
         public Inductor(int node1, int node2, float inductivity) : base(node1, node2)
@@ -56,19 +56,19 @@ namespace ElectricalPowerSystems
             this.inductivity = inductivity;
         }
     }
-    class Ground : Element1N
+    public class Ground : Element1N
     {
         public Ground(int node) : base(node)
         {
         }
     }
-    class Line : Element2N
+    public class Line : Element2N
     {
         public Line(int node1, int node2) : base(node1, node2)
         {
         }
     }
-    class VoltageSource : Element2N
+    public class VoltageSource : Element2N
     {
         public float voltage;
         public VoltageSource(int node1, int node2, float voltage) : base(node1, node2)
@@ -76,7 +76,7 @@ namespace ElectricalPowerSystems
             this.voltage = voltage;
         }
     }
-    class CurrentSource : Element2N
+    public class CurrentSource : Element2N
     {
         public float current;
         public CurrentSource(int node1, int node2, float current) : base(node1, node2)
@@ -84,7 +84,7 @@ namespace ElectricalPowerSystems
             this.current = current;
         }
     }
-    class Node
+    public class Node
     {
         public string label;
         public bool grounded;

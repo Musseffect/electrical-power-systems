@@ -18,13 +18,13 @@ namespace ElectricalPowerSystems
     }*/
     class MathUtils
     {
-        static public float degrees(float value)
+        static public double degrees(double value)
         {
-            return 180.0f * value/ (float)Math.PI ;
+            return 180.0 * value/ Math.PI ;
         }
-        static public float radians(float value)
+        static public double radians(double value)
         {
-            return (float)Math.PI*value/180.0f;
+            return Math.PI*value/180.0;
         }
 
     }

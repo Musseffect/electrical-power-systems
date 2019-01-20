@@ -69,3 +69,82 @@ current(element);
 voltage(element);/* - voltage drop on element*/
 voltage(node);/* - relative voltage on node*/
 voltage(node1,node2);/* - (phi2-phi1)*/
+
+
+
+
+
+
+/*
+	model: (state = modelStatement)*;
+	
+	modelStatement:  statement #ModelStatementRule
+					| classDefinition #ClassDefinitionRule
+					| functionDefinition #functionDefinitionRule
+					;
+
+	classDefinition: CLASS className=id classInheritance LCRLPAREN classDefinitionBody RCRLPAREN ;
+	classInheritance: COLON className=id 
+					| 
+					;
+	classDefinitionBody: (stat=classDefintionStatement)* ;
+	classDefinitionStatement: fieldDefinition #FieldDefinitionRule
+			| methodDefinition #MethodDefinitionRule
+			| access=(PUBLIC|PRIVATE|PROTECTED) COLON #AccessRule
+			;
+	methodDefinition: functionDefinition #FunctionRule
+					| constructorDefinition #ConstructorRule
+					;
+	constructorDefinition: CONSTRUCTOR LPAREN functionArgsDefinition RPAREN;
+	fieldDefinition: fieldModificator typeName=id fieldName=id SEMICOLON;
+	fieldModificator: (STATIC|CONST)*;
+
+	functionDefinition: FUNCTION functionName=id LPAREN functionArgsDefinition RPAREN LCRLPAREN (state=statement)* RCRLPAREN ;
+	functionArgsDefinition: functionArgDefinition (COMMA functionArgDefinition)* | ;
+	functionArgDefinition: typeName=id argName=id ;
+
+	CONSTRUCTOR:"constructor";
+	FUNCTION:"function";
+	PUBLIC:"public";
+	PRIVATE:"private";
+	PROTECTED:"protected";
+	CLASS:"class";
+	STATIC:"static";
+	CONST:"const";
+
+*/
+
+
+
+/*fragment A : [aA]; 
+fragment B : [bB];
+fragment C : [cC];
+fragment D : [dD];
+fragment E : [eE];
+fragment F : [fF];
+fragment G : [gG];
+fragment H : [hH];
+fragment I : [iI];
+fragment J : [jJ];
+fragment K : [kK];
+fragment L : [lL];
+fragment M : [mM];
+fragment N : [nN];
+fragment O : [oO];
+fragment P : [pP];
+fragment Q : [qQ];
+fragment R : [rR];
+fragment S : [sS];
+fragment T : [tT];
+fragment U : [uU];
+fragment V : [vV];*/
+
+
+/*RESISTOR			:RESISTOR;
+VOLTAGESOURCE		:VOLTAGESOURCE;
+VOLTAGE				:VOLTAGE;
+CURRENT				:CURRENT;
+LINE				:LINE;
+CURRENTSOURCE		:CURRENTSOURCE;
+CAPACITOR			:CAPACITOR;
+GROUND				:GROUND;*/

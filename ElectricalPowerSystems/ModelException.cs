@@ -13,6 +13,14 @@ namespace ElectricalPowerSystems
             return this.Message;
         }
     }
+    class ModelInterpreterException:Exception
+    {
+        public ModelInterpreterException(string message) : base(message)
+        {
+        }
+        public int Line { get; set; }
+        public int Position { get; set; }
+    }
     enum ParserError
     {
     }

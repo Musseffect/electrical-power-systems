@@ -33,7 +33,6 @@
                 <MenuItem Header="Paste" Command="Paste" ></MenuItem>
             </MenuItem>
             <MenuItem x:Name="RunMenuButton" Header="Run" Click="RunMenuButton_Click" ></MenuItem>
-            <MenuItem x:Name="CheckSyntaxMenuButton" Header="Check syntax" ></MenuItem>
             <MenuItem Header="Help" ></MenuItem>
         </Menu>
         <ToolBar Grid.Row="1" Height="30" VerticalAlignment="Top" Width="Auto">
@@ -68,7 +67,7 @@
         </ToolBar>
         <TabControl Grid.Row="2" >
             <TabItem Header="NewFile">
-            <TextBox x:Name="TextBox" TextWrapping="Wrap" Height="Auto" Width="Auto" Margin="0" FontFamily="Consolas" Text="/*Possible format:*/&#xA;element=resistor(value,nodeLabel1,nodeLabel2)&#xA;element=voltageSource(value,nodeLabel1,nodeLabel2)&#xA;element=ground(nodeLabel)&#xA;element=capacitor(value,nodeLabel1,nodeLabel2)&#xA;element=inductor(value,nodeLabel1,nodeLabel2)&#xA;element=currentSource(value,nodeLabel1,nodeLabel2)&#xA;element=node(nodeLabel)&#xA;element=line(nodeLabel1,nodeLabel2)/* - zero resistance*/&#xA;output:&#xA;current(element)&#xA;voltage(element)/* - voltage drop on element*/&#xA;voltage(node)/* - relative voltage on node*/&#xA;" VerticalScrollBarVisibility="Auto">
+                <TextBox x:Name="TextBox" AcceptsReturn="True" TextWrapping="Wrap" Height="Auto" Width="Auto" Margin="0" FontFamily="Consolas" Text="voltageSource(&quot;a2&quot;,&quot;a1&quot;,10.0,10.0,50.0);&#xD;&#xA;voltageSource(&quot;a1&quot;,&quot;a3&quot;,10.0,0.5,50.0);&#xD;&#xA;resistor(&quot;a1&quot;,&quot;a3&quot;,5.0);&#xD;&#xA;resistor(&quot;a4&quot;,&quot;a2&quot;, 4.0);&#xD;&#xA;ground(&quot;a2&quot;);" VerticalScrollBarVisibility="Auto" TextChanged="TextBox_TextChanged">
                 <TextBox.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Копировать"></MenuItem>

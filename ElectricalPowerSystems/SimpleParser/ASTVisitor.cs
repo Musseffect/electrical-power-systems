@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
-namespace ElectricalPowerSystems.Parser
+namespace ElectricalPowerSystems.SimpleParser
 {
     public enum ASTNodeType
     {
@@ -193,9 +193,9 @@ namespace ElectricalPowerSystems.Parser
         public override ASTNode VisitModel([NotNull] ModelGrammarParser.ModelContext context)
         {
             List<StatementNode> statements = new List<StatementNode>();
-            for (int i = 0; i < context.ChildCount; i++)
+            foreach(var statement in context.statement())
             {
-                ASTNode node = Visit(context.statement(i));
+                ASTNode node = Visit(statement);
                 if (node != null)
                     statements.Add((StatementNode)node);
             }
@@ -270,7 +270,7 @@ namespace ElectricalPowerSystems.Parser
         {
             return new StringNode
             {
-                Value = context.value.Text,
+                Value = context.value.Text.Substring(1,context.value.Text.Length-2),
                 Line = context.value.Line,
                 Position = context.value.Column
             };
@@ -292,7 +292,7 @@ namespace ElectricalPowerSystems.Parser
                     Position = context.value.value.Column
                 };
         }
-        public override ASTNode VisitMemberExpression([NotNull] ModelGrammarParser.MemberExpressionContext context)
+        public override ASTNode VisitFieldExpression([NotNull] ModelGrammarParser.FieldExpressionContext context)
         {
             return new MemberNode
             {
@@ -348,7 +348,7 @@ namespace ElectricalPowerSystems.Parser
                     return new ComplexPhaseNode
                     {
                         Magnitude = double.Parse(context.left.value.Text),
-                        Phase = double.Parse(context.right.value.Text),
+                        Phase = MathUtils.radians(double.Parse(context.right.value.Text)),
                         Line = context.left.value.Line,
                         Position = context.left.value.Column
                     };
@@ -373,8 +373,10 @@ namespace ElectricalPowerSystems.Parser
             var functionName = context.func.Text;
             List<ExpressionNode> arguments = new List<ExpressionNode>();
             var args = context.functionArguments();
-            for (int i = 0, j = 0; i < args.ChildCount; i += 2, j++)
-                arguments.Add((ExpressionNode)Visit(args.expression(j)));
+            foreach (var arg in args.expression())
+            {
+                arguments.Add((ExpressionNode)Visit(arg));
+            }
             return new FunctionNode
             {
                 FunctionName = functionName,

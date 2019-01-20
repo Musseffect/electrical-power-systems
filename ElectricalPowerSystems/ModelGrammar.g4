@@ -13,65 +13,28 @@ constant	: value=number  #NumberConstant
 	| value=STRING #StringConstant
 ;
 
-model: (state=statement)*;
+model: (state=statement)* EOF;
 
 
-/*
-	model: (state = modelStatement)*;
-	
-	modelStatement:  statement #ModelStatementRule
-					| classDefinition #ClassDefinitionRule
-					| functionDefinition #functionDefinitionRule
-					;
-
-	classDefinition: CLASS className=id classInheritance LCRLPAREN classDefinitionBody RCRLPAREN ;
-	classInheritance: COLON className=id 
-					| 
-					;
-	classDefinitionBody: (stat=classDefintionStatement)* ;
-	classDefinitionStatement: fieldDefinition #FieldDefinitionRule
-			| methodDefinition #MethodDefinitionRule
-			| access=(PUBLIC|PRIVATE|PROTECTED) COLON #AccessRule
-			;
-	methodDefinition: functionDefinition #FunctionRule
-					| constructorDefinition #ConstructorRule
-					;
-	constructorDefinition: CONSTRUCTOR LPAREN functionArgsDefinition RPAREN;
-	fieldDefinition: fieldModificator typeName=id fieldName=id SEMICOLON;
-	fieldModificator: (STATIC|CONST)*;
-
-	functionDefinition: FUNCTION functionName=id LPAREN functionArgsDefinition RPAREN LCRLPAREN (state=statement)* RCRLPAREN ;
-	functionArgsDefinition: functionArgDefinition (COMMA functionArgDefinition)* | ;
-	functionArgDefinition: typeName=id argName=id ;
-
-	CONSTRUCTOR:"constructor";
-	FUNCTION:"function";
-	PUBLIC:"public";
-	PRIVATE:"private";
-	PROTECTED:"protected";
-	CLASS:"class";
-	STATIC:"static";
-	CONST:"const";
-
-*/
 
 statement: expression SEMICOLON #StatementRule
 | SEMICOLON #EmptyStatement;
 
 unaryOperator: op=(PLUS | MINUS);
 
-expression: op=unaryOperator expression	#UnaryOperatorExpression
-	| left=expression op=(DIVISION|ASTERICS) right=expression	#BinaryOperatorExpression
-	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
-	|<assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
-	|<assoc=right> lvalue=expression ASSIGN rvalue=expression #AssignmentExpression
+expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
+	| LPAREN expression RPAREN #BracketExpression
 	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
+	| left=expression DOT id=ID #FieldExpression
+	| op=unaryOperator expression	#UnaryOperatorExpression
+	| LPAREN id=ID RPAREN right=expression #CastExpression
+	| left=expression op=(DIVISION|ASTERISK) right=expression	#BinaryOperatorExpression
+	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
+	|<assoc=right> lvalue=expression ASSIGN rvalue=expression #AssignmentExpression
 	| id=ID		#IdentifierExpression
 	| value=constant	#ConstantExpression
-	| LPAREN expression RPAREN #BracketExpression
-	| left=expression DOT id=ID #MemberExpression
-	| (id=ID) right=expression #CastExpression
 	;	
+
 
 functionArguments: expression (COMMA expression)* | ;
 
@@ -83,51 +46,15 @@ functionArguments: expression (COMMA expression)* | ;
 
 fragment LOWERCASE  : [a-z] ;
 fragment UPPERCASE  : [A-Z] ;
-fragment DIGIT: [0-9];
-/*fragment A : [aA]; 
-fragment B : [bB];
-fragment C : [cC];
-fragment D : [dD];
-fragment E : [eE];
-fragment F : [fF];
-fragment G : [gG];
-fragment H : [hH];
-fragment I : [iI];
-fragment J : [jJ];
-fragment K : [kK];
-fragment L : [lL];
-fragment M : [mM];
-fragment N : [nN];
-fragment O : [oO];
-fragment P : [pP];
-fragment Q : [qQ];
-fragment R : [rR];
-fragment S : [sS];
-fragment T : [tT];
-fragment U : [uU];
-fragment V : [vV];*/
+fragment DIGIT: [0-9] ;
 
+FLOAT: [+-]?(DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
+	   |[+-?]DOT DIGIT+ ([Ee][+-]? DIGIT+)?
+		;
+INT: [+-]?DIGIT+ ; 
+IM					: [Jj] ;
+ID		: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;
 
-/*RESISTOR			:RESISTOR;
-VOLTAGESOURCE		:VOLTAGESOURCE;
-VOLTAGE				:VOLTAGE;
-CURRENT				:CURRENT;
-LINE				:LINE;
-CURRENTSOURCE		:CURRENTSOURCE;
-CAPACITOR			:CAPACITOR;
-GROUND				:GROUND;*/
-
-INT: DIGIT+ ;
-FLOAT: (DIGIT+ '.' DIGIT* |'.' DIGIT+)[Ee][+-]? DIGIT+; 
-ID		: [_]*LOWERCASE[A-Za-z0-9_]*;
-STRING	: '"' .*? '"'|'\'' .*? '\'';
-NEWLINE	: ('\r'?'\n' | '\r')+ ;
-WHITESPACE : (' '|'\t')+ -> skip ;
-COMMENT 
-	:	( '//' ~[\r\n]* ('\r'? '\n' | 'r')
-		| '/*' .*? '*/'
-		) -> skip
-	;
 
 PLUS               : '+' ;
 MINUS              : '-' ;
@@ -145,5 +72,13 @@ RSQRPAREN			: ']' ;
 LCRLPAREN			: '{' ;
 RCRLPAREN			: '}' ;
 ANGLE				:'@' ;
-IM					:[Ii];
 CARET				:'^';
+
+STRING	: '"' .*? '"'|'\'' .*? '\'';
+NEWLINE	: ('\r'? '\n' | '\r')+ -> skip;
+WHITESPACE : (' ' | '\t')+ -> skip ;
+COMMENT 
+	:	( '//' ~[\r\n]* ('\r'? '\n' | 'r')
+		| '/*' .*? '*/'
+		) -> skip
+	;
