@@ -87,13 +87,10 @@
     <Compile Include="ModelGrammar.g4.parser.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="PowerModel.cs" />
+    <Compile Include="PowerModel\PowerModel.cs" />
     <Compile Include="SimpleParser\ASTVisitor.cs" />
     <Compile Include="SimpleParser\ObjectSystem.cs" />
     <Compile Include="Test\TestParser.cs" />
-    <Compile Include="VisualGraphEditor.xaml.cs">
-      <DependentUpon>VisualGraphEditor.xaml</DependentUpon>
-    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -106,10 +103,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="VisualGraphEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MathUtils.cs" />
@@ -139,7 +132,10 @@
       <Generator>MSBuild:Compile</Generator>
       <CustomToolNamespace>ElectricalPowerSystems</CustomToolNamespace>
     </Antlr4>
-    <None Include="packages.config" />
+    <None Include="Docs\umlDiagram.mdj" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -163,7 +159,9 @@
   <ItemGroup>
     <Resource Include="Grammar.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Docs\ModelLanguageDescription.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

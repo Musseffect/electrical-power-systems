@@ -1,0 +1,70 @@
+﻿
+базовые типы:
+int
+float
+complex
+string
+element - индекс добавленного элемента
+
+список функций в C-подобном формате:
+element resistor(string node1, string node2,float resistance);
+- присоединить резистор к узлам node1 и node2 с сопротивлением resistance Ом
+
+element capacitor(string node1, string node2,float capacity);
+- присоединить конденсатор к узлам node1 и node2 с ёмкостью capacity Фарад
+
+element inductor(string node1, string node2,float inductivity);
+- присоединить катушку индуктивности к узлам node1 и node2 с индуктивностью inductivity Фарад
+
+element line(string node1,string node2);
+- присоединить провод с нулевым сопротивлениям к узлам node1 и node2
+
+void ground(string node);
+- присоединить заземление к узлу node
+
+element voltageSource(string node1,string node2,complex voltage,float frequency = 0);
+- присоединить идеальный источник напряжения к узлам node1 и node2 с комплексным напряжением voltage и (пока что) угловой частотой frequency
+
+element voltageSource(string node1,string node2,float amp,float phase,float frequency = 0);
+- присоединить идеальный источник напряжения к узлам node1 и node2 с комплексным напряжением amp*(e^phase) и (пока что) угловой частотой frequency
+
+element currentSource(string node1,string node2,complex current,float frequency = 0);
+- присоединить идеальный источник тока к узлам node1 и node2 с комплексным током current и (пока что) угловой частотой frequency
+
+element currentSource(string node1,string node2,float amp,float phase,float frequency = 0);
+- присоединить идеальный источник тока к узлам node1 и node2 с комплексным током amp*(e^phase) и (пока что) угловой частотой frequency
+
+void print(arg);
+- вывести значение аргумента в текстбоксе вывода
+
+float re(complex val)
+- получить действительную часть комплексного аргумента val
+
+float im(complex val)
+- получить мнимую часть комплексного аргумента val
+
+float magn(complex val)
+- получить амплитуду комплексного аргумента val
+
+float phase(complex val)
+- получить угол комплексного аргумента val
+
+float radians(float val)
+- перевести значения аргументов из градусов в радианы
+
+float degrees(float val)
+- перевести значения аргументов из радиан в градусы
+
+complex conj(complex val)
+- получить комплексно-сопряжённое значение
+
+void voltage(element el)
+- добавить в список вывода падения напряжения на элементе el
+
+void voltage(string node1,string node2)
+- добавить в список вывода разницу потенциалов на узлах node2 и node1 -> Phi(node2)-Phi(node1)
+
+void current(element el)
+- добавить в список вывода ток на элементе el(положительное направление от node1 к node2)
+
+

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 //https://ptolemy.berkeley.edu/projects/embedded/eecsx44/fall2011/lectures/01-modelling.pdf
 namespace ElectricalPowerSystems
 {
-
     public class Element
     {
         public int[] nodes;

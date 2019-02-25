@@ -5,42 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-/*
-
-    basic types:
-    int
-    float
-    string
-    complex
-    element
-
-
-
-function list:
-element resistor(string node1, string node2,float value)
-element capacitor(string node1, string node2)
-element inductor(string node1, string node2)
-element line(string node1,string node2)
-void ground(string node)
-element voltageSource(string node1,string node2,complex voltage,float frequency = 0)
-element voltageSource(string node1,string node2,float amp,float phase,float frequency = 0)
-element currentSource(string node1,string node2,complex current,float frequency = 0)
-element currentSource(string node1,string node2,float amp,float phase,float frequency = 0)
-
-void print(...)
-float re(complex val)
-float im(complex val)
-float magn(complex val)
-float phase(complex val)
-float radians(float val)
-float degrees(float val)
-complex conj(complex val)
-
-void voltage(element el)
-void voltage(string node1,string node2)
-void current(element el)
-*/
-
 namespace ElectricalPowerSystems.SimpleParser
 {
     public class ASTInterpreter
@@ -749,7 +713,6 @@ namespace ElectricalPowerSystems.SimpleParser
                                 )
                         }
                     }
-
                 },
                 {"inductor",new List<FunctionDefinition>
                     {
@@ -780,7 +743,6 @@ namespace ElectricalPowerSystems.SimpleParser
                             )
                         }
                     }
-
                 },
                 {"ground",new List<FunctionDefinition>
                     {
@@ -794,7 +756,6 @@ namespace ElectricalPowerSystems.SimpleParser
                             )
                         }
                     }
-
                 },
                 {"voltage",new List<FunctionDefinition>
                     {
