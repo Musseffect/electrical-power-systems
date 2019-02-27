@@ -88,9 +88,9 @@
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
     <Compile Include="PowerModel\PowerModel.cs" />
-    <Compile Include="SimpleParser\ASTVisitor.cs" />
-    <Compile Include="SimpleParser\ObjectSystem.cs" />
-    <Compile Include="Test\TestParser.cs" />
+    <Compile Include="Interpreter\ASTVisitor.cs" />
+    <Compile Include="Interpreter\ObjectSystem.cs" />
+    <Compile Include="Interpreter\Interpreter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -161,6 +161,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Docs\ModelLanguageDescription.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Test\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

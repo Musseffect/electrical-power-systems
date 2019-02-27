@@ -93,10 +93,10 @@ namespace ElectricalPowerSystems.PowerModel
     }
     class AirLine : Element2N
     {
-        float resistance;
-        public AirLine(int node1, int node2, float resistance) : base(node1, node2)
+        float distance;
+        public AirLine(int node1, int node2, float distance) : base(node1, node2)
         {
-            this.resistance = resistance;
+            this.distance = distance;
         }
         public override ElementType getType()
         {
@@ -108,18 +108,44 @@ namespace ElectricalPowerSystems.PowerModel
         List<Element> elements;
         Dictionary<string, int> nodeDictionary;
         public List<Node> nodesList;
+        public int nodeId;
+        private int retrieveNodeId(string key)
+        {
+            int node = nodeId;
+            try
+            {
+                node = nodeDictionary[key];
+            }
+            catch (KeyNotFoundException)
+            {
+                nodeDictionary.Add(key, node);
+                nodeId++;
+                Node nd = new Node();
+                nd.label = key;
+                nodesList.Add(nd);
+            }
+            return node;
+        }
         public PowerModelGraph()
         {
             nodeDictionary = new Dictionary<string, int>();
             elements = new List<Element>();
         }
-        public int addLoad(string node)
+        public int addLoad(string node,Complex32 resistance)
         {
-            throw new NotImplementedException();
+            int node1Id = retrieveNodeId(node);
+            nodesList[node1Id].connectedElements.Add(elements.Count);
+            elements.Add(new Load(node1Id,resistance));
+            return elements.Count - 1;
         }
-        public int addAirLine()
+        public int addAirLine(string node1,string node2,float distance)
         {
-            throw new NotImplementedException();
+            int node1Id = retrieveNodeId(node1);
+            int node2Id = retrieveNodeId(node2);
+            nodesList[node1Id].connectedElements.Add(elements.Count);
+            nodesList[node2Id].connectedElements.Add(elements.Count);
+            elements.Add(new AirLine(node1Id,node2Id,distance));
+            return elements.Count - 1;
         }
         public int addConnectionLine()
         {

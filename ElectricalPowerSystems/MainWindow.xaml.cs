@@ -39,7 +39,17 @@ namespace ElectricalPowerSystems
             List<ModelParsing.ErrorMessage> errorList = new List<ModelParsing.ErrorMessage>();
             OutputTextBox.Clear();
             List<string> outputList = new List<string>();
-            Test.TestParser.test(TextBox.Text,ref errorList,ref outputList);
+            try
+            {
+                Interpreter.MainInterpreter.compile(TextBox.Text, ref errorList, ref outputList);
+            }
+            catch (Exception exc)
+            {
+                OutputTextBox.AppendText(exc.Message);
+                OutputTextBox.AppendText("\n");
+                OutputTextBox.AppendText(exc.StackTrace);
+                return;
+            }
             foreach (ModelParsing.ErrorMessage error in errorList)
             {
                 this.errors.Add(error);

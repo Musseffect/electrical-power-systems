@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
-namespace ElectricalPowerSystems.SimpleParser
+namespace ElectricalPowerSystems.Interpreter
 {
     public enum ASTNodeType
     {

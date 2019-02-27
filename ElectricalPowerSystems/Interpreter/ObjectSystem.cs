@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace ElectricalPowerSystems.SimpleParser
+namespace ElectricalPowerSystems.Interpreter
 {
     public class ASTInterpreter
     {
