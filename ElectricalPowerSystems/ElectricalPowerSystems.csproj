@@ -87,7 +87,6 @@
     <Compile Include="ModelGrammar.g4.parser.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="PowerModel\PowerModel.cs" />
     <Compile Include="Interpreter\ASTVisitor.cs" />
     <Compile Include="Interpreter\ObjectSystem.cs" />
     <Compile Include="Interpreter\Interpreter.cs" />
