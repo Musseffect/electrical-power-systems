@@ -11,18 +11,13 @@ namespace ElectricalPowerSystems.Test
         static public void testPowerModel()
         {
             PowerGraph.PowerGraphManager graph = new PowerGraph.PowerGraphManager();
-            graph.addElement(new PowerGraph.GraphGenerator("a1",));
+            graph.addElement(new PowerGraph.GraphGenerator("a1",voltage));
             graph.addElement(new PowerGraph.GraphTransformer2w("a1","a2",));
             graph.addElement(new PowerGraph.GraphAirLine("a2","a3"));
             graph.addElement(new PowerGraph.GraphTransformer2w("a3","a4"),);
             graph.addElement(new PowerGraph.GraphLoad("a4",));
-            /*
-            graph.addGeneratorY(,,);
-            graph.addTwoWindingTransformerYD();
-            graph.addAirLineDD();
-            graph.addTwoWindingTransformerDY();
-            graph.addLoadY();
-            graph.addGround();*/
+            List<string> errors=new List<string>();
+            graph.solve(ref errors);
         }
     }
 }

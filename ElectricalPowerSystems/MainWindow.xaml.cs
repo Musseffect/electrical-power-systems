@@ -32,6 +32,9 @@ namespace ElectricalPowerSystems
             errors = new ObservableCollection<ModelParsing.ErrorMessage>();
             InitializeComponent();
             DataContext = this;
+            NodeCanvas canvas = new NodeCanvas();
+            canvas.Show();
+            this.Close();
         }
         private void Run()
         {

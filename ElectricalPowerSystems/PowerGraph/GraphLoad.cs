@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics;
+﻿using ElectricalPowerSystems.ACGraph;
+using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,19 @@ namespace ElectricalPowerSystems.PowerGraph
         {
             nodes.Add(node);
             this.mode = mode;
+        }
+
+        public override void generateACGraph(ACGraph.ACGraph acGraph)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<bool> getPhaseNodes()
+        {
+            if (mode == Mode.Delta)
+                return new List<bool>() { false };
+            else
+                return new List<bool>() { true };
         }
     }
 }

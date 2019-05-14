@@ -11,7 +11,7 @@ namespace ElectricalPowerSystems.PowerGraph
         Delta,
         Wye
     }
-    class GraphElement
+    public abstract class GraphElement
     {
         protected List<string> nodes;
         public List<string> Nodes { get { return nodes; } }
@@ -19,5 +19,7 @@ namespace ElectricalPowerSystems.PowerGraph
         {
             nodes = new List<string>();
         }
+        public abstract List<bool> getPhaseNodes();
+        public abstract void generateACGraph(ACGraph.ACGraph acGraph);
     }
 }

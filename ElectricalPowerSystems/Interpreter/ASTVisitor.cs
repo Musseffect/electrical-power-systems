@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -280,7 +281,7 @@ namespace ElectricalPowerSystems.Interpreter
             if (context.value.value.Type == ModelGrammarLexer.FLOAT)
                 return new FloatNode
                 {
-                    Value = double.Parse(context.value.value.Text),
+                    Value = double.Parse(context.value.value.Text, CultureInfo.InvariantCulture),
                     Line = context.value.value.Line,
                     Position = context.value.value.Column
                 };
@@ -327,7 +328,7 @@ namespace ElectricalPowerSystems.Interpreter
             return new ComplexNode
             {
                 Re = 0.0,
-                Im = double.Parse(context.im.value.Text),
+                Im = double.Parse(context.im.value.Text, CultureInfo.InvariantCulture),
                 Line = context.im.value.Line,
                 Position = context.im.value.Column
             };
@@ -339,16 +340,16 @@ namespace ElectricalPowerSystems.Interpreter
                 case ModelGrammarLexer.IM:
                     return new ComplexNode
                     {
-                        Re = double.Parse(context.left.value.Text),
-                        Im = double.Parse(context.right.value.Text),
+                        Re = double.Parse(context.left.value.Text, CultureInfo.InvariantCulture),
+                        Im = double.Parse(context.right.value.Text, CultureInfo.InvariantCulture),
                         Line=context.left.value.Line,
                         Position=context.left.value.Column
                     };
                 case ModelGrammarLexer.ANGLE:
                     return new ComplexPhaseNode
                     {
-                        Magnitude = double.Parse(context.left.value.Text),
-                        Phase = MathUtils.radians(double.Parse(context.right.value.Text)),
+                        Magnitude = double.Parse(context.left.value.Text, CultureInfo.InvariantCulture),
+                        Phase = MathUtils.radians(double.Parse(context.right.value.Text, CultureInfo.InvariantCulture)),
                         Line = context.left.value.Line,
                         Position = context.left.value.Column
                     };
