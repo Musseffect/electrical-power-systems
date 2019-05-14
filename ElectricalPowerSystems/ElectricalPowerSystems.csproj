@@ -81,15 +81,50 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ACGraph\ACGraph.cs" />
+    <Compile Include="GUI\GraphViewer.xaml.cs">
+      <DependentUpon>GraphViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\GraphViewModel.cs" />
+    <Compile Include="GUI\MoveThumb.cs" />
+    <Compile Include="GUI\NetworkView.cs" />
+    <Compile Include="GUI\Node.cs" />
+    <Compile Include="GUI\NodeItem.cs" />
+    <Compile Include="GUI\NodesSource.cs" />
+    <Compile Include="GUI\RotateThumb.cs" />
+    <Compile Include="GUI\Toolbox.cs" />
+    <Compile Include="GUI\ToolboxControl.xaml.cs">
+      <DependentUpon>ToolboxControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ModelGrammar.g4.lexer.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
     <Compile Include="ModelGrammar.g4.parser.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
+    <Compile Include="GUI\NodeCanvas.xaml.cs">
+      <DependentUpon>NodeCanvas.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PowerGraph\ABCElement.cs" />
+    <Compile Include="PowerGraph\GraphAirLine.cs" />
+    <Compile Include="PowerGraph\GraphGenerator.cs" />
+    <Compile Include="PowerGraph\GraphElement.cs" />
+    <Compile Include="PowerGraph\GraphNode.cs" />
+    <Compile Include="PowerGraph\GraphLoad.cs" />
+    <Compile Include="PowerGraph\PowerGraphManager.cs" />
+    <Compile Include="PowerGraph\GraphTransformer2w.cs" />
     <Compile Include="Interpreter\ASTVisitor.cs" />
     <Compile Include="Interpreter\ObjectSystem.cs" />
     <Compile Include="Interpreter\Interpreter.cs" />
+    <Compile Include="Test\Test.cs" />
+    <Page Include="GUI\GraphViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GUI\ToolboxControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -102,14 +137,18 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="GUI\NodeCanvas.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MathUtils.cs" />
     <Compile Include="ModelException.cs" />
     <Compile Include="ModelGraph.cs" />
-    <Compile Include="ModelGraphAC.cs" />
-    <Compile Include="ModelParser.cs" />
-    <Compile Include="ModelSolver.cs" />
+    <Compile Include="ACGraph\ModelGraphAC.cs" />
+    <Compile Include="ErrorMessage.cs" />
+    <Compile Include="ACGraph\ModelSolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
