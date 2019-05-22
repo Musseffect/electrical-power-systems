@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.PowerGraph
 {
-    class ABCNode
+    public class ABCNode
     {
         public int A { get; set; }
         public int B { get; set; }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.PowerGraph
 {
-    enum Mode
+    public enum Mode
     {
         Delta,
         Wye
@@ -20,6 +20,6 @@ namespace ElectricalPowerSystems.PowerGraph
             nodes = new List<string>();
         }
         public abstract List<bool> getPhaseNodes();
-        public abstract void generateACGraph(ACGraph.ACGraph acGraph);
+        public abstract void generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph);
     }
 }

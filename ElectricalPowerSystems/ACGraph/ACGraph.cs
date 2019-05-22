@@ -8,18 +8,44 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.ACGraph
 {
-    class ACGraphSolution
+    public class ACGraphSolution
     {
+        public List<Complex32> voltages;//Комплексные напряжения
+        public List<Complex32> currents;//Комплексные токи для всех элементов
+        public float frequency;//Частота активных элементов схемы расчёта
+        public ACGraphSolution()
+        {
+            voltages = new List<Complex32>();
+            currents = new List<Complex32>();
+            frequency = 0.0f;
+        }
     }
-    class ACGraph
+    public class ACGraph
     {
         public List<ElementsAC.Element> elements;
         public List<int> voltageSources;
         public List<int> currentSources;
+        public List<int> transformers;
         public List<int> inductors;
         public List<Node> nodesList;
         public List<int> lines;
         public int groundsCount;
+        public ACGraph()
+        {
+            groundsCount = 0;
+            lines = new List<int>();
+            nodesList = new List<Node>();
+            inductors = new List<int>();
+            currentSources = new List<int>();
+            voltageSources = new List<int>();
+            transformers = new List<int>();
+            elements=new List<ElementsAC.Element>();
+        }
+        public int allocateNode()
+        {
+            nodesList.Add(new Node());
+            return nodesList.Count - 1;
+        }
         public class NodePair
         {
             public int node1;
@@ -30,9 +56,6 @@ namespace ElectricalPowerSystems.ACGraph
                 this.node2 = node2;
             }
         }
-        public List<NodePair> outputVoltageDifference;
-        public List<int> outputNodeVoltage;
-        public List<int> outputCurrent;
         public int createResistor(int node1, int node2, float resistance)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
@@ -81,328 +104,305 @@ namespace ElectricalPowerSystems.ACGraph
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
+            inductors.Add(elements.Count);
             elements.Add(new ElementsAC.Inductor(node1, node2, inductivity));
             return elements.Count - 1;
         }
-        //returns list of Currents
-        public List<string> SolveAC()
+        public int createTransformer(int n1, int n2, int n3, int n4, float k)
         {
+            transformers.Add(elements.Count);
+            elements.Add(new ElementsAC.Transformer(n1,n2,n3,n4,k));
+            return elements.Count;
+        }
+        //returns list of Currents
+        public ACGraphSolution SolveAC(float frequency)//решить схему для выбранной частоты
+        {
+            ACGraphSolution solution = new ACGraphSolution();
+            solution.frequency = frequency;
             int _lines = lines.Count;
-            int nodes = nodesList.Count - groundsCount;
+            int nodes = nodesList.Count;
             int _voltageSources = voltageSources.Count;
             int inductorsCount = inductors.Count;
-            int rank = nodes + _voltageSources + inductorsCount;
+            int transformersCount = transformers.Count;
+            int voltageRank = nodes - groundsCount;
+            int auxRank = _voltageSources + _lines + inductorsCount + 2 * transformersCount;
+            int linesOffset = voltageRank + _voltageSources;
+            int inductorsOffset = linesOffset + _lines;
+            int transformersOffset = inductorsOffset + inductorsCount;
+            int rank = voltageRank + auxRank;
             Matrix<Complex32> A = Matrix<Complex32>.Build.Dense(rank, rank);
-            HashSet<float> frequencies = new HashSet<float>();
-            foreach (var source in currentSources)
+            /*
+                | G B |
+                | C D |
+            */
+            //submatrix G
+            for (int i = 0, k = 0; k < voltageRank; i++)
             {
-                float freq = ((ElementsAC.CurrentSource)elements[source]).frequency;
-                frequencies.Add(freq);
-            }
-            foreach (var source in voltageSources)
-            {
-                float freq = ((ElementsAC.VoltageSource)elements[source]).frequency;
-                frequencies.Add(freq);
-            }
-            List<string> solution = new List<string>(nodes);
-            for (int i = 0, k = 0; k < nodes; i++)
-            {
-                if (nodesList[i].grounded)
+                if (nodesList[i].grounded == true)
                 {
                     continue;
                 }
-                solution.Add("Voltage for node " + nodesList[i].label + " is ");
-                k++;
-            }
-            //solve circuit for each frequency
-            foreach (float frequency in frequencies)
-            {
-                /*
-                  | G B |
-                  | C D |
-                */
-                //submatrix G
-                for (int i = 0, k = 0; k < nodes; i++)
+                for (int j = 0, l = 0; l < voltageRank; j++)
                 {
-                    if (nodesList[i].grounded == true)
+                    if (nodesList[j].grounded == true)
                     {
                         continue;
                     }
-                    for (int j = 0, l = 0; l < nodes; j++)
+                    Complex32 value = new Complex32(0, 0);
+                    if (k == l)
                     {
-                        if (nodesList[j].grounded == true)
+                        foreach (int elementId in nodesList[i].connectedElements)
                         {
-                            continue;
-                        }
-                        Complex32 value = new Complex32(0, 0);
-                        if (k == l)
-                        {
-                            foreach (int elementId in nodesList[i].connectedElements)
+                            ElementsAC.Element element = elements[elementId];
+                            if (element is ElementsAC.Resistor)
                             {
-                                ElementsAC.Element element = elements[elementId];
-                                if (element is ElementsAC.Resistor)
-                                {
-                                    value += new Complex32(1.0f / ((ElementsAC.Resistor)element).resistance, 0.0f);
-                                }
-                                else if (element is ElementsAC.Capacitor)
-                                {
-                                    value += new Complex32(0.0f, frequency * ((ElementsAC.Capacitor)element).capacity);
-                                }
+                                value += new Complex32(1.0f / ((ElementsAC.Resistor)element).resistance, 0.0f);
+                            }
+                            else if (element is ElementsAC.Capacitor)
+                            {
+                                value += new Complex32(0.0f, frequency * ((ElementsAC.Capacitor)element).capacity);
                             }
                         }
-                        else
-                        {
-                            foreach (int elementId in nodesList[i].connectedElements)
-                            {
-                                ElementsAC.Element element = elements[elementId];
-                                if (element is ElementsAC.Resistor)
-                                {
-                                    ElementsAC.Resistor res = (ElementsAC.Resistor)element;
-                                    if (res.nodes[0] == j || res.nodes[1] == j)
-                                        value -= 1.0f / res.resistance;
-                                }
-                            }
-                        }
-                        A.At(l, k, value);
-                        l++;
-                    }
-                    k++;
-                }
-                //submatrix B and C
-                for (int i = 0; i < _voltageSources; i++)
-                {
-                    for (int j = 0, k = 0; k < nodes; j++)
-                    {
-                        if (nodesList[j].grounded == true)
-                        {
-                            continue;
-                        }
-                        ElementsAC.VoltageSource vs = ((ElementsAC.VoltageSource)(elements[voltageSources[i]]));
-                        Complex32 value = new Complex32(0.0f, 0.0f);
-                        if (vs.nodes[1] == j)
-                        {
-                            value = 1.0f;
-                        }
-                        else if (vs.nodes[0] == j)
-                        {
-                            value = -1.0f;
-                        }
-                        A.At(k, i + nodes, value);
-                        A.At(i + nodes, k, value);
-                        k++;
-                    }
-                }
-                for (int i = 0; i < _lines; i++)
-                {
-                    for (int j = 0, k = 0; k < nodes; j++)
-                    {
-                        if (nodesList[j].grounded == true)
-                        {
-                            continue;
-                        }
-                        ElementsAC.Element inductor = elements[lines[i]];
-                        Complex32 value = new Complex32(0.0f, 0.0f);
-                        if (inductor.nodes[0] == k)
-                            value = 1.0f;
-                        else
-                            value = -1.0f;
-                        A.At(k, i + nodes + _voltageSources, value);
-                        A.At(i + nodes + _voltageSources, k, value);
-                        k++;
-                    }
-                }
-                for (int i = 0; i < inductorsCount; i++)
-                {
-                    for (int j = 0, k = 0; k < nodes; j++)
-                    {
-                        if (nodesList[j].grounded == true)
-                        {
-                            continue;
-                        }
-                        ElementsAC.Element inductor = elements[inductors[i]];
-                        Complex32 value = new Complex32(0.0f, 0.0f);
-                        if (inductor.nodes[0] == k)
-                            value = 1.0f;
-                        else
-                            value = -1.0f;
-                        A.At(k, i + nodes + _voltageSources + _lines, value);
-                        A.At(i + nodes + _voltageSources + _lines, k, value);
-                        k++;
-                    }
-                }
-                //submatrix D
-                for (int i = 0; i < _voltageSources + _lines + inductorsCount; i++)
-                {
-                    for (int j = 0; j < _voltageSources + _lines + inductorsCount; j++)
-                    {
-                        A.At(nodes + j, nodes + i, 0.0f);
-                    }
-                }
-                for (int i = 0; i < inductorsCount; i++)
-                {
-                    int index = nodes + _voltageSources + _lines + i;
-                    ElementsAC.Inductor inductor = (ElementsAC.Inductor)elements[inductors[i]];
-                    A.At(index, index, new Complex32(0.0f, inductor.inductivity));
-
-                }
-                Vector<Complex32> y = Vector<Complex32>.Build.Dense(rank); ;//size equal to
-                for (int i = 0, j = 0; j < nodes; i++)
-                {
-                    if (nodesList[i].grounded == true)
-                    {
-                        continue;
-                    }
-                    Complex32 value = 0.0f;
-                    foreach (int elId in nodesList[i].connectedElements)
-                    {
-                        ElementsAC.Element element = elements[elId];
-                        if (element is ElementsAC.CurrentSource)
-                        {
-                            ElementsAC.CurrentSource cs = (ElementsAC.CurrentSource)element;
-                            if (cs.frequency == frequency)
-                            {
-                                Complex32 current = Complex32.FromPolarCoordinates(cs.current,
-                                  cs.phase);
-                                if (((ElementsAC.CurrentSource)element).nodes[1] == i)
-                                    value += current;
-                                else
-                                    value -= current;
-                            }
-                        }
-                    }
-                    y[j] = value;
-                    j++;
-                }
-                for (int i = 0; i < _voltageSources; i++)
-                {
-                    ElementsAC.VoltageSource vs = ((ElementsAC.VoltageSource)(elements[voltageSources[i]]));
-                    if (frequency == vs.frequency)
-                    {
-                        y[i + nodes] = Complex32.FromPolarCoordinates(vs.voltage, vs.phase);
                     }
                     else
-                        y[i + nodes] = new Complex32(0.0f, 0.0f);
+                    {
+                        foreach (int elementId in nodesList[i].connectedElements)
+                        {
+                            ElementsAC.Element element = elements[elementId];
+                            if (element is ElementsAC.Resistor)
+                            {
+                                ElementsAC.Resistor res = (ElementsAC.Resistor)element;
+                                if (res.nodes[0] == j || res.nodes[1] == j)
+                                    value -= 1.0f / res.resistance;
+                            }
+                        }
+                    }
+                    A.At(l, k, value);
+                    l++;
                 }
-                for (int i = 0; i < _lines + inductorsCount; i++)
+                k++;
+            }
+            //submatrix B and C
+            for (int i = 0; i < _voltageSources; i++)
+            {
+                for (int j = 0, k = 0; k < voltageRank; j++)
                 {
-                    y[i + nodes + _voltageSources] = new Complex32(0.0f, 0.0f);
-                }
-                Vector<Complex32> x = A.Solve(y);
-                for (int i = 0, k = 0; k < nodes; i++)
-                {
-                    if (nodesList[i].grounded)
+                    if (nodesList[j].grounded == true)
                     {
                         continue;
                     }
-                    solution[k] += (x[k].Magnitude.ToString() + "@" + MathUtils.degrees(x[k].Phase).ToString() + " w=" + frequency + " ");
+                    ElementsAC.VoltageSource vs = ((ElementsAC.VoltageSource)(elements[voltageSources[i]]));
+                    Complex32 value = new Complex32(0.0f, 0.0f);
+                    if (vs.nodes[1] == j)
+                    {
+                        value = 1.0f;
+                    }
+                    else if (vs.nodes[0] == j)
+                    {
+                        value = -1.0f;
+                    }
+                    A.At(k, i + voltageRank, value);
+                    A.At(i + voltageRank, k, value);
                     k++;
                 }
             }
-            for (int i = 0, k = 0; k < nodes; i++)
+            for (int i = 0; i < _lines; i++)
             {
-                if (nodesList[i].grounded)
+                for (int j = 0, k = 0; k < voltageRank; j++)
+                {
+                    if (nodesList[j].grounded == true)
+                    {
+                        continue;
+                    }
+                    ElementsAC.Element inductor = elements[lines[i]];
+                    Complex32 value = new Complex32(0.0f, 0.0f);
+                    if (inductor.nodes[0] == j)
+                        value = 1.0f;
+                    else
+                        value = -1.0f;
+                    A.At(k, i + linesOffset, value);
+                    A.At(i + linesOffset, k, value);
+                    k++;
+                }
+            }
+            for (int i = 0; i < inductorsCount; i++)
+            {
+                for (int j = 0, k = 0; k < voltageRank; j++)
+                {
+                    if (nodesList[j].grounded == true)
+                    {
+                        continue;
+                    }
+                    ElementsAC.Element inductor = elements[inductors[i]];
+                    Complex32 value = new Complex32(0.0f, 0.0f);
+                    if (inductor.nodes[0] == j)
+                        value = 1.0f;
+                    else
+                        value = -1.0f;
+                    A.At(k, i + inductorsOffset, value);
+                    A.At(i + inductorsOffset, k, value);
+                    k++;
+                }
+            }
+            for (int i = 0; i < transformersCount; i++)
+            {
+                for (int j = 0, k = 0; k < voltageRank; j++)
+                {
+                    if (nodesList[j].grounded == true)
+                    {
+                        continue;
+                    }
+                    ElementsAC.Element transformer = elements[transformers[i]];
+                    Complex32 value1 = new Complex32(0.0f, 0.0f);
+                    Complex32 value2 = new Complex32(0.0f, 0.0f);
+                    Complex32 value3 = new Complex32(0.0f, 0.0f);
+                    if (transformer.nodes[0] == j)
+                    {
+                        value1 = 1.0f;
+                        value3 = -((ElementsAC.Transformer)transformer).b;
+                    }
+                    else if (transformer.nodes[1] == j)
+                    {
+                        value1 = -1.0f;
+                        value3 = ((ElementsAC.Transformer)transformer).b;
+                    }
+                    else if (transformer.nodes[2] == j)
+                    {
+                        value2 = 1.0f;
+                        value3 = 1.0f;
+                    }
+                    else if (transformer.nodes[3] == j)
+                    {
+                        value2 = -1.0f;
+                        value3 = -1.0f;
+                    }
+                    A.At(i * 2 + transformersOffset, k, value1);
+                    A.At(i * 2 + 1 + transformersOffset, k, value2);
+                    A.At(k, i * 2 + 1 + transformersOffset, value3);
+                    k++;
+                }
+            }
+            //submatrix D
+            for (int i = 0; i < _voltageSources + _lines + inductorsCount; i++)
+            {
+                for (int j = 0; j < _voltageSources + _lines + inductorsCount; j++)
+                {
+                    A.At(voltageRank + j, voltageRank + i, 0.0f);
+                }
+            }
+            for (int i = 0; i < inductorsCount; i++)
+            {
+                int index = inductorsOffset + i;
+                ElementsAC.Inductor inductor = (ElementsAC.Inductor)elements[inductors[i]];
+                A.At(index, index, new Complex32(0.0f, inductor.inductivity));
+
+            }
+            for (int i = 0; i < transformersCount; i++)
+            {
+                ElementsAC.Element transformer = elements[transformers[i]];
+                float b = ((ElementsAC.Transformer)transformer).b;
+                A.At(i * 2 +transformersOffset,i*2+transformersOffset, 1.0f);
+                A.At(i * 2 + 1 + transformersOffset, i * 2 + transformersOffset,-b);
+            }
+            Vector<Complex32> y = Vector<Complex32>.Build.Dense(rank); ;//size equal to
+            for (int i = 0, j = 0; j < voltageRank; i++)
+            {
+                if (nodesList[i].grounded == true)
                 {
                     continue;
                 }
-                solution[k] += "V";
-                k++;
-            }
-            return solution;
-        }
-        static public List<string> formOutput(ModelGraphCreatorAC graph, Vector<Complex32> x, float frequency)
-        {
-            List<string> output = new List<string>();
-            int nodes = graph.nodesList.Count - graph.groundsCount;
-            List<Complex32> elementsCurrents = new List<Complex32>();
-            List<Complex32> nodesVoltages = new List<Complex32>();
-            for (int i = 0, k = 0; i < graph.nodesList.Count; i++)
-            {
-                if (graph.nodesList[i].grounded)
+                Complex32 value = 0.0f;
+                foreach (int elId in nodesList[i].connectedElements)
                 {
-                    nodesVoltages.Add(new Complex32(0.0f, 0.0f));
+                    ElementsAC.Element element = elements[elId];
+                    if (element is ElementsAC.CurrentSource)
+                    {
+                        ElementsAC.CurrentSource cs = (ElementsAC.CurrentSource)element;
+                        if (cs.frequency == frequency)
+                        {
+                            Complex32 current = Complex32.FromPolarCoordinates(cs.current,
+                                cs.phase);
+                            if (((ElementsAC.CurrentSource)element).nodes[1] == i)
+                                value += current;
+                            else
+                                value -= current;
+                        }
+                    }
+                }
+                y[j] = value;
+                j++;
+            }
+            for (int i = 0; i < _voltageSources; i++)
+            {
+                ElementsAC.VoltageSource vs = ((ElementsAC.VoltageSource)(elements[voltageSources[i]]));
+                if (frequency == vs.frequency)
+                {
+                    y[i + voltageRank] = Complex32.FromPolarCoordinates(vs.voltage, vs.phase);
                 }
                 else
-                {
-                    nodesVoltages.Add(x[k]);
-                    k++;
-                }
+                    y[i + voltageRank] = new Complex32(0.0f, 0.0f);
             }
-            for (int i = 0; i < graph.elements.Count; i++)
+            for (int i = 0; i < _lines + inductorsCount + transformersCount * 2; i++)
             {
-                ElementsAC.Element element = graph.elements[i];
+                y[i + linesOffset] = new Complex32(0.0f, 0.0f);
+            }
+            //Решение системы
+            Vector<Complex32> x = A.Solve(y);
+            //Напряжения(Потенциалы) в узлах
+            for (int i = 0, k = 0; k < voltageRank; i++)
+            {
+                if (nodesList[i].grounded)
+                {
+                    solution.voltages.Add(0.0f);
+                    continue;
+                }
+                solution.voltages.Add(x[k]);
+                k++;
+            }
+            for (int i = 0; i < elements.Count; i++)
+            {
+                ElementsAC.Element element = elements[i];
                 switch (element.ElementType)
                 {
                     case ElementsAC.ElementTypeEnum.Capacitor:
                         {
-                            Complex32 voltageDrop = nodesVoltages[element.nodes[1]] - nodesVoltages[element.nodes[0]];
+                            Complex32 voltageDrop = solution.voltages[element.nodes[1]] - solution.voltages[element.nodes[0]];
                             Complex32 current = voltageDrop * new Complex32(0.0f, frequency * ((ElementsAC.Capacitor)element).capacity);
-                            elementsCurrents.Add(current);
+                            solution.currents.Add(current);
                             break;
                         }
                     case ElementsAC.ElementTypeEnum.Resistor:
                         {
-                            Complex32 voltageDrop = nodesVoltages[element.nodes[1]] - nodesVoltages[element.nodes[0]];
-                            elementsCurrents.Add(voltageDrop / ((ElementsAC.Resistor)element).resistance);
-                            break;
-                        }
-                    case ElementsAC.ElementTypeEnum.Inductor:
-                        {
-                            Complex32 voltageDrop = nodesVoltages[element.nodes[1]] - nodesVoltages[element.nodes[0]];
-                            Complex32 current = voltageDrop / new Complex32(0.0f, -frequency * ((ElementsAC.Inductor)element).inductivity);
-                            elementsCurrents.Add(current);
+                            Complex32 voltageDrop = solution.voltages[element.nodes[1]] - solution.voltages[element.nodes[0]];
+                            solution.currents.Add(voltageDrop / ((ElementsAC.Resistor)element).resistance);
                             break;
                         }
                     case ElementsAC.ElementTypeEnum.CurrentSource:
                         ElementsAC.CurrentSource csel = (ElementsAC.CurrentSource)element;
-                        elementsCurrents.Add(Complex32.FromPolarCoordinates(csel.current, csel.phase));
+                        solution.currents.Add(Complex32.FromPolarCoordinates(csel.current, csel.phase));
                         break;
+                    case ElementsAC.ElementTypeEnum.Inductor:
                     case ElementsAC.ElementTypeEnum.Ground:
                     case ElementsAC.ElementTypeEnum.Line:
                     case ElementsAC.ElementTypeEnum.VoltageSource:
-                        elementsCurrents.Add(new Complex32());//empty 
+                        solution.currents.Add(0.0f);//Пропуск значений, поскольку данные токи присутствуют в векторе решения
                         break;
                 }
             }
-            int voltageSources = graph.voltageSources.Count;
-            int inductorsCount = graph.inductors.Count;
-            int lines = graph.lines.Count;
-            for (int i = 0; i < voltageSources; i++)
+            for (int i = 0; i < _voltageSources; i++)
             {
-                Complex32 current = x[i + nodes];
-                elementsCurrents[graph.voltageSources[i]] = current;
+                solution.currents[voltageSources[i]]=x[voltageRank + i];
             }
-            for (int i = 0; i < lines; i++)
+            for (int i = 0; i<inductorsCount; i++)
             {
-                Complex32 current = x[i + nodes + voltageSources];
-                elementsCurrents[graph.lines[i]] = current;
+                solution.currents[inductors[i]] = x[inductorsOffset + i];
             }
-            for (int i = 0; i < inductorsCount; i++)
+            for (int i = 0; i < transformersCount; i++)
             {
-                Complex32 current = x[i + nodes + voltageSources + lines];
-                elementsCurrents[graph.inductors[i]] = current;
+                solution.currents[transformers[i]] = x[transformersCount + i];
             }
-            foreach (var element in graph.outputCurrent)
-            {
-                Complex32 current = elementsCurrents[element];
-                output.Add($"Current [id={element}] = {current.Magnitude}@{MathUtils.degrees(current.Phase)}");
-            }
-            foreach (var element in graph.outputNodeVoltage)
-            {
-                ElementsAC.Element el = graph.elements[element];
-                if (el is ElementsAC.Element2N)
-                {
-                    Complex32 voltageDrop = nodesVoltages[el.nodes[1]] - nodesVoltages[el.nodes[1]];
-                    output.Add($"Voltage difference [id={element}] = {voltageDrop.Magnitude}@{MathUtils.degrees(voltageDrop.Phase)}");
-                }
-            }
-            foreach (var nodePair in graph.outputVoltageDifference)
-            {
-                Complex32 diff = nodesVoltages[nodePair.node2] - nodesVoltages[nodePair.node1];
-                output.Add($"Voltage difference [n1={graph.nodesList[nodePair.node1].label}, n2={graph.nodesList[nodePair.node2].label}] = " +
-                    $"{diff.Magnitude}@{MathUtils.degrees(diff.Phase)}"
-                    );
-            }
-            return output;
+            return solution;
         }
+    }
 }
-}
+

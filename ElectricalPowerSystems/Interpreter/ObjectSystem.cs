@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ElectricalPowerSystems.ACGraph;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,14 +20,14 @@ namespace ElectricalPowerSystems.Interpreter
                 { "Void", new BaseType(BasicType.Void,"Void") }
             };
         public Dictionary<string, Object> variableTable;
-        ModelGraphCreatorAC modelGraph;
+        CircuitModelAC model;
         public ASTInterpreter()
         {
         }
-        public ModelGraphCreatorAC generate(ASTNode ast,ref List<ModelParsing.ErrorMessage> errorList,ref List<string> output)
+        public CircuitModelAC generate(ASTNode ast,ref List<ErrorMessage> errorList,ref List<string> output)
         {
-            modelGraph = new ModelGraphCreatorAC();
-            FunctionStorage.model = modelGraph;
+            model = new CircuitModelAC();
+            FunctionStorage.model = model;
             FunctionStorage.output = output;
             variableTable = new Dictionary<string, Object>();
             LValueIdentifier.variableTable = variableTable;
@@ -41,14 +42,14 @@ namespace ElectricalPowerSystems.Interpreter
                 catch (ModelInterpreterException exc)
                 {
                     Console.WriteLine(exc.Message);
-                    errorList.Add(new ModelParsing.ErrorMessage(exc.Message, exc.Line,exc.Position));
+                    errorList.Add(new ErrorMessage(exc.Message, exc.Line,exc.Position));
                 } catch (Exception exc)
                 {
                     Console.WriteLine(exc.Message);
-                    errorList.Add(new ModelParsing.ErrorMessage(exc.Message));
+                    errorList.Add(new ErrorMessage(exc.Message));
                 }
             }
-            return modelGraph;
+            return model;
         }
         private Value assignment(ExpressionNode exp)
         {
@@ -404,7 +405,7 @@ namespace ElectricalPowerSystems.Interpreter
             try
             {
                 funcList = FunctionStorage.functionTable[node.FunctionName];
-            }catch(Exception exc)
+            }catch(Exception)
             {
                 throw new ModelInterpreterException("Invalid function name.")
                 {
@@ -448,7 +449,7 @@ namespace ElectricalPowerSystems.Interpreter
             try
             {
                 main = basicTypes[node.CastType.Value];
-            } catch (Exception exc)
+            } catch (Exception)
             {
                 throw new ModelInterpreterException("Invalid type name.")
                 {
@@ -680,7 +681,7 @@ namespace ElectricalPowerSystems.Interpreter
         }
         static public class FunctionStorage
         {
-            static public ModelGraphCreatorAC model;
+            static public CircuitModelAC model;
             static public List<string> output;
             static public Dictionary<string, List<FunctionDefinition>> functionTable = new Dictionary<string, List<FunctionDefinition>>
             {
@@ -955,6 +956,16 @@ namespace ElectricalPowerSystems.Interpreter
                 model.addVoltageOutput(arg1.Value, arg2.Value);
                 return new Void();
             }
+            static public Object transformer(List<Object> args)
+            {
+                String arg1 = (String)args[0];
+                String arg2 = (String)args[1];
+                String arg3 = (String)args[2];
+                String arg4 = (String)args[3];
+                Float arg5 = (Float)args[4];
+                int index = model.addTransformer(arg1.Value,arg2.Value,arg3.Value,arg4.Value,(float )arg5.Value);
+                return new Element(index);
+            }
             static public Object ground(List<Object> args)
             {
                 model.addGround(((String)args[0]).Value);
@@ -964,14 +975,10 @@ namespace ElectricalPowerSystems.Interpreter
             {
                 output.Add(((String)args[0]).Value);
                 return new Void();
-                throw new Exception("Not implemented");
-                return new Void();
             }
             static public Object printElement(List<Object> args)
             {
                 output.Add(model.getElementString(((Element)args[0]).Index));
-                return new Void();
-                throw new Exception("Not implemented");
                 return new Void();
             }
             static public Object re(List<Object> args)
@@ -1250,7 +1257,7 @@ namespace ElectricalPowerSystems.Interpreter
                     Object obj = variableTable[key];
                     return obj;
                 }
-                catch (Exception exc)
+                catch (Exception)
                 {
                     throw new Exception("Undefined variable \""+key+"\"");
                 }

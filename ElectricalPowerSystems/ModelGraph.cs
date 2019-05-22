@@ -85,12 +85,10 @@ namespace ElectricalPowerSystems
     }
     public class Node
     {
-        public string label;
         public bool grounded;
         public List<int> connectedElements;
         public Node()
         {
-            label = "";
             grounded = false;
             connectedElements = new List<int>();
         }
@@ -182,7 +180,6 @@ namespace ElectricalPowerSystems
                 nodes.Add(key,node);
                 nodeId++;
                 Node nd = new Node();
-                nd.label = key;
                 nodesList.Add(nd);
             }
             return node;
@@ -197,6 +194,9 @@ namespace ElectricalPowerSystems
             nodesList=new List<Node>();
             lines = new List<int>();
             inductors = new List<int>();
+            outputNodeVoltage = new List<int>();
+            outputVoltageDifference = new List<NodePair>();
+            outputCurrents = new List<int>();
             groundsCount = 0;
         }
         public int addResistor(string node1, string node2,float resistance)
@@ -304,7 +304,4 @@ namespace ElectricalPowerSystems
             return true;
         }
     }
-
-
-  
 }

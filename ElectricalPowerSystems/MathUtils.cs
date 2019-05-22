@@ -6,16 +6,6 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems
 {
-    /*class Matrix
-    {
-        float[] data;
-        int width;
-        int height;
-    }
-    class Vector
-    {
-        float[] data;
-    }*/
     class MathUtils
     {
         static public double degrees(double value)
