@@ -5,13 +5,61 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ElectricalPowerSystems"
         mc:Ignorable="d"
+        Name="windowElement"
         Title="ElectricalPowerSystems v 1.0 - 0.(9)" Height="360" Width="531.916" MinWidth="400" MinHeight="400">
     <Grid>
+        <Grid.Resources>
+            <Style x:Key="newTabButtonStyle" TargetType="TabItem">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TabItem">
+                            <Button Width="20" Height="Auto" Content="+" Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}},  Path=DataContext.NewCommand}" BorderThickness="0"
+                                    Margin="10,0,10,0" Padding="4,0,4,0"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Background" Value="Aqua"/>
+            </Style>
+            <Style x:Key="itemStyle" TargetType="TabItem">
+                <Setter Property="Width" Value="Auto" />
+            </Style>
+            <DataTemplate x:Key="newTabButtonHeader">
+                <!--<Button Width="Auto" Height="Auto" Content="+" Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}},  Path=DataContext.NewCommand}" BorderThickness="0" Padding="0,0,8,0"/>-->
+            </DataTemplate>
+            <DataTemplate x:Key="itemHeader">
+                <DockPanel>
+                    <TextBlock Text="{Binding Header}"/>
+                    <Button Margin="5,0,0,0" 
+                            Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.DeleteCommand}"
+                            CommandParameter="{Binding}" BorderThickness="0" BorderBrush="{x:Null}">
+                        <Image Source="Resources/close-image.png" Width="10" Height="10"/>
+                    </Button>
+                </DockPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="newTabButtonContent">
+                <Grid/>
+            </DataTemplate>
+            <DataTemplate x:Key="itemContent">
+                <TextBox Text="{Binding Content}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"/>
+            </DataTemplate>
+            <local:TabTemplateSelector x:Key="tabHeaderTemplateSelector" 
+                                   NewButtonTemplate="{StaticResource newTabButtonHeader}"
+                                   ItemTemplate="{StaticResource itemHeader}"/>
+            <local:TabTemplateSelector x:Key="tabContentTemplateSelector" 
+                                   NewButtonTemplate="{StaticResource newTabButtonContent}"
+                                   ItemTemplate="{StaticResource itemContent}"/>
+            <local:TabStyleSelector x:Key="tabHeaderStyleSelector"
+                                    NewButtonStyle="{StaticResource newTabButtonStyle}"
+                                    ItemStyle="{StaticResource itemStyle}"
+                                       />
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
             <RowDefinition/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Menu Grid.Row="0" Height="25" VerticalAlignment="Top">
             <MenuItem Header="File">
@@ -65,23 +113,25 @@
             </Button>
             <Separator />
         </ToolBar>
-        <TabControl Grid.Row="2" >
-            <TabItem Header="NewFile">
-                <TextBox x:Name="TextBox" AcceptsReturn="True" TextWrapping="Wrap" Height="Auto" Width="Auto" Margin="0" FontFamily="Consolas" Text="voltageSource(&quot;a2&quot;,&quot;a1&quot;,10.0,10.0,50.0);&#xD;&#xA;voltageSource(&quot;a1&quot;,&quot;a3&quot;,10.0,0.5,50.0);&#xD;&#xA;resistor(&quot;a1&quot;,&quot;a3&quot;,5.0);&#xD;&#xA;resistor(&quot;a4&quot;,&quot;a2&quot;, 4.0);&#xD;&#xA;ground(&quot;a2&quot;);" VerticalScrollBarVisibility="Auto" TextChanged="TextBox_TextChanged">
-                <TextBox.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Копировать"></MenuItem>
-                        <MenuItem Header="Вставить"></MenuItem>
-                        <MenuItem Header="Вырезать"></MenuItem>
-                        <MenuItem Header="Удалить"></MenuItem>
-                    </ContextMenu>
-                </TextBox.ContextMenu>
-            </TextBox>
-            </TabItem>
+        <TabControl Grid.Row="2" Name="FileTab"
+                    ItemsSource="{Binding Path=TabItems}"
+                    ItemTemplateSelector="{StaticResource tabHeaderTemplateSelector}"
+                    ItemContainerStyleSelector="{StaticResource tabHeaderStyleSelector}"
+                    ContentTemplateSelector="{StaticResource tabContentTemplateSelector}" SelectionChanged="FileTab_SelectionChanged"
+                    >
+            <TabControl.Resources>
+                <Style TargetType="TextBox">
+                    <Setter Property="AcceptsReturn" Value="True"></Setter>
+                    <Setter Property="Height" Value="Auto"></Setter>
+                    <Setter Property="Width" Value="Auto"></Setter>
+                    <Setter Property="Margin" Value="0"></Setter>
+                    <Setter Property="FontFamily" Value="0"></Setter>
+                </Style>
+            </TabControl.Resources>
         </TabControl>
         <TabControl Grid.Row="3" >
             <TabItem Header="Output">
-                <TextBox Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
+                <TextBox Text="{Binding Path=OutputText, Mode=OneWay}"  Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
                 </TextBox>
             </TabItem>
             <TabItem Header="Errors">
@@ -125,5 +175,28 @@
                 </ListView>
             </TabItem>
         </TabControl>
+        <StatusBar Grid.Row="4" Height="25" Width="Auto">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="2" VerticalContentAlignment="Center" BorderThickness="0">
+                <TextBlock Text="Использование памяти "/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="3" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"  Padding="10,4">
+                <TextBlock x:Name="MemoryUsage"></TextBlock>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="0">
+                <TextBlock x:Name="StatusBlock" Text="{Binding StatusText}"></TextBlock>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>

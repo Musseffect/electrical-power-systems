@@ -18,7 +18,7 @@ namespace ElectricalPowerSystems.Interpreter
     }
     class MainInterpreter
     {
-        static public void compile(string inputText,ref List<ModelParsing.ErrorMessage> errorList,ref List<string> output)
+        static public void compile(string inputText,ref List<ErrorMessage> errorList,ref List<string> output)
         {
             AntlrInputStream inputStream = new AntlrInputStream(inputText);
             ModelGrammarLexer modelLexer = new ModelGrammarLexer(inputStream);
@@ -33,7 +33,7 @@ namespace ElectricalPowerSystems.Interpreter
             var model = interpreter.generate(root, ref errorList, ref output);
             if (errorList.Count > 0)
                 return;
-            List<string> solverOutput = ModelSolver.SolveAC(model);
+            List<string> solverOutput = model.Solve();
             output.AddRange(solverOutput);
         }
 

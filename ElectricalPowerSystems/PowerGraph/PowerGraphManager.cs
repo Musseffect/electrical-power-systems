@@ -71,7 +71,6 @@ namespace ElectricalPowerSystems.PowerGraph
                     elements.Add(el);
                 }
                 //create abcn nodes
-                int lastAbcIndex = 0;
                 List<ABCElement> abcElements = new List<ABCElement>();
                 BitArray visitedElements=new BitArray(elements.Count,false);
                 int i = 0;
@@ -85,18 +84,14 @@ namespace ElectricalPowerSystems.PowerGraph
                     foreach (var node in phaseNodes)
                     {
                         ABCNode abcNode=new ABCNode();
-                        abcNode.A = lastAbcIndex++;
-                        abcNode.B = lastAbcIndex++;
-                        abcNode.C = lastAbcIndex++;
-                        abcNode.N = node ? lastAbcIndex++ :-1;
+                        abcNode.A = acGraph.allocateNode();
+                        abcNode.B = acGraph.allocateNode();
+                        abcNode.C = acGraph.allocateNode();
+                        abcNode.N = node ? acGraph.allocateNode() : -1;
                         abcElement.Nodes.Add(abcNode);
                     }
                     //generate local electric scheme for element
-                    abcElement.getElementDescription().generateACGraph(acGraph);
-                    if (!visitedElements[i])
-                    {
-
-                    }
+                    abcElement.getElementDescription().generateACGraph(abcElement.Nodes,acGraph);
                     i++;
                 }
                 foreach (var nodeList in nodeElements)
@@ -115,6 +110,10 @@ namespace ElectricalPowerSystems.PowerGraph
                             acGraph.createLine(firstABCNode.N, currentABCNode.N);
                     }
                 }
+                if (acGraph.groundsCount == 0)
+                {
+                    acGraph.createGround(0);
+                }
             }
             public bool validate(ref List<string> errors)
             {
@@ -123,16 +122,16 @@ namespace ElectricalPowerSystems.PowerGraph
             }
             public PowerGraphSolveResult solve()//in phase coordinates
             {
-                ACGraph.ACGraphSolution acSolution = acGraph.SolveAC();
+                ACGraph.ACGraphSolution acSolution = acGraph.SolveAC((float)(50.0*2.0*Math.PI));
                 //get results
                 //return results
                 return new PowerGraphSolveResult();
             }
         }
         List<GraphElement> elements;
-        PowerGraphManager()
+        public PowerGraphManager()
         {
-            clear();
+            elements = new List<GraphElement>();
         }
         public void clear()
         {

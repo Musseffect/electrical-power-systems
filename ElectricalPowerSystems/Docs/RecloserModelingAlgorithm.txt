@@ -1,0 +1,89 @@
+﻿
+Алгоритм динамического расчёта схемы с реклозером без переходных процессов
+
+В общих чертах:
+Имеется список событий в системе, события двух видов:
+изменение схемы (включение выключение реклозеров, изменение потребляемой мощности, замыкания);
+проверка выполнения условий отключения реклозера при превышении тока/мощности в течении заданного времени;
+
+Изменения состояния схемы происходят мгновенно.
+Алгоритм производит перерасчёт схемы при событиях изменения схемы и проверяет условия для отключения реклозеров.
+По сути это имитационное моделирование по событиям.
+
+
+
+events - упорядоченный по времени список событий
+
+state - значения всех токов и напряжений в схеме
+
+Имеется начальное состояние схемы - список всех элементов, состояния реклозеров(вкл/выкл)
+а также возможные замыкания в виде отдельных элементов с указанием времени их возникновения и продожительности
+
+recloser rule - правило по отклюючению реклозера при мгновенном превышении тока, либо при превышении тока в течении
+некоторого времени
+
+eventTypes{
+	scheme change,
+	recloser current check
+}
+function applyEvent(event,state)
+{
+	if(event.type == scheme change)
+	{
+		//change scheme value
+		return false;
+	}else if(event.type==recloser current check)
+	{
+		if(current or power on event.recloser is big at current time than)
+		{
+			addEvent(events);//add scheme change event for this recloser
+			remove all events for current check from this recloser;
+			break;
+		}else
+		{
+			//do nothing
+		}
+	}
+	return true;
+}
+function calcSchemeState(state,events)
+{
+	//calc scheme currents and voltages
+	foreach recloser
+	{
+		if there is an event in events for recloser current check 
+		and at this moment current on this recloser is less than currentCheck.value in recloser rule
+		remove this event from queue
+
+		if there is no event for particular recloser rule and current value on this recloser is big enough
+		to trigger this rule add event for current check in events queue
+
+		if there is an valid rule for instant current value than addEvent for scheme change
+	}
+}
+function main()
+{
+	initEvents(events);//Инициализировать Events событиями возникновения и исчезновения замыканий
+	bool recalcState = false
+	float t = 0.0;
+	while(true)
+	{
+		while(t==events.first.time)
+		{
+			currentEvent = events.Enqueue;
+			recalcState = recalcState && applyEvent(currentEvent,state);//change scheme or 
+		}
+		if(recalcState == false)
+		{
+			recalcState = true;
+			calcSchemeState(state,events);
+		}
+		if(events.isEmpty())
+		{
+			break;//end of simulation, scheme state isn't going to change
+		}
+		t = events.first.time;
+	}
+	return;
+}
+

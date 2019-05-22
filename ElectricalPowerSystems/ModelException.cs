@@ -21,21 +21,4 @@ namespace ElectricalPowerSystems
         public int Line { get; set; }
         public int Position { get; set; }
     }
-    enum ParserError
-    {
-    }
-    class ModeParserSyntaxException:ModelException
-    {
-        int line;
-        int symbol;
-        ParserError errorCode;
-        static public string getErrorMessage(ParserError code)
-        {
-            return "Not implemented";
-        }
-        public override string getMessage()
-        {
-            return "["+line.ToString()+(symbol>-1?symbol.ToString():"")+"]: "+ getErrorMessage(errorCode);
-        }
-    }
 }
