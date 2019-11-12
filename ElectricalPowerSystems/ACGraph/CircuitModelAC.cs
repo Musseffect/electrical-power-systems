@@ -107,18 +107,19 @@ namespace ElectricalPowerSystems.ACGraph
         }
         public void addCurrentOutput(int elementIndex)
         {
-            if (elementIndex < acGraph.elements.Count)
+            if (elementIndex >= acGraph.elements.Count ||elementIndex<0)
                 throw new Exception("Incorrect element index.");
             outputCurrent.Add(elementIndex);
         }
         public void addVoltageOutput(int elementIndex)
         {
-            if (elementIndex < acGraph.elements.Count)
+            if (elementIndex >= acGraph.elements.Count || elementIndex < 0)
                 throw new Exception("Incorrect element index.");
             outputNodeVoltage.Add(elementIndex);
         }
         public void addVoltageOutput(string node1, string node2)
         {
+            //TODO ADD exception and change grammar to include output section
             int node1Id = retrieveNodeId(node1);
             int node2Id = retrieveNodeId(node2);
             outputVoltageDifference.Add(new NodePair(node1Id, node2Id));
@@ -153,7 +154,7 @@ namespace ElectricalPowerSystems.ACGraph
                 foreach (var element in outputCurrent)
                 {
                     Complex32 current = solution.currents[element];
-                    output[outputIndex++]+=($" [{hz} Hz]({current.Magnitude}@{MathUtils.degrees(current.Phase)})");
+                    output[outputIndex++]+=($" [{hz} Hz]({current.Magnitude}@{Utils.degrees(current.Phase)})");
                 }
                 foreach (var element in outputNodeVoltage)
                 {
@@ -161,13 +162,13 @@ namespace ElectricalPowerSystems.ACGraph
                     if (el is ElementsAC.Element2N)
                     {
                         Complex32 voltageDrop = solution.voltages[el.nodes[1]] - solution.voltages[el.nodes[1]];
-                        output[outputIndex++] += ($" [{hz} Hz]({voltageDrop.Magnitude}@{MathUtils.degrees(voltageDrop.Phase)})");
+                        output[outputIndex++] += ($" [{hz} Hz]({voltageDrop.Magnitude}@{Utils.degrees(voltageDrop.Phase)})");
                     }
                 }
                 foreach (var nodePair in outputVoltageDifference)
                 {
                     Complex32 diff = solution.voltages[nodePair.node2] - solution.voltages[nodePair.node1];
-                    output[outputIndex++] += ($" [{hz} Hz]({diff.Magnitude}@{MathUtils.degrees(diff.Phase)})");
+                    output[outputIndex++] += ($" [{hz} Hz]({diff.Magnitude}@{Utils.degrees(diff.Phase)})");
                 }
             }
             return output;

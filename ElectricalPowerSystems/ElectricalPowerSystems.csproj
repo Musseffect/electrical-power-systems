@@ -52,6 +52,16 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Test\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Antlr4.Runtime, Version=4.6.0.0, Culture=neutral, PublicKeyToken=09abb75b9ed49849, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr4.Runtime.4.6.5\lib\net45\Antlr4.Runtime.dll</HintPath>
@@ -115,6 +125,8 @@
     <Compile Include="PowerGraph\GraphElement.cs" />
     <Compile Include="PowerGraph\GraphNode.cs" />
     <Compile Include="PowerGraph\GraphLoad.cs" />
+    <Compile Include="PowerGraph\GraphOutput.cs" />
+    <Compile Include="PowerGraph\PowerElementScheme.cs" />
     <Compile Include="PowerGraph\PowerGraphManager.cs" />
     <Compile Include="PowerGraph\GraphTransformer2w.cs" />
     <Compile Include="Interpreter\ASTVisitor.cs" />
@@ -205,6 +217,8 @@
     <Resource Include="Docs\ModelLanguageDescription.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Docs\TODO.txt" />
+    <Resource Include="TestModels\model1.txt" />
     <Resource Include="Docs\RecloserModelingAlgorithm.txt" />
     <Content Include="Resources\close-image.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

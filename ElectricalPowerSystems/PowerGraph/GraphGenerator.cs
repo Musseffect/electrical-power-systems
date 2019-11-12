@@ -9,7 +9,7 @@ namespace ElectricalPowerSystems.PowerGraph
 {
     public class GraphGenerator:GraphElement
     {
-        float voltage;
+        public float voltage;
         Mode mode;
         public GraphGenerator(string node,float voltage, Mode mode):base()
         {
@@ -17,18 +17,20 @@ namespace ElectricalPowerSystems.PowerGraph
             this.voltage = voltage;
             this.mode = mode;
         }
-        public override void generateACGraph(List<ABCNode> nodes,ACGraph.ACGraph acGraph)
+        public override PowerElementScheme generateACGraph(List<ABCNode> nodes,ACGraph.ACGraph acGraph)
         {
             if (mode == Mode.Delta)
             {
-                acGraph.createVoltageSource(nodes[0].C,nodes[0].A,voltage, 0.0f, 50.0f);
-                acGraph.createVoltageSource(nodes[0].A,nodes[0].B,voltage, (float)(Math.PI) * 2.0f / 3.0f, 50.0f);
-                acGraph.createVoltageSource(nodes[0].B,nodes[0].C,voltage, (float)(Math.PI) * 4.0f / 3.0f, 50.0f);
+                return new GeneratorSchemeD(nodes,acGraph,this);
+                acGraph.createVoltageSource(nodes[0].C,nodes[0].A,voltage, 0.0f, PowerGraphManager.powerFrequency);
+                acGraph.createVoltageSource(nodes[0].A,nodes[0].B,voltage, (float)(Math.PI) * 2.0f / 3.0f, PowerGraphManager.powerFrequency);
+                acGraph.createVoltageSource(nodes[0].B,nodes[0].C,voltage, (float)(Math.PI) * 4.0f / 3.0f, PowerGraphManager.powerFrequency);
             } else
             {
-                acGraph.createVoltageSource(nodes[0].N,nodes[0].A,this.voltage,0.0f,50.0f);
-                acGraph.createVoltageSource(nodes[0].N,nodes[0].B,this.voltage,(float)(Math.PI)*2.0f/3.0f, 50.0f);
-                acGraph.createVoltageSource(nodes[0].N,nodes[0].C,this.voltage,(float)(Math.PI)*4.0f/3.0f, 50.0f);
+                return new GeneratorSchemeY(nodes, acGraph, this);
+                acGraph.createVoltageSource(nodes[0].N,nodes[0].A,this.voltage,0.0f, PowerGraphManager.powerFrequency);
+                acGraph.createVoltageSource(nodes[0].N,nodes[0].B,this.voltage,(float)(Math.PI)*2.0f/3.0f, PowerGraphManager.powerFrequency);
+                acGraph.createVoltageSource(nodes[0].N,nodes[0].C,this.voltage,(float)(Math.PI)*4.0f/3.0f, PowerGraphManager.powerFrequency);
                 acGraph.createGround(nodes[0].N);
             }
         }

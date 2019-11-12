@@ -67,6 +67,7 @@ namespace ElectricalPowerSystems.ACGraph
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
+            lines.Add(elements.Count);
             elements.Add(new ElementsAC.Line(node1, node2));
             return elements.Count - 1;
         }
@@ -214,11 +215,11 @@ namespace ElectricalPowerSystems.ACGraph
                     {
                         continue;
                     }
-                    ElementsAC.Element inductor = elements[lines[i]];
+                    ElementsAC.Element line = elements[lines[i]];
                     Complex32 value = new Complex32(0.0f, 0.0f);
-                    if (inductor.nodes[0] == j)
+                    if (line.nodes[0] == j)
                         value = 1.0f;
-                    else
+                    else if(line.nodes[1] == j)
                         value = -1.0f;
                     A.At(k, i + linesOffset, value);
                     A.At(i + linesOffset, k, value);
@@ -237,7 +238,7 @@ namespace ElectricalPowerSystems.ACGraph
                     Complex32 value = new Complex32(0.0f, 0.0f);
                     if (inductor.nodes[0] == j)
                         value = 1.0f;
-                    else
+                    else if(inductor.nodes[1]==j)
                         value = -1.0f;
                     A.At(k, i + inductorsOffset, value);
                     A.At(i + inductorsOffset, k, value);
@@ -294,7 +295,7 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 int index = inductorsOffset + i;
                 ElementsAC.Inductor inductor = (ElementsAC.Inductor)elements[inductors[i]];
-                A.At(index, index, new Complex32(0.0f, inductor.inductivity));
+                A.At(index, index, new Complex32(0.0f, -inductor.inductivity*frequency));
 
             }
             for (int i = 0; i < transformersCount; i++)
@@ -349,13 +350,15 @@ namespace ElectricalPowerSystems.ACGraph
             //Решение системы
             Vector<Complex32> x = A.Solve(y);
             //Напряжения(Потенциалы) в узлах
-            for (int i = 0, k = 0; k < voltageRank; i++)
+            for (int i = 0, k = 0; i<nodes; i++)
             {
                 if (nodesList[i].grounded)
                 {
                     solution.voltages.Add(0.0f);
                     continue;
                 }
+                if (k >= voltageRank)
+                    break;
                 solution.voltages.Add(x[k]);
                 k++;
             }
@@ -381,6 +384,9 @@ namespace ElectricalPowerSystems.ACGraph
                         ElementsAC.CurrentSource csel = (ElementsAC.CurrentSource)element;
                         solution.currents.Add(Complex32.FromPolarCoordinates(csel.current, csel.phase));
                         break;
+                    case ElementsAC.ElementTypeEnum.Transformer:
+                        solution.currents.Add(0.0f);
+                        break;
                     case ElementsAC.ElementTypeEnum.Inductor:
                     case ElementsAC.ElementTypeEnum.Ground:
                     case ElementsAC.ElementTypeEnum.Line:
@@ -388,6 +394,10 @@ namespace ElectricalPowerSystems.ACGraph
                         solution.currents.Add(0.0f);//Пропуск значений, поскольку данные токи присутствуют в векторе решения
                         break;
                 }
+            }
+            for (int i = 0; i < _lines; i++)
+            {
+                solution.currents[lines[i]] = x[linesOffset + i];
             }
             for (int i = 0; i < _voltageSources; i++)
             {
@@ -399,7 +409,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             for (int i = 0; i < transformersCount; i++)
             {
-                solution.currents[transformers[i]] = x[transformersCount + i];
+                solution.currents[transformers[i]] = x[transformersCount + i*2];
             }
             return solution;
         }
