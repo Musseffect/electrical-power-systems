@@ -10,11 +10,11 @@ namespace ElectricalPowerSystems.PowerGraph
 {
     public class GraphAirLine : GraphElement
     {
-        float R;
-        float L;
-        float B;
-        float G;
-        float Bp;
+        public float R;
+        public float L;
+        public float B;
+        public float G;
+        public float Bp;
         public GraphAirLine(string node1,string node2,float R,float L,float B,float G,float Bp) : base()
         {
             nodes.Add(node1);
@@ -25,8 +25,9 @@ namespace ElectricalPowerSystems.PowerGraph
             this.G = G;
             this.Bp = Bp;
         }
-        public override void generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph)
+        public override PowerElementScheme generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph)
         {
+            return new AirLineSchemeD(nodes,acGraph,this);
             int A1 = acGraph.allocateNode();
             int B1 = acGraph.allocateNode();
             int C1 = acGraph.allocateNode();

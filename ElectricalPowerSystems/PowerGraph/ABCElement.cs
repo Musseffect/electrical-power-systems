@@ -15,12 +15,11 @@ namespace ElectricalPowerSystems.PowerGraph
     }
     class ABCElement
     {
-        List<ABCNode> nodes;
         GraphElement elementDescription;
         public List<ABCNode> Nodes { get; set; }
         public ABCElement(GraphElement element)
         {
-            nodes = new List<ABCNode>();
+            Nodes = new List<ABCNode>();
             elementDescription = element;
         }
         public GraphElement getElementDescription()

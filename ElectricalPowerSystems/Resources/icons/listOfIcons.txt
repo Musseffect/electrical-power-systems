@@ -1,0 +1,13 @@
+1. New file
+2. Open file
+3. Save file
+4. Save as
+5. Undo
+6. Redo
+7. Help
+8. Cut
+9. Copy
+10. Paste
+11. Run
+12. Close icon
+13. Right and left

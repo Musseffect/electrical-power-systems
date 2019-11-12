@@ -139,7 +139,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public override string toString()
             {
-                return $"Voltage Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, voltage = {voltage}@{MathUtils.degrees(phase)}, freq = {frequency} }}";
+                return $"Voltage Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, voltage = {voltage}@{Utils.degrees(phase)}, freq = {frequency} }}";
             }
         }
         public class CurrentSource : Element2N
@@ -156,7 +156,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public override string toString()
             {
-                return $"Current Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, current = {current}@{MathUtils.degrees(phase)}, freq = {frequency} }}";
+                return $"Current Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, current = {current}@{Utils.degrees(phase)}, freq = {frequency} }}";
             }
         }
     }

@@ -21,13 +21,18 @@ namespace ElectricalPowerSystems.Interpreter
             };
         public Dictionary<string, Object> variableTable;
         CircuitModelAC model;
+
+        PowerGraph.PowerGraphManager graph;
         public ASTInterpreter()
         {
         }
         public CircuitModelAC generate(ASTNode ast,ref List<ErrorMessage> errorList,ref List<string> output)
         {
             model = new CircuitModelAC();
+            graph = new PowerGraph.PowerGraphManager();
+            PowerGraph.PowerGraphManager.powerFrequency = (float)(60.0 * 2.0 * Math.PI);
             FunctionStorage.model = model;
+            FunctionStorage.powerModel = graph;
             FunctionStorage.output = output;
             variableTable = new Dictionary<string, Object>();
             LValueIdentifier.variableTable = variableTable;
@@ -682,6 +687,7 @@ namespace ElectricalPowerSystems.Interpreter
         static public class FunctionStorage
         {
             static public CircuitModelAC model;
+            static public PowerGraph.PowerGraphManager powerModel;
             static public List<string> output;
             static public Dictionary<string, List<FunctionDefinition>> functionTable = new Dictionary<string, List<FunctionDefinition>>
             {
@@ -915,7 +921,7 @@ namespace ElectricalPowerSystems.Interpreter
                 Float arg3 = (Float)args[2];
                 Float arg4 = (Float)args[3];
                 Float arg5 = (Float)args[4];
-                int index = model.addVoltageSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)MathUtils.radians(arg4.Value), (float)arg5.Value);
+                int index = model.addVoltageSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.radians(arg4.Value), (float)arg5.Value);
                 return new Element(index);
             }
             static public Object currentSource1(List<Object> args)
@@ -934,7 +940,7 @@ namespace ElectricalPowerSystems.Interpreter
                 Float arg3 = (Float)args[2];
                 Float arg4 = (Float)args[3];
                 Float arg5 = (Float)args[4];
-                int index = model.addCurrentSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)MathUtils.radians(arg4.Value), (float)arg5.Value);
+                int index = model.addCurrentSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.radians(arg4.Value), (float)arg5.Value);
                 return new Element(index);
             }
             static public Object current(List<Object> args)
@@ -1004,13 +1010,13 @@ namespace ElectricalPowerSystems.Interpreter
             static public Object radians(List<Object> args)
             {
                 Float arg1 = (Float)args[0];
-                arg1.Value = MathUtils.radians(arg1.Value);
+                arg1.Value = Utils.radians(arg1.Value);
                 return arg1;
             }
             static public Object degrees(List<Object> args)
             {
                 Float arg1 = (Float)args[0];
-                arg1.Value = MathUtils.degrees(arg1.Value);
+                arg1.Value = Utils.degrees(arg1.Value);
                 return arg1;
             }
             static public Object conj(List<Object> args)
@@ -1018,6 +1024,22 @@ namespace ElectricalPowerSystems.Interpreter
                 Complex arg1 = (Complex)args[0];
                 arg1.Im = -arg1.Im;
                 return arg1;
+            }
+            static public Object generator(List<Object> args)
+            {
+                throw new NotImplementedException();
+            }
+            static public Object load(List<Object> args)
+            {
+                throw new NotImplementedException();
+            }
+            static public Object transformer2w(List<Object> args)
+            {
+                throw new NotImplementedException();
+            }
+            static public Object airline(List<Object> args)
+            {
+                throw new NotImplementedException();
             }
         }
         public enum BasicType
@@ -1192,7 +1214,7 @@ namespace ElectricalPowerSystems.Interpreter
             }
             public override String castToString()
             {
-                return new String(Magn.ToString()+"@"+ MathUtils.degrees(Phase).ToString());
+                return new String(Magn.ToString()+"@"+ Utils.degrees(Phase).ToString());
             }
         }
         public class String : Object

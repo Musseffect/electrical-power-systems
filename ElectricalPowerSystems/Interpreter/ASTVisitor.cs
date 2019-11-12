@@ -349,7 +349,7 @@ namespace ElectricalPowerSystems.Interpreter
                     return new ComplexPhaseNode
                     {
                         Magnitude = double.Parse(context.left.value.Text, CultureInfo.InvariantCulture),
-                        Phase = MathUtils.radians(double.Parse(context.right.value.Text, CultureInfo.InvariantCulture)),
+                        Phase = Utils.radians(double.Parse(context.right.value.Text, CultureInfo.InvariantCulture)),
                         Line = context.left.value.Line,
                         Position = context.left.value.Column
                     };

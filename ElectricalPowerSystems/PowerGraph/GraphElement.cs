@@ -20,6 +20,6 @@ namespace ElectricalPowerSystems.PowerGraph
             nodes = new List<string>();
         }
         public abstract List<bool> getPhaseNodes();
-        public abstract void generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph);
+        public abstract PowerElementScheme generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph);
     }
 }
