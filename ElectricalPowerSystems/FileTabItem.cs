@@ -61,7 +61,7 @@ namespace ElectricalPowerSystems
         public FileTabItem()
         {
             Changed = false;
-            filename = "New File";
+            filename = "Новый проект";
             Content = "";
             FilePath = null;
         }

@@ -63,6 +63,18 @@ namespace ElectricalPowerSystems
                 OnPropertyChanged();
             }
         }
+        private DelegateCommand _newCommand;
+        public DelegateCommand NewCommand
+        {
+            get
+            {
+                if (_newCommand == null)
+                {
+                    _newCommand = new DelegateCommand(CanExecuteNew,NewExecute);
+                }
+                return _deleteCommand;
+            }
+        }
         private DelegateCommand _deleteCommand;
         public DelegateCommand DeleteCommand
         {
@@ -283,10 +295,6 @@ namespace ElectricalPowerSystems
                 item.Filename = filename;
                 item.Changed = false;
             }
-        }
-        private void NewCommand()
-        {
-            addNewTab();
         }
         private void SaveAsCommand()
         {

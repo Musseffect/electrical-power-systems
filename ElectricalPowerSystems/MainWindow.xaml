@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ElectricalPowerSystems"
         mc:Ignorable="d"
         Name="windowElement"
-        Title="ElectricalPowerSystems v. 1.0 - 0.(9)" Height="360" Width="531.916" MinWidth="600" MinHeight="600">
+        Title="Power System Simulator v. 1.0 - 0.(9)" Height="360" Width="531.916" MinWidth="600" MinHeight="600">
     <Grid>
         <Grid.Resources>
             <Style x:Key="itemStyle" TargetType="TabItem">
@@ -16,7 +16,7 @@
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             </Style>
             <DataTemplate x:Key="itemHeader">
-                <Grid Width="Auto" HorizontalAlignment="Left">
+                <Grid Name="Panel" Width="Auto" HorizontalAlignment="Left">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -29,6 +29,22 @@
                         <Image Source="Resources/Icons/016-cross.png" Width="10" Height="10"/>
                     </Button>
                 </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding
+                    RelativeSource={RelativeSource
+                        Mode=FindAncestor,
+                        AncestorType={x:Type TabItem}},
+                        Path=IsSelected}" Value="True">
+                        <Setter TargetName="Panel" Property="Background" Value="LightSkyBlue" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding
+                    RelativeSource={RelativeSource
+                        Mode=FindAncestor,
+                        AncestorType={x:Type TabItem}},
+                        Path=IsSelected}" Value="False">
+                        <Setter TargetName="Panel" Property="Background" Value="GhostWhite" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
             </DataTemplate>
             <DataTemplate x:Key="itemContent">
                 <TextBox Text="{Binding Content}"
@@ -45,27 +61,27 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Menu Grid.Row="0" Height="25" VerticalAlignment="Top">
-            <MenuItem Header="File">
-                <MenuItem x:Name="newProjectMenu" Header="New Project" />
-                <MenuItem x:Name="openProjectMenu" Header="Open Project" />
-                <MenuItem Header="Open Recent" >
-                    <MenuItem x:Name="openRecentMenu" Header="Clear list" IsEnabled="False">
+            <MenuItem Header="{DynamicResource m_menu_File}">
+                <MenuItem x:Name="newProjectMenu" Header="{DynamicResource m_menu_New_Project}" />
+                <MenuItem x:Name="openProjectMenu" Header="{DynamicResource m_menu_Open_Project}" />
+                <MenuItem Header="{DynamicResource m_menu_Open_Recent}" >
+                    <MenuItem x:Name="openRecentMenu" Header="{DynamicResource m_menu_Clear_List}" IsEnabled="False">
                     </MenuItem>
                     <Separator />
                 </MenuItem>
                 <Separator />
-                <MenuItem x:Name="exitMenu" Header="Exit" ></MenuItem>
+                <MenuItem x:Name="exitMenu" Header="{DynamicResource m_menu_Exit}" ></MenuItem>
             </MenuItem>
-            <MenuItem Header="Edit" >
-                <MenuItem Header="Undo" Command="Undo" IsEnabled="False"></MenuItem>
-                <MenuItem Header="Redo" Command="Redo" IsEnabled="False"></MenuItem>
-                <MenuItem Header="Copy" Command="Copy" ></MenuItem>
-                <MenuItem Header="Cut" Command="Cut" ></MenuItem>
-                <MenuItem Header="Paste" Command="Paste" ></MenuItem>
+            <MenuItem Header="{DynamicResource m_menu_Edit}" >
+                <MenuItem Header="{DynamicResource m_menu_Undo}" Command="Undo" IsEnabled="False"></MenuItem>
+                <MenuItem Header="{DynamicResource m_menu_Redo}" Command="Redo" IsEnabled="False"></MenuItem>
+                <MenuItem Header="{DynamicResource m_menu_Copy}" Command="Copy" ></MenuItem>
+                <MenuItem Header="{DynamicResource m_menu_Cut}" Command="Cut" ></MenuItem>
+                <MenuItem Header="{DynamicResource m_menu_Paste}" Command="Paste" ></MenuItem>
             </MenuItem>
-            <MenuItem x:Name="RunMenuButton" Header="Run" Click="RunMenuButton_Click" ></MenuItem>
-            <MenuItem x:Name="RunPowerTestButton" Header="Run Test" Click="RunPowerTestButton_Click"></MenuItem>
-            <MenuItem Header="Help" ></MenuItem>
+            <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" Click="RunMenuButton_Click" ></MenuItem>
+            <!--<MenuItem x:Name="RunPowerTestButton" Header="{DynamicResource m_menu_Run_Test}" Click="RunPowerTestButton_Click"></MenuItem>-->
+            <MenuItem Header="{DynamicResource m_menu_Help}" ></MenuItem>
         </Menu>
         <ToolBar Grid.Row="1" Height="36" VerticalAlignment="Top" Width="Auto">
             <Button x:Name="CreateFileButton" >
@@ -153,6 +169,7 @@
                                                         <RowDefinition Height="20px"/>
                                                     </Grid.RowDefinitions>
                                                     <ScrollContentPresenter Grid.Column="0" Content="{TemplateBinding ScrollViewer.Content}"/>
+
                                                     <RepeatButton Grid.Column="1" Command="ScrollBar.LineLeftCommand"
                                                                   Style="{DynamicResource TabScrollRepeatButtonStyle}" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" BorderThickness="0" Margin="0">
                                                         <Image Source="Resources/Icons/011-left-chevron.png"></Image>
@@ -171,7 +188,18 @@
                                     </Setter>
                                 </Style>
                             </ScrollViewer.Style>
-                            <StackPanel IsItemsHost="True" Orientation="Horizontal" Background="{x:Null}" KeyboardNavigation.TabIndex="1"/>
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel IsItemsHost="True" Orientation="Horizontal" Background="{x:Null}" KeyboardNavigation.TabIndex="1"/>
+                                <Button 
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.NewCommand}"
+                                    CommandParameter="{Binding}"
+                                    HorizontalAlignment="Left"
+                                    Background="{x:Null}"
+                                    BorderBrush="{x:Null}" Foreground="{x:Null}" BorderThickness="0" Margin="0"
+                                    Padding="5,0,5,0">
+                                    <Image Source="Resources/Icons/006-add.png"></Image>
+                                </Button>
+                            </StackPanel>
                         </ScrollViewer>
                     </Grid>
                 </ControlTemplate>
@@ -185,45 +213,51 @@
             </TabControl.Resources>
         </TabControl>
 
-        <Expander Grid.Row="3" IsExpanded="True"  MinHeight="150px">
-            <TabControl >
-                <TabItem Header="Output">
-                    <TextBox Text="{Binding Path=OutputText, Mode=OneWay}"  Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
+        <Expander Grid.Row="3" IsExpanded="True" >
+            <Expander.Content>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="5"/>
+                    </Grid.RowDefinitions>
+                    <TabControl Height="150">
+                    <TabItem Header="{DynamicResource m_Output_Header}" >
+                        <TextBox Text="{Binding Path=OutputText, Mode=OneWay}"  Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
                     </TextBox>
                 </TabItem>
-                <TabItem Header="Errors">
+                    <TabItem Header="{DynamicResource m_Errors_Header}">
                     <ListView x:Name="ErrorList" Margin="10" ItemsSource="{Binding Path=Errors}">
                         <ListView.View>
                             <GridView>
                                 <GridView.ColumnHeaderContainerStyle>
                                     <Style TargetType="{x:Type GridViewColumnHeader}">
                                         <Setter Property="Visibility"
-    							Value="Visible"/>
+    							            Value="Visible"/>
                                     </Style>
                                 </GridView.ColumnHeaderContainerStyle>
-                                <GridViewColumn Header="Line" Width="Auto">
+                                    <GridViewColumn Header="{DynamicResource m_Errors_Line_Header}" Width="Auto">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Margin="0"
-    								VerticalAlignment="Center"
-    								Text="{Binding Path=Line,Mode=OneWay}"/>
+    								        VerticalAlignment="Center"
+    								        Text="{Binding Path=Line,Mode=OneWay}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Position" Width="Auto">
+                                <GridViewColumn Header="{DynamicResource m_Errors_Position_Header}" Width="Auto">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Margin="0"
-    								VerticalAlignment="Center"
-    								Text="{Binding Path=Position,Mode=OneWay}"/>
+    								        VerticalAlignment="Center"
+    								        Text="{Binding Path=Position,Mode=OneWay}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Message" Width="Auto">
+                                    <GridViewColumn Header="{DynamicResource m_Errors_Message_Header}" Width="Auto">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Margin="0"
-    								Text="{Binding Path=Message,Mode=OneWay}"/>
+    								        Text="{Binding Path=Message,Mode=OneWay}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -232,6 +266,9 @@
                     </ListView>
                 </TabItem>
             </TabControl>
+                    <GridSplitter Grid.Row="1" Height="5" ResizeDirection="Rows" ResizeBehavior="PreviousAndCurrent" HorizontalAlignment="Stretch"/>
+                </Grid>
+            </Expander.Content>
         </Expander>
         <StatusBar Grid.Row="4" Height="25" Width="Auto">
             <StatusBar.ItemsPanel>
@@ -247,7 +284,7 @@
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
             <StatusBarItem Grid.Column="2" VerticalContentAlignment="Center" BorderThickness="0">
-                <TextBlock Text="Использование памяти "/>
+                <TextBlock Text="{DynamicResource m_Memory_Usage_Header}"/>
             </StatusBarItem>
             <StatusBarItem Grid.Column="3" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"  Padding="10,4">
                 <TextBlock x:Name="MemoryUsage"></TextBlock>
