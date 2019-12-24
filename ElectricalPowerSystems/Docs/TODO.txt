@@ -1,1 +1,9 @@
-﻿
+﻿Icons :done
+UI commands
+Do something with tabs
+Improve expander placement
+Check functionality
+Read about DAE
+Transient MNA
+Some basic inapp help
+Make UML

@@ -159,6 +159,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\lang.ru-RU.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\lang.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MathUtils.cs" />
@@ -181,6 +189,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <Antlr4 Include="ModelGrammar.g4">
       <Generator>MSBuild:Compile</Generator>
@@ -220,27 +229,28 @@
     <Resource Include="Docs\TODO.txt" />
     <Resource Include="TestModels\model1.txt" />
     <Resource Include="Docs\RecloserModelingAlgorithm.txt" />
-    <Content Include="Resources\close-image.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Copy_6524_32.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Cut_6523_32.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\NewFile_6276_32.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Open_6529_32.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Paste_6520_32.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Redo_16x_32.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\001-new-file.png" />
+    <Resource Include="Resources\Icons\002-file.png" />
+    <Resource Include="Resources\Icons\003-open-folder.png" />
+    <Resource Include="Resources\Icons\004-open-folder-outline.png" />
+    <Resource Include="Resources\Icons\005-save.png" />
+    <Resource Include="Resources\Icons\006-add.png" />
+    <Resource Include="Resources\Icons\007-scissors.png" />
+    <Resource Include="Resources\Icons\008-copy.png" />
+    <Resource Include="Resources\Icons\009-paste.png" />
+    <Resource Include="Resources\Icons\010-undo.png" />
+    <Resource Include="Resources\Icons\011-left-chevron.png" />
+    <Resource Include="Resources\Icons\012-right-chevron.png" />
+    <Resource Include="Resources\Icons\013-down-chevron.png" />
+    <Resource Include="Resources\Icons\014-up-chevron.png" />
+    <Resource Include="Resources\Icons\015-redo.png" />
+    <Resource Include="Resources\Icons\016-cross.png" />
+    <Resource Include="Resources\Icons\017-information.png" />
+    <Resource Include="Resources\Icons\floppy-disk.png" />
+    <Resource Include="Resources\Icons\listOfIcons.txt" />
+    <Resource Include="Resources\Icons\play-button.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
