@@ -1,9 +1,10 @@
-﻿Icons :done
+﻿Icons: done
 UI commands
-Do something with tabs
+Do something with tabs: done
 Improve expander placement
 Check functionality
 Read about DAE
 Transient MNA
+Fault analysis
 Some basic inapp help
 Make UML

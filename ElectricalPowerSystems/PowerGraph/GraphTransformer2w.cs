@@ -92,7 +92,6 @@ namespace ElectricalPowerSystems.PowerGraph
                         return new int[]{c,n,
                             a,n,
                             b,n};
-                    break;
                 case TransformerMode.Y10:
                         return new int[]{n,b,
                             n,c,

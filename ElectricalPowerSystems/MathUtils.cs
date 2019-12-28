@@ -21,6 +21,14 @@ namespace ElectricalPowerSystems
         {
             return z.Magnitude.ToString() + "@" + z.Phase.ToString();
         }
+        static public double HertzToAngular(double hertz)
+        {
+            return hertz * Math.PI * 2.0;
+        }
+        static public double AngularToHertz(double angular)
+        {
+            return angular / (Math.PI * 2.0);
+        }
 
     }
 }
