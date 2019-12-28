@@ -252,6 +252,19 @@
     <Resource Include="Resources\Icons\listOfIcons.txt" />
     <Resource Include="Resources\Icons\play-button.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TestModels\TransientTest.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TestModels\ThreePhaseStaticTest1.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TestModels\ThreePhaseStaticTest2.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Faults\" />
+    <Folder Include="Transients\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

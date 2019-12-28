@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -72,7 +73,7 @@ namespace ElectricalPowerSystems
                 {
                     _newCommand = new DelegateCommand(CanExecuteNew,NewExecute);
                 }
-                return _deleteCommand;
+                return _newCommand;
             }
         }
         private DelegateCommand _deleteCommand;
@@ -139,7 +140,7 @@ namespace ElectricalPowerSystems
             List<ErrorMessage> errorList = new List<ErrorMessage>();
             Dispatcher.Invoke(() => {
                 window.FileTab.Focus();
-                window.StatusText = "Рассчёт";
+                window.StatusText = "Расчёт";
             });
             Thread.Sleep(4000);
             List<string> outputList = new List<string>();
@@ -221,6 +222,14 @@ namespace ElectricalPowerSystems
         {
             addNewTab();
         }
+        private void SaveCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            SaveCommand();
+        }
+        private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            OpenCommand();
+        }
         private void DeleteExecute(object parameter)
         {
             FileTabItem item = parameter as FileTabItem;
@@ -230,7 +239,9 @@ namespace ElectricalPowerSystems
             {
                 if (item.Changed == true)
                 {
-                    MessageBoxResult result = MessageBox.Show("You have unsaved changes in this file, do you wish to continue?", "Unsaved changes", MessageBoxButton.YesNo);
+                    string message = (string)Application.Current.Resources["m_Unsaved_Changes"];
+                    MessageBoxResult result = MessageBox.Show(message, "Unsaved changes",
+                        MessageBoxButton.YesNo);
                     if (result != MessageBoxResult.Yes)
                         return;
                 }
@@ -242,6 +253,26 @@ namespace ElectricalPowerSystems
                 }
                 _tabItems.RemoveAt(index);
             }
+        }
+        private void SaveCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (FileTab == null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+            FileTabItem item = FileTab.SelectedItem as FileTabItem;
+            e.CanExecute = item.Changed;
+        }
+        private void OpenCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (FileTab == null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+            FileTabItem item = FileTab.SelectedItem as FileTabItem;
+            e.CanExecute = FileTab.Items.Count<21;
         }
         private bool CanExecuteDelete(object parameter)
         {
@@ -260,27 +291,49 @@ namespace ElectricalPowerSystems
                 control.SelectedItem = e.RemovedItems[0];
             }
         }
-        private void LoadFile(string filepath,string filename)
+        private string LoadFile(string filepath)
         {
-            throw new NotImplementedException();
+            string content=File.ReadAllText(filepath);
+            return content;
         }
         public bool SaveFile(string filename, string content)
         {
-            throw new NotImplementedException();
+            try
+            {
+                File.WriteAllText(filename, content);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
-        private void LoadCommand()
+        private void OpenCommand()
         {
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Multiselect = false;
             if (!dialog.ShowDialog().Value)
                 return;
-            LoadFile(dialog.FileName,dialog.SafeFileName);
+            try
+            {
+                string content = LoadFile(dialog.FileName);
+                //System.Diagnostics.Debug.Write(dialog.FileName+"\n"+dialog.SafeFileName);
+                FileTabItem tab = new FileTabItem(dialog.SafeFileName,
+                    dialog.FileName,
+                    content);
+                _tabItems.Add(tab);
+                FileTab.SelectedIndex = _tabItems.Count-1;
+            }
+            catch (Exception)
+            {
+                return;
+            }
         }
         private void SaveCommand()
         {
             FileTabItem item = FileTab.SelectedItem as FileTabItem;
             string path = item.FilePath;
-            string filename = item.Header;
+            string filename = item.Filename;
             if (item.FilePath == null)
             {
                 SaveFileDialog dialog=new SaveFileDialog();
@@ -294,6 +347,28 @@ namespace ElectricalPowerSystems
                 item.FilePath = path;
                 item.Filename = filename;
                 item.Changed = false;
+            }
+        }
+        private void SaveAllCommand()
+        {
+            foreach (FileTabItem item in FileTab.Items)
+            {
+                string path = item.FilePath;
+                string filename = item.Filename;
+                if (item.FilePath == null)
+                {
+                    SaveFileDialog dialog = new SaveFileDialog();
+                    if (!dialog.ShowDialog().Value)
+                        return;
+                    path = dialog.FileName;
+                    filename = dialog.SafeFileName;
+                }
+                if (SaveFile(path, item.Content))
+                {
+                    item.FilePath = path;
+                    item.Filename = filename;
+                    item.Changed = false;
+                }
             }
         }
         private void SaveAsCommand()
@@ -316,12 +391,16 @@ namespace ElectricalPowerSystems
             FileTabItem item = FileTab.SelectedItem as FileTabItem;
             if (item != null)
             {
-                item.Changed = true;
+                //item.Changed = true;
             }
         }
         private void RunPowerTestButton_Click(object sender, RoutedEventArgs e)
         {
             Test.Test.testPowerModel();
+        }
+        private void SaveAll_Click(object sender, RoutedEventArgs e)
+        {
+            SaveAllCommand();
         }
 
     }

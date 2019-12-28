@@ -9,6 +9,7 @@
     <v:String x:Key="m_menu_Help">Help</v:String>
     <v:String x:Key="m_menu_New_Project">New project</v:String>
     <v:String x:Key="m_menu_Open_Project">Open project</v:String>
+    <v:String x:Key="m_menu_Save_Project">Save project</v:String>
     <v:String x:Key="m_menu_Open_Recent">Open recent</v:String>
     <v:String x:Key="m_menu_Clear_List">Clear list</v:String>
     <v:String x:Key="m_menu_Exit">Exit</v:String>
@@ -26,4 +27,7 @@
     <v:String x:Key="m_Errors_Position_Header">Position</v:String>
     <v:String x:Key="m_Errors_Message_Header">Message</v:String>
     <v:String x:Key="m_Memory_Usage_Header">Memory usage</v:String>
+    <v:String x:Key="m_Unsaved_Changes">You have unsaved changes in this file, do you wish to continue?</v:String>
+    <v:String x:Key="m_Yes">Yes</v:String>
+    <v:String x:Key="m_No">No</v:String>
 </ResourceDictionary>

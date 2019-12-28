@@ -8,11 +8,17 @@ namespace ElectricalPowerSystems
         private string filename;
         public string Filename {
             get { return filename; }
-            set { filename = value;
+            set {
+                filename = value;
                 OnPropertyChanged();
+                OnPropertyChanged("Header");
             }
         }
-        public string Header { get { return filename + (Changed ? "*":""); }  }
+        public string ToolTip
+        {
+            get { return filepath==null?filename:filepath; }
+        }
+        public string Header { get { return Filename + (Changed ? "*":""); }  }
         private string content;
         public string Content {
             get {
@@ -21,6 +27,7 @@ namespace ElectricalPowerSystems
             set
             {
                 content = value;
+                Changed = true;
                 OnPropertyChanged();
             }
         }
@@ -60,10 +67,17 @@ namespace ElectricalPowerSystems
         }
         public FileTabItem()
         {
-            Changed = false;
-            filename = "Новый проект";
-            Content = "";
+            changed = false;
+            Filename = "Новый проект";
+            content = "";
             FilePath = null;
+        }
+        public FileTabItem(string filename,string filepath,string content)
+        {
+            Changed = false;
+            Filename = filename;
+            this.content = content;
+            FilePath = filepath;
         }
     }
 }

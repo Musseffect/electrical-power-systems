@@ -6,7 +6,15 @@
         xmlns:local="clr-namespace:ElectricalPowerSystems"
         mc:Ignorable="d"
         Name="windowElement"
-        Title="Power System Simulator v. 1.0 - 0.(9)" Height="360" Width="531.916" MinWidth="600" MinHeight="600">
+        Title="Power System Simulator v. 1.0 - 0.(8)" Height="360" Width="531.916" MinWidth="600" MinHeight="600">
+    <Window.InputBindings>
+    </Window.InputBindings>
+    <Window.CommandBindings>
+    <CommandBinding Command="ApplicationCommands.Save" Executed="SaveCommandExecuted"
+                    CanExecute="SaveCommandCanExecute"></CommandBinding>
+        <CommandBinding Command="ApplicationCommands.Open" Executed="OpenCommandExecuted"
+                    CanExecute="OpenCommandCanExecute"></CommandBinding>
+    </Window.CommandBindings>
     <Grid>
         <Grid.Resources>
             <Style x:Key="itemStyle" TargetType="TabItem">
@@ -21,6 +29,9 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
+                    <Grid.ToolTip>
+                        <ToolTip Content="{Binding Path=ToolTip, Mode=OneWay}"/>
+                    </Grid.ToolTip>
                     <TextBlock Grid.Column="0" HorizontalAlignment="Left" Text="{Binding Path=Header, Mode=OneWay}"/>
                     <Button Grid.Column="1" DockPanel.Dock="Right"  Margin="5,0,0,0" 
                         Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.DeleteCommand}"
@@ -52,6 +63,30 @@
                          VerticalScrollBarVisibility="Auto"
                          ScrollViewer.CanContentScroll="True" TextChanged="TextBox_TextChanged"/>
             </DataTemplate>
+            <Style x:Key="ExpanderCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToggleButton}">
+                            <Grid Width="24" Height="24">
+                                <Rectangle Fill="Aqua"></Rectangle>
+                                <Border Name="ExpandBorder"  RenderOptions.EdgeMode="Aliased" BorderBrush="Black" BorderThickness="2">
+                                    <Path RenderOptions.EdgeMode="Aliased" Name="ExpandPath" Stroke="Black" Margin="0" StrokeThickness="2" Data="M 5 1 L 5 9 M 1 5 L 9 5" />
+                                </Border>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Data" TargetName="ExpandPath"  Value="M 1 5 L 9 5" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="ExpandBorder" Property="BorderBrush" Value="Gray" />
+                                    <Setter TargetName="ExpandPath" Property="Stroke" Value="Gray" />
+                                    <Setter Property="Data" TargetName="ExpandPath" Value=""/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -63,62 +98,101 @@
         <Menu Grid.Row="0" Height="25" VerticalAlignment="Top">
             <MenuItem Header="{DynamicResource m_menu_File}">
                 <MenuItem x:Name="newProjectMenu" Header="{DynamicResource m_menu_New_Project}" />
-                <MenuItem x:Name="openProjectMenu" Header="{DynamicResource m_menu_Open_Project}" />
+                <MenuItem x:Name="openProjectMenu" Header="{DynamicResource m_menu_Open_Project}" Command="Open"/>
+                <MenuItem x:Name="saveProjectMenu" Header="{DynamicResource m_menu_Save_Project}" Command="Save"/>
                 <MenuItem Header="{DynamicResource m_menu_Open_Recent}" >
                     <MenuItem x:Name="openRecentMenu" Header="{DynamicResource m_menu_Clear_List}" IsEnabled="False">
                     </MenuItem>
                     <Separator />
                 </MenuItem>
                 <Separator />
-                <MenuItem x:Name="exitMenu" Header="{DynamicResource m_menu_Exit}" ></MenuItem>
+                <MenuItem x:Name="exitMenu" Header="{DynamicResource m_menu_Exit}" Command="Close"></MenuItem>
             </MenuItem>
             <MenuItem Header="{DynamicResource m_menu_Edit}" >
-                <MenuItem Header="{DynamicResource m_menu_Undo}" Command="Undo" IsEnabled="False"></MenuItem>
-                <MenuItem Header="{DynamicResource m_menu_Redo}" Command="Redo" IsEnabled="False"></MenuItem>
+                <MenuItem Header="{DynamicResource m_menu_Undo}" Command="Undo"></MenuItem>
+                <MenuItem Header="{DynamicResource m_menu_Redo}" Command="Redo"></MenuItem>
                 <MenuItem Header="{DynamicResource m_menu_Copy}" Command="Copy" ></MenuItem>
                 <MenuItem Header="{DynamicResource m_menu_Cut}" Command="Cut" ></MenuItem>
                 <MenuItem Header="{DynamicResource m_menu_Paste}" Command="Paste" ></MenuItem>
             </MenuItem>
-            <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" Click="RunMenuButton_Click" ></MenuItem>
+            <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" >
+                <MenuItem IsEnabled="True" Header="Установившийся режим">
+                    <MenuItem x:Name="RunElectricalSchemeStatic" Header="Расчёт эл. схемы" Click="RunMenuButton_Click"/>
+                    <MenuItem x:Name="RunPowerSystemStatic" Header="Расчёт трёхфазной схемы" IsEnabled="False"/>
+                    <MenuItem x:Name="RunVariationStatic" Header="Варьирование параметров трёхфазной схемы" IsEnabled="False"/>
+                </MenuItem>
+                <MenuItem IsEnabled="False" Header="Переходные процессы">
+                    <MenuItem x:Name="RunElectricalSchemeTransient" Header="Расчёт эл. схемы"/>
+                    <MenuItem x:Name="RunPowerSystemTransient" Header="Расчёт трёхфазной схемы"/>
+                </MenuItem>
+                <MenuItem IsEnabled="False" Header="Замыкания" >
+                    <MenuItem x:Name="RunFaultsStatic" Header="Статический расчёт"/>
+                    <MenuItem x:Name="RunFaultsDynamic" Header="Динамический расчёт"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Тестовые примеры" IsEnabled="False">
+                <MenuItem Header="Установившийся режим">
+                    <MenuItem Header="Расчёт эл. схемы"/>
+                    <MenuItem Header="Расчёт трёхфазной схемы"/>
+                    <MenuItem Header="Варьирование параметров трёхфазной схемы"/>
+                </MenuItem>
+                <MenuItem Header="Переходные процессы">
+                    <MenuItem Header="Расчёт эл. схемы"/>
+                    <MenuItem Header="Расчёт трёхфазной схемы"/>
+                </MenuItem>
+                <MenuItem Header="Замыкания">
+                    <MenuItem Header="Статический расчёт"/>
+                    <MenuItem Header="Динамический расчёт"/>
+                </MenuItem>
+            </MenuItem>
             <!--<MenuItem x:Name="RunPowerTestButton" Header="{DynamicResource m_menu_Run_Test}" Click="RunPowerTestButton_Click"></MenuItem>-->
-            <MenuItem Header="{DynamicResource m_menu_Help}" ></MenuItem>
+            <MenuItem Header="{DynamicResource m_menu_Help}" IsEnabled="False"></MenuItem>
         </Menu>
         <ToolBar Grid.Row="1" Height="36" VerticalAlignment="Top" Width="Auto">
-            <Button x:Name="CreateFileButton" >
+            <ToolBar.Resources>
+                <Style x:Key="ToolBarButtonStyle" TargetType="{x:Type Button}">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Opacity" Value="0.25"/>
+                    </Trigger>
+                </Style.Triggers>
+                </Style>
+            </ToolBar.Resources>
+            <Button x:Name="CreateFileButton" Command="{Binding Path=DataContext.NewCommand}" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/002-file.png"/>
             </Button>
-            <Button x:Name="OpenFileButton">
+            <Button x:Name="OpenFileButton" Command="Open" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/003-open-folder.png"/>
             </Button>
-            <Button x:Name="SaveFileButton">
+            <Button x:Name="SaveFileButton" Command="Save" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/005-save.png"/>
             </Button>
-            <Button x:Name="SaveAllButton">
+            <Button x:Name="SaveAllButton" Click="SaveAll_Click" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/floppy-disk.png"/>
             </Button>
             <Separator />
-            <Button x:Name="UndoButton" Command="Undo" IsEnabled="False">
+            <Button x:Name="UndoButton" Command="Undo" IsEnabled="False" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/010-undo.png" />
             </Button>
-            <Button x:Name="RedoButton" Command="Redo" IsEnabled="False">
+            <Button x:Name="RedoButton" Command="Redo" IsEnabled="False" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/015-redo.png" />
             </Button>
             <Separator />
-            <Button x:Name="Cut" Command="Cut">
+            <Button x:Name="Cut" Command="Cut" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/007-scissors.png" />
             </Button>
-            <Button x:Name="Copy" Command="Copy">
+            <Button x:Name="Copy" Command="Copy" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/008-copy.png" />
             </Button>
-            <Button x:Name="Paste" Command="Paste">
+            <Button x:Name="Paste" Command="Paste" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/009-paste.png" />
             </Button>
             <Separator />
-            <Button x:Name="Start">
+            <Button x:Name="Start" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/play-button.png" />
             </Button>
             <Separator />
-            <Button x:Name="Help" IsEnabled="False">
+            <Button x:Name="Help" IsEnabled="False" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/017-information.png" />
             </Button>
             <Separator />
@@ -151,7 +225,7 @@
                                               />
                         </Border>
                         <ScrollViewer x:Name="HeaderPanel" HorizontalScrollBarVisibility="Hidden"
-                                      VerticalScrollBarVisibility="Disabled"
+                                      VerticalScrollBarVisibility="Disabled" CanContentScroll="True"
                                       Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0">
                             <ScrollViewer.Style>
                                 <Style TargetType="{x:Type ScrollViewer}">
@@ -212,62 +286,56 @@
                 </Style>
             </TabControl.Resources>
         </TabControl>
-
-        <Expander Grid.Row="3" IsExpanded="True" >
+        <Expander Grid.Row="3" IsExpanded="True">
             <Expander.Content>
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="5"/>
-                    </Grid.RowDefinitions>
-                    <TabControl Height="150">
-                    <TabItem Header="{DynamicResource m_Output_Header}" >
-                        <TextBox Text="{Binding Path=OutputText, Mode=OneWay}"  Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
-                    </TextBox>
-                </TabItem>
-                    <TabItem Header="{DynamicResource m_Errors_Header}">
-                    <ListView x:Name="ErrorList" Margin="10" ItemsSource="{Binding Path=Errors}">
-                        <ListView.View>
-                            <GridView>
-                                <GridView.ColumnHeaderContainerStyle>
-                                    <Style TargetType="{x:Type GridViewColumnHeader}">
-                                        <Setter Property="Visibility"
+                    <TabControl Height="150" Grid.ColumnSpan="2">
+                        <TabItem Header="{DynamicResource m_Output_Header}" >
+                            <TextBox Text="{Binding Path=OutputText, Mode=OneWay}"  Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
+                            </TextBox>
+                        </TabItem>
+                        <TabItem Header="{DynamicResource m_Errors_Header}">
+                            <ListView x:Name="ErrorList" Margin="10" ItemsSource="{Binding Path=Errors}">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridView.ColumnHeaderContainerStyle>
+                                            <Style TargetType="{x:Type GridViewColumnHeader}">
+                                                <Setter Property="Visibility"
     							            Value="Visible"/>
-                                    </Style>
-                                </GridView.ColumnHeaderContainerStyle>
-                                    <GridViewColumn Header="{DynamicResource m_Errors_Line_Header}" Width="Auto">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Margin="0"
+                                            </Style>
+                                        </GridView.ColumnHeaderContainerStyle>
+                                        <GridViewColumn Header="{DynamicResource m_Errors_Line_Header}" Width="Auto">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Margin="0"
     								        VerticalAlignment="Center"
     								        Text="{Binding Path=Line,Mode=OneWay}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="{DynamicResource m_Errors_Position_Header}" Width="Auto">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Margin="0"
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="{DynamicResource m_Errors_Position_Header}" Width="Auto">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Margin="0"
     								        VerticalAlignment="Center"
     								        Text="{Binding Path=Position,Mode=OneWay}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                    <GridViewColumn Header="{DynamicResource m_Errors_Message_Header}" Width="Auto">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Margin="0"
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="{DynamicResource m_Errors_Message_Header}" Width="Auto">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Margin="0"
     								        Text="{Binding Path=Message,Mode=OneWay}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                </TabItem>
-            </TabControl>
-                    <GridSplitter Grid.Row="1" Height="5" ResizeDirection="Rows" ResizeBehavior="PreviousAndCurrent" HorizontalAlignment="Stretch"/>
-                </Grid>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </TabItem>
+                    </TabControl>
+                    </Grid>
             </Expander.Content>
         </Expander>
         <StatusBar Grid.Row="4" Height="25" Width="Auto">
