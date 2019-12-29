@@ -8,12 +8,17 @@
         Name="windowElement"
         Title="Power System Simulator v. 1.0 - 0.(8)" Height="360" Width="531.916" MinWidth="600" MinHeight="600">
     <Window.InputBindings>
+        <!--<KeyBinding Key="F4" Command="local:Commands.Exit" Modifiers="Alt"></KeyBinding>-->
     </Window.InputBindings>
     <Window.CommandBindings>
-    <CommandBinding Command="ApplicationCommands.Save" Executed="SaveCommandExecuted"
-                    CanExecute="SaveCommandCanExecute"></CommandBinding>
+        <CommandBinding Command="local:Commands.Exit" Executed="ExitCommandExecuted"
+                        CanExecute="ExitCommandCanExecute"/>
+        <CommandBinding Command="ApplicationCommands.Save" Executed="SaveCommandExecuted"
+                    CanExecute="SaveCommandCanExecute"/>
         <CommandBinding Command="ApplicationCommands.Open" Executed="OpenCommandExecuted"
-                    CanExecute="OpenCommandCanExecute"></CommandBinding>
+                    CanExecute="OpenCommandCanExecute"/>
+        <CommandBinding Command="ApplicationCommands.New" Executed="NewCommandExecuted"
+                    CanExecute="NewCommandCanExecute"/>
     </Window.CommandBindings>
     <Grid>
         <Grid.Resources>
@@ -97,7 +102,7 @@
         </Grid.RowDefinitions>
         <Menu Grid.Row="0" Height="25" VerticalAlignment="Top">
             <MenuItem Header="{DynamicResource m_menu_File}">
-                <MenuItem x:Name="newProjectMenu" Header="{DynamicResource m_menu_New_Project}" />
+                <MenuItem x:Name="newProjectMenu" Header="{DynamicResource m_menu_New_Project}" Command="New"/>
                 <MenuItem x:Name="openProjectMenu" Header="{DynamicResource m_menu_Open_Project}" Command="Open"/>
                 <MenuItem x:Name="saveProjectMenu" Header="{DynamicResource m_menu_Save_Project}" Command="Save"/>
                 <MenuItem Header="{DynamicResource m_menu_Open_Recent}" >
@@ -106,7 +111,7 @@
                     <Separator />
                 </MenuItem>
                 <Separator />
-                <MenuItem x:Name="exitMenu" Header="{DynamicResource m_menu_Exit}" Command="Close"></MenuItem>
+                <MenuItem x:Name="exitMenu" Header="{DynamicResource m_menu_Exit}" Command="local:Commands.Exit" InputGestureText="Alt+F4"></MenuItem>
             </MenuItem>
             <MenuItem Header="{DynamicResource m_menu_Edit}" >
                 <MenuItem Header="{DynamicResource m_menu_Undo}" Command="Undo"></MenuItem>
@@ -158,7 +163,7 @@
                 </Style.Triggers>
                 </Style>
             </ToolBar.Resources>
-            <Button x:Name="CreateFileButton" Command="{Binding Path=DataContext.NewCommand}" Style="{StaticResource ToolBarButtonStyle}">
+            <Button x:Name="CreateFileButton" Command="New" Style="{StaticResource ToolBarButtonStyle}">
                 <Image Source="Resources/Icons/002-file.png"/>
             </Button>
             <Button x:Name="OpenFileButton" Command="Open" Style="{StaticResource ToolBarButtonStyle}">
@@ -188,7 +193,7 @@
                 <Image Source="Resources/Icons/009-paste.png" />
             </Button>
             <Separator />
-            <Button x:Name="Start" Style="{StaticResource ToolBarButtonStyle}">
+            <Button x:Name="Start" Style="{StaticResource ToolBarButtonStyle}" IsEnabled="False">
                 <Image Source="Resources/Icons/play-button.png" />
             </Button>
             <Separator />
@@ -204,6 +209,7 @@
                     ContentTemplate="{StaticResource itemContent}"
                     SelectionChanged="FileTab_SelectionChanged"
                     Template="{DynamicResource TabControlTemplate}"
+                    VirtualizingPanel.IsVirtualizing="False"
                     >
             <TabControl.Resources>
                 <Style x:Key="TabScrollRepeatButtonStyle" TargetType="{x:Type RepeatButton}">
@@ -286,7 +292,7 @@
                 </Style>
             </TabControl.Resources>
         </TabControl>
-        <Expander Grid.Row="3" IsExpanded="True">
+        <Expander x:Name="Expander" Grid.Row="3" IsExpanded="True">
             <Expander.Content>
                 <Grid>
                     <TabControl Height="150" Grid.ColumnSpan="2">
