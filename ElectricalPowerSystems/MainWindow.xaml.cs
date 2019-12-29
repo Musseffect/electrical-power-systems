@@ -126,6 +126,7 @@ namespace ElectricalPowerSystems
         {
             FileTabItem tab = new FileTabItem();
             _tabItems.Add(tab);
+            FileTab.SelectedIndex = _tabItems.Count - 1;
         }
         private void Run(MainWindow window)
         {
@@ -142,7 +143,7 @@ namespace ElectricalPowerSystems
                 window.FileTab.Focus();
                 window.StatusText = "Расчёт";
             });
-            Thread.Sleep(4000);
+            //Thread.Sleep(4000); //Test of UI
             List<string> outputList = new List<string>();
             try
             {
@@ -212,23 +213,65 @@ namespace ElectricalPowerSystems
             clearOutput();
             await Task.Run(()=>Run(this));
             RunMenuButton.IsEnabled = true;
+            Expander.IsExpanded = true;
         }
         private void clearOutput()
         {
             OutputText = "";
             errors.Clear();
         }
-        private void NewExecute(object parameter)
+        //Commands
+        private void SaveCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            addNewTab();
+            if (FileTab == null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+            FileTabItem item = FileTab.SelectedItem as FileTabItem;
+            e.CanExecute = item.Changed;
         }
         private void SaveCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             SaveCommand();
         }
+        private void OpenCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (FileTab == null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+            e.CanExecute = FileTab.Items.Count < 21;
+        }
         private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             OpenCommand();
+        }
+        private void NewCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (FileTab == null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+            e.CanExecute = FileTab.Items.Count < 21;
+        }
+        private void NewCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            addNewTab();
+        }
+        private void ExitCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void ExitCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            this.Close();
+        }
+        private void NewExecute(object parameter)
+        {
+            addNewTab();
         }
         private void DeleteExecute(object parameter)
         {
@@ -254,33 +297,13 @@ namespace ElectricalPowerSystems
                 _tabItems.RemoveAt(index);
             }
         }
-        private void SaveCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private bool CanExecuteNew(object parameter)
         {
-            if (FileTab == null)
-            {
-                e.CanExecute = false;
-                return;
-            }
-            FileTabItem item = FileTab.SelectedItem as FileTabItem;
-            e.CanExecute = item.Changed;
-        }
-        private void OpenCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            if (FileTab == null)
-            {
-                e.CanExecute = false;
-                return;
-            }
-            FileTabItem item = FileTab.SelectedItem as FileTabItem;
-            e.CanExecute = FileTab.Items.Count<21;
+            return true;
         }
         private bool CanExecuteDelete(object parameter)
         {
             return _tabItems.Count > 0;
-        }
-        private bool CanExecuteNew(object parameter)
-        {
-            return true;
         }
         private void FileTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
