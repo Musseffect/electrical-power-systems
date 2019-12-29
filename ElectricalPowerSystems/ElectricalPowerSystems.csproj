@@ -94,7 +94,7 @@
     <Compile Include="ACGraph\ACGraph.cs" />
     <Compile Include="ACGraph\CircuitModelAC.cs" />
     <Compile Include="ACGraph\ElementsAC.cs" />
-    <Compile Include="Commandds.cs" />
+    <Compile Include="Commands.cs" />
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="GUI\GraphViewer.xaml.cs">
       <DependentUpon>GraphViewer.xaml</DependentUpon>
