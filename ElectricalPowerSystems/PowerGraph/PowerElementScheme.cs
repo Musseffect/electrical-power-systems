@@ -27,11 +27,15 @@ namespace ElectricalPowerSystems.PowerGraph
         int LCA;
         public LoadSchemeD(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphLoad load)
         {
+            inA = nodes[0].A;
+            inB = nodes[0].B;
+            inC = nodes[0].C;
             generate(acGraph, load);
         }
         private void generate(ACGraph.ACGraph acGraph, GraphLoad load)
         {
             int A1 = acGraph.allocateNode(), B1 = acGraph.allocateNode(), C1 = acGraph.allocateNode();
+
             RCA = acGraph.createResistor(inC, A1, load.resistanceA.Real);
             RAB = acGraph.createResistor(inA, B1, load.resistanceB.Real);
             RBC = acGraph.createResistor(inB, C1, load.resistanceC.Real);
