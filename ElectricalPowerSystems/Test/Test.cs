@@ -81,5 +81,38 @@ namespace ElectricalPowerSystems.Test
             Stdout.Flush();
             Stdout.Close();
         }
+        static public void testNonlinearEquationParser()
+        {
+            /*
+            x*x+2=e^x*sin(x);
+            x(0)=0;
+            x(0)=2;
+            solution at approx 1.4 and 2.33
+
+            6x^5+-3x^4+7x^3+2x^2+-5x+7.13=0.
+            1 root at -0.963
+             */
+            string equation1 = @"x*x+2=e^x*sin(x)
+                x(0)=0";
+            string equation2 = @"x*x+2=e^x*sin(x)
+                x(0)=2";
+            string equation3 = @"x*x+2=e^x*sin(x)
+                x(0)=5";
+            string equation4 = @"6*x^5+-3*x^4+7*x^3+2*x^2+-5*x+7.13=0.
+                x(0)=0";
+
+            //enter equation
+            //calc derivatives
+            //show derivatives
+
+
+
+        }
+        static public void testNonlinearEquationSolver()
+        {
+
+            //calc solution
+            //show solution
+        }
     }
 }

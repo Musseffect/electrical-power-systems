@@ -44,4 +44,5 @@ namespace ElectricalPowerSystems.PowerGraph
                 return new List<bool>() { true };
         }
     }
+
 }

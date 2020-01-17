@@ -362,4 +362,8 @@ namespace ElectricalPowerSystems.PowerGraph
             result.powers.Add(power);
         }
     }
+
+
+
+
 }

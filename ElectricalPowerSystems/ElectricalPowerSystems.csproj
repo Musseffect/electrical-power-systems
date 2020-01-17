@@ -15,6 +15,9 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -27,11 +30,8 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -96,6 +96,19 @@
     <Compile Include="ACGraph\ElementsAC.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="DelegateCommand.cs" />
+    <Compile Include="EquationGrammar.g4.lexer.cs">
+      <DependentUpon>EquationGrammar.g4</DependentUpon>
+    </Compile>
+    <Compile Include="EquationGrammar.g4.parser.cs">
+      <DependentUpon>EquationGrammar.g4</DependentUpon>
+    </Compile>
+    <Compile Include="EquationInterpreter\ASTDifferentiationVisitor.cs" />
+    <Compile Include="EquationInterpreter\ASTEquationCompiler.cs" />
+    <Compile Include="EquationInterpreter\ASTPrint.cs" />
+    <Compile Include="EquationInterpreter\CompiledExpression.cs" />
+    <Compile Include="EquationInterpreter\EquationGrammarVisitor.cs" />
+    <Compile Include="EquationInterpreter\Simplifier.cs" />
+    <Compile Include="EquationInterpreter\Validator.cs" />
     <Compile Include="GUI\GraphViewer.xaml.cs">
       <DependentUpon>GraphViewer.xaml</DependentUpon>
     </Compile>
@@ -111,6 +124,9 @@
       <DependentUpon>ToolboxControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="FileTabItem.cs" />
+    <Compile Include="MathUtils\NewtonRaphsonSolver.cs" />
+    <Compile Include="MathUtils\NonlinearEquation.cs" />
+    <Compile Include="MathUtils\NonlinearSolver.cs" />
     <Compile Include="ModelGrammar.g4.lexer.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
@@ -122,6 +138,7 @@
     </Compile>
     <Compile Include="PowerGraph\ABCElement.cs" />
     <Compile Include="PowerGraph\GraphAirLine.cs" />
+    <Compile Include="PowerGraph\GraphFault.cs" />
     <Compile Include="PowerGraph\GraphGenerator.cs" />
     <Compile Include="PowerGraph\GraphElement.cs" />
     <Compile Include="PowerGraph\GraphNode.cs" />
@@ -197,6 +214,10 @@
       <CustomToolNamespace>ElectricalPowerSystems</CustomToolNamespace>
     </Antlr4>
     <None Include="Docs\umlDiagramOld.mdj" />
+    <Antlr4 Include="EquationGrammar.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <CustomToolNamespace>ElectricalPowerSystems</CustomToolNamespace>
+    </Antlr4>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

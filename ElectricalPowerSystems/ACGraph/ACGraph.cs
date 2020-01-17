@@ -176,6 +176,12 @@ namespace ElectricalPowerSystems.ACGraph
                                 if (res.nodes[0] == j || res.nodes[1] == j)
                                     value -= 1.0f / res.resistance;
                             }
+                            else if (element is ElementsAC.Capacitor)
+                            {
+                                ElementsAC.Capacitor res = (ElementsAC.Capacitor)element;
+                                if (res.nodes[0] == j || res.nodes[1] == j)
+                                    value -= new Complex32(0.0f, frequency * ((ElementsAC.Capacitor)element).capacity);
+                            }
                         }
                     }
                     A.At(l, k, value);
