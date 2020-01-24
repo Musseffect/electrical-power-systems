@@ -1,10 +1,13 @@
 ﻿Icons: done
-UI commands
+UI commands: more or less done
 Do something with tabs: done
-Improve expander placement
+Improve expander placement: not important
 Check functionality
-Read about DAE
-Transient MNA
+Read about DAE : in progress
+Transient MNA : in progress
+Nonlinear equations : in progress
+Add nonlinear models for elements :
+DAE index reduction : 
 Fault analysis
 Some basic inapp help
 Make UML

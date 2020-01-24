@@ -3,6 +3,40 @@ grammar EquationGrammar;
 /*
  * Parser Rules
  */
+
+ /*
+ DAE parser rules
+ 
+number		: value=(FLOAT|INT);
+
+compileUnit
+	:(state=statement)*	EOF
+	;
+	
+statement: eq=equation SEMICOLON #StatementRule
+| SEMICOLON #EmptyStatement;
+
+derivative	: ID APOSTROPHE ;
+
+equation: left=expression ASSIGN right=expression #EquationRule
+	| 'set' id=ID ASSIGN right=expression #ParameterRule
+	| id=ID LAPREN T0 RPAREN ASSIGN expression #InitialValueAssignmentRule;
+
+ expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
+	| LPAREN expression RPAREN #BracketExpression
+	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
+	| op=unaryOperator expression	#UnaryOperatorExpression
+	| left=expression op=(DIVISION|ASTERISK) right=expression	#BinaryOperatorExpression
+	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
+	| id=ID #IdentifierExpression
+	| value=number	#ConstantExpression
+	| value=derivative #DerivativeExpression 
+	;
+
+T0 : 't0';
+
+ */
+
 number		: value=(FLOAT|INT);
 
 compileUnit
@@ -61,6 +95,7 @@ LCRLPAREN			: '{' ;
 RCRLPAREN			: '}' ;
 ANGLE				:'@' ;
 CARET				:'^';
+APOSTROPHE			:''';
 
 STRING	: '"' .*? '"'|'\'' .*? '\'';
 NEWLINE	: ('\r'? '\n' | '\r')+ -> skip;

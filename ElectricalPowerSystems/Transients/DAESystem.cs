@@ -31,7 +31,6 @@ namespace ElectricalPowerSystems.Transients
         public abstract double[,] dGdX(Vector<double> x, Vector<double> z, double t);
         public abstract double[,] dGdZ(Vector<double> x, Vector<double> z, double t);
     }
-
     //linear DAE
     // A(t)x'+B(t)x=f(t) , A(t) - matrix NxN , B(t) - matrix NxN , f(t) - N-size vector
 }

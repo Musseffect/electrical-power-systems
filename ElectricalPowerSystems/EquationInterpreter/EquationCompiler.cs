@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.EquationInterpreter
 {
-
+    //TODO вынести в отдельный класс
     class ErrorListener<T> : IAntlrErrorListener<T>
     {
         List<ErrorMessage> errors;
@@ -25,23 +25,6 @@ namespace ElectricalPowerSystems.EquationInterpreter
         {
             Console.WriteLine(msg);
             errors.Add(new ErrorMessage(msg,line, charPositionInLine));
-        }
-    }
-    class ParserErrorListener : IAntlrErrorListener<IToken>
-    {
-        List<ErrorMessage> errors;
-        public ParserErrorListener()
-        {
-            this.errors = new List<ErrorMessage>();
-        }
-        public List<ErrorMessage> getErrors()
-        {
-            return this.errors;
-        }
-        public void SyntaxError([NotNull] IRecognizer recognizer, [Nullable] IToken offendingSymbol, int line, int charPositionInLine, [NotNull] string msg, [Nullable] RecognitionException e)
-        {
-            Console.WriteLine(msg);
-            errors.Add(new ErrorMessage(msg, line, charPositionInLine));
         }
     }
     public class NonlinearEquationDefinition
@@ -207,6 +190,7 @@ namespace ElectricalPowerSystems.EquationInterpreter
                     compilerErrors.Add(new ErrorMessage("Определение начального приближения несуществующей переменной"));
                 }
             }
+            //check that number of variables = number of equations
             if (variableNames.Count != equations.Count)
             {
                 compilerErrors.Add(new ErrorMessage("Количество переменных не совпадает с количеством уравнений"));
@@ -215,7 +199,6 @@ namespace ElectricalPowerSystems.EquationInterpreter
             {
                 compilerErrors.Add(new ErrorMessage("Пустая система уравнений"));
             }
-            //check for number of variables = number of equations
             if (compilerErrors.Count>0)
             {
                 throw new Exception("Equation definition errors");

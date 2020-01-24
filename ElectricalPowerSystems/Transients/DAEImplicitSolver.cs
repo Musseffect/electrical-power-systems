@@ -19,6 +19,7 @@ namespace ElectricalPowerSystems.Transients
     {
         Vector<double> IntegrateStep(DAESemiExplicitSystem system, Vector<double> x, Vector<double> z, double t);
     }
+    //TODO add BDF2 and Trapezoid
     class ImplicitEulerDAESolver:DESolver, IDAEImplicitSolver, IDAESemiExplicitSolver
     {
         int newtonIterations;
