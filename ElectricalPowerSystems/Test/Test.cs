@@ -1,11 +1,15 @@
 ﻿using ElectricalPowerSystems.ACGraph;
+using ElectricalPowerSystems.EquationInterpreter;
+using ElectricalPowerSystems.MathUtils;
 using ElectricalPowerSystems.PowerGraph;
+using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ElectricalPowerSystems.EquationInterpreter.EquationCompiler;
 
 /*
 voltageSource("4", "1", 1000.0, 0.0, 60.0);
@@ -81,8 +85,10 @@ namespace ElectricalPowerSystems.Test
             Stdout.Flush();
             Stdout.Close();
         }
+        //Done
         static public void testNonlinearEquationParser()
         {
+            //create file
             /*
             x*x+2=e^x*sin(x);
             x(0)=0;
@@ -92,27 +98,143 @@ namespace ElectricalPowerSystems.Test
             6x^5+-3x^4+7x^3+2x^2+-5x+7.13=0.
             1 root at -0.963
              */
-            string equation1 = @"x*x+2=e^x*sin(x)
-                x(0)=0";
-            string equation2 = @"x*x+2=e^x*sin(x)
-                x(0)=2";
-            string equation3 = @"x*x+2=e^x*sin(x)
-                x(0)=5";
-            string equation4 = @"6*x^5+-3*x^4+7*x^3+2*x^2+-5*x+7.13=0.
-                x(0)=0";
+            string equation1 = @"x*x+2=e()^x*sin(x);x[0]=0;";
+            string equation2 = @"x*x+2=e()^x*sin(x);x[0]=2;";
+            string equation3 = @"x*x+2=e()^x*sin(x);x[0]=5;";
+            string equation4 = @"6*x^5+-3*x^4+7*x^3+2*x^2+-5*x+7.13=0.;x[0]=0;";
 
-            //enter equation
-            //calc derivatives
-            //show derivatives
-
-
-
+            Stream StdoutStream = Console.OpenStandardOutput();
+            StreamWriter Stdout = new StreamWriter(StdoutStream);
+            EquationCompiler compiler = new EquationCompiler();
+            try
+            {
+                NonlinearEquationDefinition compiledEquation = compiler.compileEquations(equation1);
+                Stdout.WriteLine("Equation 1: x=0");
+                Stdout.WriteLine("x*x+2-e^x*sin(x)");
+                Stdout.WriteLine("Derivative: 2x-e^x*sin(x)-e^x*cos(x)");
+                Stdout.WriteLine(compiledEquation.PrintVariables());
+                Stdout.WriteLine(compiledEquation.PrintEquations());
+                Stdout.WriteLine(compiledEquation.PrintJacobiMatrix());
+                compiledEquation = compiler.compileEquations(equation2);
+                Stdout.WriteLine("Equation 2 x=2");
+                Stdout.WriteLine(compiledEquation.PrintVariables());
+                Stdout.WriteLine(compiledEquation.PrintEquations());
+                Stdout.WriteLine(compiledEquation.PrintJacobiMatrix());
+                compiledEquation = compiler.compileEquations(equation3);
+                Stdout.WriteLine("Equation 3 x=5");
+                Stdout.WriteLine(compiledEquation.PrintVariables());
+                Stdout.WriteLine(compiledEquation.PrintEquations());
+                Stdout.WriteLine(compiledEquation.PrintJacobiMatrix());
+                compiledEquation = compiler.compileEquations(equation4);
+                Stdout.WriteLine("Equation 4 x=0");
+                Stdout.WriteLine(compiledEquation.PrintVariables());
+                Stdout.WriteLine(compiledEquation.PrintEquations());
+                Stdout.WriteLine(compiledEquation.PrintJacobiMatrix());
+            }
+            catch (Exception exc)
+            {
+                Stdout.WriteLine(exc.Message);
+                var errors = compiler.getErrors();
+                foreach (var error in errors)
+                {
+                    Stdout.WriteLine(error.Message+" Line: "+error.Line+" Position: "+error.Position);
+                }
+            }
+            Stdout.Flush();
+            Stdout.Close();
+        }
+        static public string printSolution(Vector<double> solution, string[] variables, NonlinearEquationDefinition system)
+        {
+            string result="";
+            for (int i = 0; i < solution.Count; i++)
+            {
+                result += variables[i] + " = " + solution[i].ToString()+ Environment.NewLine;
+            }
+            double[] x = solution.ToArray();
+            for (int i = 0; i < system.Equations.Count; i++)
+            {
+                result += $"F{i}(0) = {system.Equations[i].execute(x)}"+ Environment.NewLine;
+            }
+            return result;
         }
         static public void testNonlinearEquationSolver()
         {
+            Stream StdoutStream = Console.OpenStandardOutput();
+            StreamWriter Stdout = new StreamWriter(StdoutStream);
+            EquationCompiler compiler = new EquationCompiler();
+            string equation1 = @"x*x+2=e()^x*sin(x);x[0]=0;";
+            string equation2 = @"x*x+2=e()^x*sin(x);x[0]=2;";
+            string equation3 = @"x*x+2=e()^x*sin(x);x[0]=5;";
+            string equation4 = @"6*x^5+-3*x^4+7*x^3+2*x^2+-5*x+7.13=0.;x[0]=0;";
 
-            //calc solution
-            //show solution
+            try
+            {
+                NonlinearEquationDefinition compiledEquation = compiler.compileEquations(equation1);
+                NonlinearSystemSymbolicAnalytic system = new NonlinearSystemSymbolicAnalytic(compiledEquation);
+                //calc solution
+                Vector<double> solution = NewtonRaphsonSolver.Solve(
+                    system,
+                    Vector<double>.Build.DenseOfArray(compiledEquation.InitialValues),
+                    20,
+                    0.01,
+                    1.0
+                    );
+                Stdout.WriteLine("Solution:");
+                Stdout.WriteLine(printSolution(solution,compiledEquation.VariableNames,compiledEquation));
+                //show solution
+            }
+            catch (Exception exc)
+            {
+                Stdout.WriteLine(exc.Message);
+                var errors = compiler.getErrors();
+                foreach (var error in errors)
+                {
+                    Stdout.WriteLine(error.Message + " Line: " + error.Line + " Position: " + error.Position);
+                }
+            }
+            Stdout.Flush();
+            Stdout.Close();
+        }
+        static public void testDAEInterpreter()
+        {
+            string differentialEquation = "x'=x;" +
+                "x(t0)=1.0;" +
+                "t0=0;";
+            string DAEquation = "set L=1.0;" +
+                "x^2+y^2=L;" +
+                "x'=;" +
+                "y'=;";
+            try {
+
+            } catch (Exception exc)
+            {
+
+            }
+        }
+        static public void testDAEInterpreterAndSolver()
+        {
+            string differentialEquation = "x'=x;" +
+                "x(t0)=1.0;" +
+                "t0=0;";
+            string DAEquation = "set L=1.0;" +
+                "x^2+y^2=L;" +
+                "x'=;" +
+                "y'=;";
+            try
+            {
+
+            }
+            catch (Exception exc)
+            {
+
+            }
+        }
+        static public void testTransientEquationGenerator()
+        {
+        }
+        static public void testTransientSolver()
+        {
+
         }
     }
 }

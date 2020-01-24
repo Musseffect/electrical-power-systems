@@ -102,11 +102,12 @@
     <Compile Include="EquationGrammar.g4.parser.cs">
       <DependentUpon>EquationGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="EquationInterpreter\ASTDifferentiationVisitor.cs" />
-    <Compile Include="EquationInterpreter\ASTEquationCompiler.cs" />
-    <Compile Include="EquationInterpreter\ASTPrint.cs" />
-    <Compile Include="EquationInterpreter\CompiledExpression.cs" />
+    <Compile Include="EquationInterpreter\DifferentiationVisitor.cs" />
+    <Compile Include="EquationInterpreter\EquationCompiler.cs" />
+    <Compile Include="EquationInterpreter\FunctionTable.cs" />
     <Compile Include="EquationInterpreter\EquationGrammarVisitor.cs" />
+    <Compile Include="EquationInterpreter\ExpressionCompiler.cs" />
+    <Compile Include="EquationInterpreter\RPNExpression.cs" />
     <Compile Include="EquationInterpreter\Simplifier.cs" />
     <Compile Include="EquationInterpreter\Validator.cs" />
     <Compile Include="GUI\GraphViewer.xaml.cs">
@@ -124,6 +125,7 @@
       <DependentUpon>ToolboxControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="FileTabItem.cs" />
+    <Compile Include="Interpreter\ErrorListener.cs" />
     <Compile Include="MathUtils\NewtonRaphsonSolver.cs" />
     <Compile Include="MathUtils\NonlinearEquation.cs" />
     <Compile Include="MathUtils\NonlinearSolver.cs" />
@@ -153,6 +155,9 @@
     <Compile Include="TabStyleSelector.cs" />
     <Compile Include="TabTemplateSelector.cs" />
     <Compile Include="Test\Test.cs" />
+    <Compile Include="Transients\DAEExamples.cs" />
+    <Compile Include="Transients\DAESystem.cs" />
+    <Compile Include="Transients\DAEImplicitSolver.cs" />
     <Page Include="GUI\GraphViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -285,7 +290,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Faults\" />
-    <Folder Include="Transients\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

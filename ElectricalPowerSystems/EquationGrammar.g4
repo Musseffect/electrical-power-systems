@@ -9,11 +9,14 @@ compileUnit
 	:(state=statement)*	EOF
 	;
 
-statement: equation SEMICOLON #StatementRule
+statement: eq=equation SEMICOLON #StatementRule
 | SEMICOLON #EmptyStatement;
 
-equation: expression ASSIGN expression #EquationRule
-| left=ID ASSIGN (ID ASSIGN)* expression #AssignmentRule;
+equation: left=expression ASSIGN right=expression #EquationRule
+	| 'set' id=ID ASSIGN right=expression #ParameterRule
+	| id=ID '[0]' ASSIGN expression #InitialValueAssignmentRule;
+
+unaryOperator: op=(PLUS | MINUS);
 
 expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
 	| LPAREN expression RPAREN #BracketExpression
@@ -23,8 +26,9 @@ expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOper
 	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
 	| id=ID #IdentifierExpression
 	| value=number	#ConstantExpression
-	| id=ID LPAREN '0' RPAREN #InitialValueExpression
 	;	
+
+functionArguments: expression (COMMA expression)* | ;
 /*
  * Lexer Rules
  */
@@ -33,10 +37,10 @@ fragment LOWERCASE  : [a-z] ;
 fragment UPPERCASE  : [A-Z] ;
 fragment DIGIT: [0-9] ;
 
-FLOAT: [+-]?(DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
-	   |[+-?]DOT DIGIT+ ([Ee][+-]? DIGIT+)?
+FLOAT: (DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
+	   |DOT DIGIT+ ([Ee][+-]? DIGIT+)?
 		;
-INT: [+-]?DIGIT+ ; 
+INT: DIGIT+ ; 
 ID: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;
 
 

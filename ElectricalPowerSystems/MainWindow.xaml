@@ -122,6 +122,8 @@
             </MenuItem>
             <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" >
                 <MenuItem IsEnabled="True" Header="Установившийся режим">
+                    <MenuItem x:Name="RunNonlinearTest" Header="Тестирование решения нелинейной системы" Click="RunNonlinearTest_Click"/>
+                    <MenuItem x:Name="RunDAETest" Header="Тестирование решения ДАУ системы" Click="RunDAETest_Click"  IsEnabled="False"/>
                     <MenuItem x:Name="RunElectricalSchemeStatic" Header="Расчёт эл. схемы" Click="RunMenuButton_Click"/>
                     <MenuItem x:Name="RunPowerSystemStatic" Header="Расчёт трёхфазной схемы" IsEnabled="False"/>
                     <MenuItem x:Name="RunVariationStatic" Header="Варьирование параметров трёхфазной схемы" IsEnabled="False"/>

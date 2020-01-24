@@ -1,10 +1,10 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using ElectricalPowerSystems.EquationInterpreter;
+using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static ElectricalPowerSystems.EquationInterpreter.ASTEquationCompiler;
 
 namespace ElectricalPowerSystems.MathUtils
 {
@@ -35,15 +35,22 @@ namespace ElectricalPowerSystems.MathUtils
     };
     public class NonlinearSystemSymbolicAnalytic : NonlinearSystem
     {
-        private List<RPN> equations;
-        private Matrix<RPN> derivatives;
+        private List<RPNExpression> equations;
+        private RPNExpression [,]derivatives;
+        public NonlinearSystemSymbolicAnalytic(NonlinearEquationDefinition system)
+        {
+            this.equations = system.Equations;
+            this.derivatives = system.JacobiMatrix;
+            this.Size = this.equations.Count;
+        }
         public override Vector<double> F(Vector<double> x)
         {
             Vector<double> result=Vector<double>.Build.Dense(this.Size);
             int i = 0;
+            double[] _x = x.ToArray();
             foreach (var equation in equations)
             {
-                result[i] = equation.solve(x);
+                result[i] = equation.execute(_x);
                 i++;
             }
             return result;
@@ -51,7 +58,15 @@ namespace ElectricalPowerSystems.MathUtils
         public override Matrix<double> dF(Vector<double> x)
         {
             Matrix<double> result = Matrix<double>.Build.Dense(Size, Size);
-
+            double[] _x = x.ToArray();
+            for (int j = 0; j < equations.Count; j++)
+            {
+                for (int i = 0; i < equations.Count; i++)
+                {
+                    result[j,i] = derivatives[i,j].execute(_x);
+                }
+            }
+            //throw new NotImplementedException();
             //for each non zero derivative equation in matrix derivatives solve at x
             return result;
         }
@@ -59,13 +74,19 @@ namespace ElectricalPowerSystems.MathUtils
     public class NonlinearSystemSymbolicNumerical : NonlinearEquationNumericCentralDifference
     {
         private List<RPNExpression> equations;
+        public NonlinearSystemSymbolicNumerical(NonlinearEquationDefinition system)
+        {
+            this.equations = system.Equations;
+            this.Size = this.equations.Count;
+        }
         public override Vector<double> F(Vector<double> x)
         {
             Vector<double> result = Vector<double>.Build.Dense(this.Size);
             int i = 0;
+            double[] _x = x.ToArray();
             foreach (var equation in equations)
             {
-                result[i] = equation.execute(x.ToArray());
+                result[i] = equation.execute(_x);
                 i++;
             }
             return result;

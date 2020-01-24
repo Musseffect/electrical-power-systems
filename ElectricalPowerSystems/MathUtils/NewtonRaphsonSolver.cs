@@ -14,7 +14,8 @@ namespace ElectricalPowerSystems.MathUtils
 
     class NewtonRaphsonSolver
     {
-        static Vector<double> Solve(NonlinearSystem system, Vector<double> x0, int maxIterations, double accuracy,double alpha)
+        //<summary><summary>
+        public static Vector<double> Solve(NonlinearSystem system, Vector<double> x0, int maxIterations, double accuracy,double alpha)
         {
             Vector<double> x = x0;
             Vector<double> F = system.F(x);
@@ -22,7 +23,7 @@ namespace ElectricalPowerSystems.MathUtils
             {
                 Matrix<double> J = system.dF(x);
 
-                Vector<double> dx = J.Solve(F.Multiply((dynamic)alpha));
+                Vector<double> dx = J.Solve(F.Multiply(-alpha));
                 Vector<double> x_new = x + dx;
                 Vector<double> F_new = system.F(x_new);
                 x = x_new;

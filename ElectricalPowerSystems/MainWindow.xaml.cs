@@ -114,6 +114,9 @@ namespace ElectricalPowerSystems
             dt.Interval = TimeSpan.FromSeconds(2);
             dt.Tick += DispatcherTimerTick;
             dt.Start();
+
+            Test.Test.testNonlinearEquationSolver();
+            //Test.Test.testNonlinearEquationParser();
             //NodeCanvas canvas = new NodeCanvas();
             //canvas.Show();
             //this.Close();
@@ -425,6 +428,13 @@ namespace ElectricalPowerSystems
         {
             SaveAllCommand();
         }
-
+        private void RunNonlinearTest_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+        private void RunDAETest_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

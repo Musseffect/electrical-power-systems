@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ElectricalPowerSystems.ACGraph;
+using MathNet.Numerics;
 
 namespace ElectricalPowerSystems.PowerGraph
 {
@@ -99,14 +100,14 @@ namespace ElectricalPowerSystems.PowerGraph
         override public void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraph.ACGraphSolution solution)
         {
             throw new NotImplementedException();
-            Complex32 opA = solution.currents[RA] * (solution.voltages[inA]);
+            /*Complex32 opA = solution.currents[RA] * (solution.voltages[inA]);
             Complex32 opB = solution.currents[RB] * (solution.voltages[inB]);
             Complex32 opC = solution.currents[RC] * (solution.voltages[inC]);
             PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
             power.A = opA;
             power.B = opB;
             power.C = opC;
-            result.powers.Add(power);
+            result.powers.Add(power);*/
         }
     }
 

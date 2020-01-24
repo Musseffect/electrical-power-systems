@@ -4,6 +4,24 @@ grammar ModelGrammar;
  * Parser Rules
  */
 
+ /*
+ New Grammar
+
+ model: (state=statement)* EOF;
+ statement: expression SEMICOLON #StatementRule
+ | SEMICOLON #emptyStatement;
+
+ expression: objectKeyWork=ID LCRLPAREN modelObjectContent RCRLPAREN #ModelObject
+ modelObjectContent: keyValue(COMMA keyValue) | ;
+ keyValue: key=ID ASSIGN value=expression;
+
+ //example
+ //TRANSFORMER { K=2.0,Type=TWO_WINDING }
+  //TRANSFORMER { K1=2.0,K2=4.0,Type=THREE_WINDING }
+ 
+ */
+
+
 number		: value=(FLOAT|INT);
 complexExp	: left=number type=(IM| ANGLE) right=number;
 complex		: IM im=number;
@@ -48,10 +66,10 @@ fragment LOWERCASE  : [a-z] ;
 fragment UPPERCASE  : [A-Z] ;
 fragment DIGIT: [0-9] ;
 
-FLOAT: [+-]?(DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
-	   |[+-?]DOT DIGIT+ ([Ee][+-]? DIGIT+)?
+FLOAT: (DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
+	   |DOT DIGIT+ ([Ee][+-]? DIGIT+)?
 		;
-INT: [+-]?DIGIT+ ; 
+INT: DIGIT+ ; 
 IM					: [Jj] ;
 ID		: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;
 

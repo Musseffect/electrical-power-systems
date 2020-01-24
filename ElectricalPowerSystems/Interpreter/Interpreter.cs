@@ -9,13 +9,6 @@ using Antlr4.Runtime.Tree;
 
 namespace ElectricalPowerSystems.Interpreter
 {
-    class ErrorListener : IAntlrErrorListener<int>
-    {
-        public void SyntaxError([NotNull] IRecognizer recognizer, [Nullable] int offendingSymbol, int line, int charPositionInLine, [NotNull] string msg, [Nullable] RecognitionException e)
-        {
-            Console.WriteLine(msg);
-        }
-    }
     class MainInterpreter
     {
         static public void compile(string inputText,ref List<ErrorMessage> errorList,ref List<string> output)

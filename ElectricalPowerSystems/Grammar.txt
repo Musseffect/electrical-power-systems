@@ -148,3 +148,37 @@ LINE				:LINE;
 CURRENTSOURCE		:CURRENTSOURCE;
 CAPACITOR			:CAPACITOR;
 GROUND				:GROUND;*/
+
+
+
+
+
+
+compileUnit = (statement)*;
+
+statement = expression SEMICOLON|
+SEMICOLON;
+
+expression = expression ASSIGN expression |
+ expression + expression |
+ epxression - expression |
+ ...
+ ID{ ObjectArguments} |
+ expression[expression];
+
+ ObjectArguments = Argument (COMMA Argument)* | ;
+
+ Argument = ID ASSIGN expression;
+
+ref=Transformer
+{
+	Key=Value,
+	Key2=Value2
+};
+
+ref=Load
+{
+	type=Type,
+
+};
+

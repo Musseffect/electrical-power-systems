@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.EquationInterpreter
+namespace ElectricalPowerSystems.Transients
 {
-    class ASTDifferentiationVisitor
+    class DAEExamples
     {
     }
 }
