@@ -11,7 +11,4 @@ namespace ElectricalPowerSystems.MathUtils
     {
         public abstract void Solve(NonlinearSystem system, Vector<double> x0);
     }
-
-
-
 }

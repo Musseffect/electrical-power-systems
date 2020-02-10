@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.Transients
+namespace ElectricalPowerSystems.PowerGraph
 {
-    class DAEExamples
+    class GraphTransformer3w
     {
     }
 }

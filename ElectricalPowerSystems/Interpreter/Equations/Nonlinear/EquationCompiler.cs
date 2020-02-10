@@ -1,5 +1,6 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
+using ElectricalPowerSystems.Interpreter.Equations;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -7,25 +8,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.EquationInterpreter
+namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
 {
-    //TODO вынести в отдельный класс
-    class ErrorListener<T> : IAntlrErrorListener<T>
+    public class NonlinearSystemSolution
     {
-        List<ErrorMessage> errors;
-        public ErrorListener()
+        Vector<double> values;
+        Dictionary<string, int> variableIndicies;
+        public NonlinearSystemSolution(Dictionary<string,int> variableIndicies, Vector<double> values)
         {
-            this.errors = new List<ErrorMessage>();
+            this.variableIndicies = variableIndicies;
+            this.values = values;
         }
-        public List<ErrorMessage> getErrors()
+        public double getValue(string name)
         {
-            return this.errors;
+            return values[variableIndicies[name]];
         }
-        public void SyntaxError([NotNull] IRecognizer recognizer, [Nullable] T offendingSymbol, int line, int charPositionInLine, [NotNull] string msg, [Nullable] RecognitionException e)
-        {
-            Console.WriteLine(msg);
-            errors.Add(new ErrorMessage(msg,line, charPositionInLine));
-        }
+
     }
     public class NonlinearEquationDefinition
     {
@@ -33,6 +31,7 @@ namespace ElectricalPowerSystems.EquationInterpreter
         string[] variableNames;
         List<RPNExpression> equations;
         RPNExpression[,] jacobiMatrix;
+        Dictionary<string, int> variableMap;
         public double[] InitialValues { get { return initialValues; } }
         public string[] VariableNames { get { return variableNames; } }
         public List<RPNExpression> Equations { get { return equations; } }
@@ -40,12 +39,22 @@ namespace ElectricalPowerSystems.EquationInterpreter
         private NonlinearEquationDefinition()
         {
         }
+        public NonlinearSystemSolution getSolution(Vector<double> values)
+        {
+            return new NonlinearSystemSolution(variableMap, values);
+        }
         public NonlinearEquationDefinition(double[] initialValues, string[] variableNames, List<RPNExpression> equations, RPNExpression[,] jacobiMatrix)
         {
             this.initialValues = initialValues;
             this.variableNames = variableNames;
             this.equations = equations;
             this.jacobiMatrix = jacobiMatrix;
+            int i = 0;
+            foreach (var variableName in variableNames)
+            {
+                variableMap[variableName] = i;
+                i++;
+            }
         }
         public string PrintVariables()
         {
@@ -79,16 +88,13 @@ namespace ElectricalPowerSystems.EquationInterpreter
             return result;
         }
     }
-
     public partial class EquationCompiler
     {
         Dictionary<string, double> parameters;
         Dictionary<string, int> variables;
-        List<string> variableNames;
         List<double> initialValues;
+        List<string> variableNames;
         List<ErrorMessage> compilerErrors;
-
-
         public EquationCompiler()
         {
         }
@@ -133,16 +139,16 @@ namespace ElectricalPowerSystems.EquationInterpreter
             var rootSimple = Compiler.ASTCompiler.validate(root);
             rootSimple = Compiler.ASTCompiler.simplify(rootSimple);
             return compileASTExpression(rootSimple);*/
-            return compile((RootNode)root);
+            return compileEquations((RootNode)root);
         }
-        private NonlinearEquationDefinition compile(RootNode root)
+        private NonlinearEquationDefinition compileEquations(RootNode root)
         {
-
             List<RPNExpression> rpnEquations = new List<RPNExpression>();
             List<ExpressionNode> equations = new List<ExpressionNode>();
 
             foreach (var parameter in root.parameters)
             {
+                //Expression right = convertToExpression(parameter.Right)
                 ExpressionNode right = simplify(parameter.Right);
                 if (right is FloatNode)
                 {
@@ -163,17 +169,20 @@ namespace ElectricalPowerSystems.EquationInterpreter
                     Line = equation.Line,
                     Position = equation.Position
                 };
+                //Expression expression = convertToExpression(subtraction)
                 validate(exp);
                 equations.Add(exp);
                 //simplify
                 //index variables
             }
 
+            //initialValues aren't important
             foreach (var initialValue in root.initialValues)
             {
                 if (variables.ContainsKey(initialValue.Identifier))
                 {
                     ExpressionNode right = simplify(initialValue.Right);
+                    //Expression expression = convertToExpression(right)
                     if (right is FloatNode)
                     {
                         initialValues[variables[initialValue.Identifier]] = ((FloatNode)right).Value;
@@ -207,6 +216,7 @@ namespace ElectricalPowerSystems.EquationInterpreter
             ExpressionCompiler expCompiler = new ExpressionCompiler(variables);
             for (int i = 0; i < equations.Count; i++)
             {
+                //equations[i] = simplify(equations[i])
                 equations[i] = simplify(equations[i]);
                 rpnEquations.Add(expCompiler.compile(equations[i]));
             }

@@ -1,7 +1,11 @@
 ﻿using ElectricalPowerSystems.ACGraph;
-using ElectricalPowerSystems.EquationInterpreter;
+using ElectricalPowerSystems.Interpreter;
+using ElectricalPowerSystems.Interpreter.Equations.DAE;
+using ElectricalPowerSystems.Interpreter.Equations.Nonlinear;
 using ElectricalPowerSystems.MathUtils;
 using ElectricalPowerSystems.PowerGraph;
+using ElectricalPowerSystems.Transients;
+using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -9,7 +13,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static ElectricalPowerSystems.EquationInterpreter.EquationCompiler;
 
 /*
 voltageSource("4", "1", 1000.0, 0.0, 60.0);
@@ -49,26 +52,62 @@ namespace ElectricalPowerSystems.Test
             model.addGround("a2");
             model.Solve();
         }
+        static public void testCircuitEquationgeneration()
+        {
+            CircuitModelAC model = new CircuitModelAC();
+            model.addVoltageSource("a2", "a1", 10.0f, 50.0f, 10.0f);
+            model.addVoltageSource("a1", "a3", 10.0f, 50.0f, 0.5f);
+            model.addResistor("a1", "a3", 5.0f);
+            model.addResistor("a1", "a4", 15.0f);
+            model.addResistor("a4", "a2", 4.0f);
+            model.addGround("a2");
+            string equations = model.testEquationGeneration();
+            Stream StdoutStream = Console.OpenStandardOutput();
+            StreamWriter Stdout = new StreamWriter(StdoutStream);
+            Stdout.WriteLine(equations);
+            Stdout.Flush();
+            Stdout.Close();
+        }
         static public void testPowerModel()
         {
             PowerGraph.PowerGraphManager graph = new PowerGraph.PowerGraphManager();
             PowerGraph.PowerGraphManager.powerFrequency = (float)(60.0 * 2.0 * Math.PI);
             List<int> elements=new List<int>();
-            elements.Add(graph.addElement(new PowerGraph.GraphGenerator("a1", 100.0f, PowerGraph.Mode.Wye)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoad("a1", 1.0f, 1.0f, 1.0f, PowerGraph.Mode.Wye)));
-            /*elements.Add(graph.addElement(new PowerGraph.GraphGenerator("a1",1000.0f,PowerGraph.Mode.Wye)));
-            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a1", "a2", 3.0f, 1.0f, 1.0f, PowerGraph.TransformerMode.Y0, PowerGraph.TransformerMode.Y0)));
-            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a1", "a3", 0.5f, 1.0f, 1.0f, PowerGraph.TransformerMode.Y0, PowerGraph.TransformerMode.Y0)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoad("a1", 1.0f, 1.0f, 1.0f, PowerGraph.Mode.Wye)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoad("a2", 1.0f, 1.0f, 1.0f, PowerGraph.Mode.Wye)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoad("a2", 1.0f, 1.0f, 1.0f, PowerGraph.Mode.Wye)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoad("a2", 1.0f, 1.0f, 1.0f, PowerGraph.Mode.Wye)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoad("a3", 1.0f, 1.0f, 1.0f, PowerGraph.Mode.Wye)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoad("a3", 1.0f, 1.0f, 1.0f, PowerGraph.Mode.Wye)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoad("a3", 1.0f, 1.0f, 1.0f, PowerGraph.Mode.Wye)));*/
+            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVWye("a1", 100.0f,0.0f, new ResistanceGrounding(1000.0f))));
+            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVDelta("a10", 100.0f,0.0f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a2", 10,1,0.001f,1.0f,0.001f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a3", "a4", 20, 2, 0.005f, 3.0f, 0.006f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a6", 20, 2, 0.005f, 3.0f, 0.006f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a2", "a10", 20, 2, 0.005f, 3.0f, 0.006f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a7", "a8", 20, 2, 0.005f, 3.0f, 0.006f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a2", "a3",10,
+                new Complex32(),new Complex32(),
+                new WyeWinding(WyeWinding.Mode.Y0,new SolidGrounding()),
+                new DeltaWinding(DeltaWinding.Mode.D1))));
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a4", "a5",0.2f,
+                new Complex32(25, 0.5f),
+                new Complex32(15, 0.2f),
+                new WyeWinding(WyeWinding.Mode.Y0, new Ungrounded()),
+                new WyeWinding(WyeWinding.Mode.Y0, new Ungrounded()))));
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a6", "a7", 0.2f,
+                new Complex32(10,2),
+                new Complex32(20,1),
+                new DeltaWinding(DeltaWinding.Mode.D1),
+                new DeltaWinding(DeltaWinding.Mode.D1))));
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a8", "a9", 0.2f,
+                new Complex32(25, 0.5f),
+                new Complex32(15, 0.2f),
+                new DeltaWinding(DeltaWinding.Mode.D1),
+                new WyeWinding(WyeWinding.Mode.Y0, new Ungrounded()))));
+            elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a3", 1.0f, 1.0f, 1.0f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a5", 1.0f, 1.0f, 1.0f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphLoadWye("a9", 1.0f, 1.0f, 1.0f,new Ungrounded())));
+
+
             foreach (var element in elements)
             {
                 graph.addOutput(new PowerOutput(OutputMode.FULL, element));
+                graph.addOutput(new CurrentOutput(OutputMode.FULL, element));
             }
             graph.addOutput(new VoltageOutput(OutputMode.FULL, "a1"));
             /*graph.addOutput(new VoltageOutput(OutputMode.FULL, "a1"));
@@ -200,11 +239,20 @@ namespace ElectricalPowerSystems.Test
             string differentialEquation = "x'=x;" +
                 "x(t0)=1.0;" +
                 "t0=0;";
-            string DAEquation = "set L=1.0;" +
+            string DAEequation = "set L=1.0;" +
                 "x^2+y^2=L;" +
                 "x'=;" +
                 "y'=;";
+            DAECompiler compiler = new DAECompiler();
+            Stream StdoutStream = Console.OpenStandardOutput();
+            StreamWriter Stdout = new StreamWriter(StdoutStream);
             try {
+                DAEDefinition def = compiler.compileDAE(differentialEquation);
+                Stdout.WriteLine("Equation 1:");
+                Stdout.WriteLine(def.PrintSystem());
+                def = compiler.compileDAE(DAEequation);
+                Stdout.WriteLine("Equation 2 x=2");
+                Stdout.WriteLine(def.PrintSystem());
 
             } catch (Exception exc)
             {
@@ -215,14 +263,35 @@ namespace ElectricalPowerSystems.Test
         {
             string differentialEquation = "x'=x;" +
                 "x(t0)=1.0;" +
-                "t0=0;";
-            string DAEquation = "set L=1.0;" +
+                "t0=0;" +
+                "time=5";
+            string DAEequation = "set L=1.0;" +
                 "x^2+y^2=L;" +
                 "x'=;" +
-                "y'=;";
+                "y'=;" +
+                "time=5";
+            Stream StdoutStream = Console.OpenStandardOutput();
+            StreamWriter Stdout = new StreamWriter(StdoutStream);
+            throw new NotImplementedException();
             try
             {
-
+                /*ChartWindow window = new ChartWindow();
+                RADAUIIA3 solver = new RADAUIIA3();
+                DAEImplicitSystem system;
+                List<double> timeArray = new List<double>();
+                List<double> xArray = new List<double>();
+                List<double> yArray = new List<double>();
+                xArray.Add(system.x0);
+                yArray.Add(system.z0);
+                timeArray.Add(system.t0);
+                for(double t=system.t0;t<system.t0+system.time;)
+                {
+                    points =  solver.IntegrateStep(system, x, t);
+                    t = points.t;
+                    timeArray.Add(t);
+                }
+                window.addLineSeries(xArray.ToArray(),timeArray.ToArray(),"x");
+                window.addLineSeries(yArray.ToArray(),timeArray.ToArray(),"y");*/
             }
             catch (Exception exc)
             {

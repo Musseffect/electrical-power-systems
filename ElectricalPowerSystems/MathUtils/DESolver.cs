@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.Transients
+namespace ElectricalPowerSystems.MathUtils
 {
     abstract class DESolver
     {
@@ -104,10 +104,16 @@ namespace ElectricalPowerSystems.Transients
         protected double[] c;
         public int Stages { get; protected set; }
         int newtonIterations;
+        /*
+         kxi=f(xn+sum aij*kxj,zn+sum aij*kzj,tn+ci*h)
+         0=g(xn+sum aij*kxj,zn+sum aij*kzj,tn+ci*h)
+             
+             */
         public Vector<double> IntegrateStep(DAESemiExplicitSystem system, Vector<double> x, Vector<double> z, double t)
         {
             int sizeX = system.SizeX * Stages;
             int sizeZ = system.SizeZ * Stages;
+            int size = sizeX + sizeZ;
             Vector<double>[] kx = new Vector<double>[Stages];// vector k=[k1_1,k1_2,...k1_n,...,kn_1,...,kn_n]
             Vector<double>[] kz = new Vector<double>[Stages];// vector k=[k1_1,k1_2,...k1_n,...,kn_1,...,kn_n]
 
@@ -116,6 +122,79 @@ namespace ElectricalPowerSystems.Transients
                 kx[i] = Vector<double>.Build.Dense(system.SizeX);
                 kz[i] = Vector<double>.Build.Dense(system.SizeZ);
             }
+
+            for (int i = 0; i < newtonIterations; i++)
+            {
+                Matrix<double> jacobiMatrix = Matrix<double>.Build.Dense(size, size);
+                Vector<double> f = Vector<double>.Build.Dense(size);
+                for (int j = 0; j < Stages; j++)
+                {
+                    Vector<double> t_x = x;
+                    Vector<double> t_z = z;
+                    for (int m = 0; m < Stages; m++)
+                    {
+                        t_x += Step * a[j, m] * kx[m];
+                        t_z += Step * a[j, m] * kz[m];
+                    }
+                    double time = t + Step * c[j];
+                    double[,] dFdX = system.dFdX(t_x, t_z, time); //use k as dx
+                    double[,] dFdZ = system.dFdZ(t_x, t_z, time); //use k as dx
+                    double[,] dGdX = system.dGdX(t_x, t_z, time);
+                    double[,] dGdZ = system.dGdZ(t_x, t_z, time);
+                    double[] F = system.F(t_x, t_z, time);
+                    double[] G = system.G(t_x, t_z, time);
+                    for (int m = 0; m < system.SizeX; m++)
+                    {
+                        int row = j * system.SizeX + m;
+                        f[row] = F[m];
+                        for (int p = 0; p < Stages; p++)
+                        {
+                            for (int l = 0; l < system.SizeX; l++)
+                            {
+                                int column = l + p * system.Size;
+                                //jacobiMatrix[row, column] = dFdX[m, l] * Step * a[j, p] + dFddX[m, l];
+                            }
+                            for (int l = 0; l < system.SizeZ; l++)
+                            {
+                                int column = l + p * system.Size;
+                                //jacobiMatrix[row, column] = dFdX[m, l] * Step * a[j, p] + dFddX[m, l];
+                            }
+                        }
+                    }
+                    for (int m = 0; m < system.SizeZ; m++)
+                    {
+                        int row=j*system.SizeZ + sizeX + m;
+                        f[row] = G[m];
+
+                        for (int p = 0; p < Stages; p++)
+                        {
+                            for (int l = 0; l < system.SizeX; l++)
+                            {
+                                int column = l + p * system.Size;
+                                //jacobiMatrix[row, column] = dFdX[m, l] * Step * a[j, p] + dFddX[m, l];
+                            }
+                            for (int l = 0; l < system.SizeZ; l++)
+                            {
+                                int column = l + p * system.Size;
+                                //jacobiMatrix[row, column] = dFdX[m, l] * Step * a[j, p] + dFddX[m, l];
+                            }
+                        }
+                    }
+                }
+                Vector<double> dk = jacobiMatrix.Solve(-f);
+                for (int j = 0; j < Stages; j++)
+                {
+                    kx[i] += dk.SubVector(j * system.Size, system.Size);
+                    kz[i] += dk.SubVector(j * system.Size, system.Size);
+                }
+            }
+
+            for (int i = 0; i < Stages; i++)
+            {
+                x += kx[i] * Step * b[i];
+                x += kz[i] * Step * b[i];
+            }
+            return x;
 
 
             throw new NotImplementedException();
@@ -151,13 +230,13 @@ namespace ElectricalPowerSystems.Transients
                     double[,] dFdX = system.dFdX(t_x, k[j], time); //use k as dx
                     double[,] dFddX = system.dFddX(t_x, k[j], time);
                     double[] F = system.F(t_x, k[j], time);
-                    for (int p = 0; p < Stages; p++)
-                    {
                         //subMatrix Size*Size
                         for (int m = 0; m < system.Size; m++)
                         {
                             int row = m + j * system.Size;
                             f[row] = F[m];
+                        for (int p = 0; p < Stages; p++)
+                        {
                             for (int l = 0; l < system.Size; l++)
                             {
                                     int column = l + p * system.Size;

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using ElectricalPowerSystems.Interpreter.Equations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.EquationInterpreter
+namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
 {
     public partial class EquationCompiler
     {

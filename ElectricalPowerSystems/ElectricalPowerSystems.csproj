@@ -66,6 +66,12 @@
     <Reference Include="Antlr4.Runtime, Version=4.6.0.0, Culture=neutral, PublicKeyToken=09abb75b9ed49849, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr4.Runtime.4.6.5\lib\net45\Antlr4.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
+    </Reference>
+    <Reference Include="LiveCharts.Wpf, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>..\packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="MathNet.Numerics, Version=4.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathNet.Numerics.4.7.0\lib\net461\MathNet.Numerics.dll</HintPath>
     </Reference>
@@ -94,6 +100,26 @@
     <Compile Include="ACGraph\ACGraph.cs" />
     <Compile Include="ACGraph\CircuitModelAC.cs" />
     <Compile Include="ACGraph\ElementsAC.cs" />
+    <Compile Include="Interpreter\Equations\DAE\ASTNode.cs" />
+    <Compile Include="Interpreter\Equations\DAE\DAECompiler.cs" />
+    <Compile Include="Interpreter\Equations\DAE\DAEGrammarVisitor.cs" />
+    <Compile Include="Interpreter\Equations\DAE\DAEImplicitGrammar.g4.lexer.cs" />
+    <Compile Include="Interpreter\Equations\DAE\DAEImplicitGrammar.g4.parser.cs" />
+    <Compile Include="Interpreter\Equations\DAE\DAESimplifier.cs" />
+    <Compile Include="Interpreter\Equations\DAE\DAEValidator.cs" />
+    <Compile Include="Interpreter\Equations\DAE\DAEDifferentiationVisitor.cs" />
+    <Compile Include="Interpreter\Equations\ExpressionAST.cs" />
+    <Compile Include="Interpreter\Equations\Nonlinear\ASTNode.cs" />
+    <Compile Include="PowerGraph\GraphAutotransformer.cs" />
+    <Compile Include="PowerGraph\GraphBreak.cs" />
+    <Compile Include="PowerGraph\GraphSwitch.cs" />
+    <Compile Include="PowerGraph\GraphTransformer3w.cs" />
+    <Compile Include="PowerGraph\GraphRecloser.cs" />
+    <Compile Include="PowerGraph\GroundingType.cs" />
+    <Compile Include="PowerGraph\TransformerMode.cs" />
+    <Compile Include="Windows\ChartWindow.xaml.cs">
+      <DependentUpon>ChartWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Commands.cs" />
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="EquationGrammar.g4.lexer.cs">
@@ -102,14 +128,14 @@
     <Compile Include="EquationGrammar.g4.parser.cs">
       <DependentUpon>EquationGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="EquationInterpreter\DifferentiationVisitor.cs" />
-    <Compile Include="EquationInterpreter\EquationCompiler.cs" />
-    <Compile Include="EquationInterpreter\FunctionTable.cs" />
-    <Compile Include="EquationInterpreter\EquationGrammarVisitor.cs" />
-    <Compile Include="EquationInterpreter\ExpressionCompiler.cs" />
-    <Compile Include="EquationInterpreter\RPNExpression.cs" />
-    <Compile Include="EquationInterpreter\Simplifier.cs" />
-    <Compile Include="EquationInterpreter\Validator.cs" />
+    <Compile Include="Interpreter\Equations\Nonlinear\DifferentiationVisitor.cs" />
+    <Compile Include="Interpreter\Equations\Nonlinear\EquationCompiler.cs" />
+    <Compile Include="Interpreter\Equations\FunctionTable.cs" />
+    <Compile Include="Interpreter\Equations\Nonlinear\EquationGrammarVisitor.cs" />
+    <Compile Include="Interpreter\Equations\ExpressionCompiler.cs" />
+    <Compile Include="Interpreter\Equations\RPNExpression.cs" />
+    <Compile Include="Interpreter\Equations\Nonlinear\Simplifier.cs" />
+    <Compile Include="Interpreter\Equations\Nonlinear\Validator.cs" />
     <Compile Include="GUI\GraphViewer.xaml.cs">
       <DependentUpon>GraphViewer.xaml</DependentUpon>
     </Compile>
@@ -149,15 +175,18 @@
     <Compile Include="PowerGraph\PowerElementScheme.cs" />
     <Compile Include="PowerGraph\PowerGraphManager.cs" />
     <Compile Include="PowerGraph\GraphTransformer2w.cs" />
-    <Compile Include="Interpreter\ASTVisitor.cs" />
-    <Compile Include="Interpreter\ObjectSystem.cs" />
-    <Compile Include="Interpreter\Interpreter.cs" />
+    <Compile Include="Interpreter\PowerModel\ASTVisitor.cs" />
+    <Compile Include="Interpreter\PowerModel\ObjectSystem.cs" />
+    <Compile Include="Interpreter\PowerModel\Interpreter.cs" />
     <Compile Include="TabStyleSelector.cs" />
     <Compile Include="TabTemplateSelector.cs" />
     <Compile Include="Test\Test.cs" />
-    <Compile Include="Transients\DAEExamples.cs" />
-    <Compile Include="Transients\DAESystem.cs" />
-    <Compile Include="Transients\DAEImplicitSolver.cs" />
+    <Compile Include="MathUtils\DAESystem.cs" />
+    <Compile Include="MathUtils\DESolver.cs" />
+    <Page Include="Windows\ChartWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="GUI\GraphViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -230,6 +259,10 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Antlr4 Include="Interpreter\Equations\DAE\DAEImplicitGrammar.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <CustomToolNamespace>ElectricalPowerSystems.Interpreter.Equations.DAE</CustomToolNamespace>
+    </Antlr4>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -289,7 +322,7 @@
     <Resource Include="TestModels\ThreePhaseStaticTest2.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Faults\" />
+    <Folder Include="PowerGraph\GraphElements\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

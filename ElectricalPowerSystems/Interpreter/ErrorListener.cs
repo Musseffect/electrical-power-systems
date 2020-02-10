@@ -8,12 +8,21 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.Interpreter
 {
-    //TODO add errorMessage stuff
-    class ErrorListener : IAntlrErrorListener<int>
+    class ErrorListener<T> : IAntlrErrorListener<T>
     {
-        public void SyntaxError([NotNull] IRecognizer recognizer, [Nullable] int offendingSymbol, int line, int charPositionInLine, [NotNull] string msg, [Nullable] RecognitionException e)
+        List<ErrorMessage> errors;
+        public ErrorListener()
+        {
+            this.errors = new List<ErrorMessage>();
+        }
+        public List<ErrorMessage> getErrors()
+        {
+            return this.errors;
+        }
+        public void SyntaxError([NotNull] IRecognizer recognizer, [Nullable] T offendingSymbol, int line, int charPositionInLine, [NotNull] string msg, [Nullable] RecognitionException e)
         {
             Console.WriteLine(msg);
+            errors.Add(new ErrorMessage(msg, line, charPositionInLine));
         }
     }
 }

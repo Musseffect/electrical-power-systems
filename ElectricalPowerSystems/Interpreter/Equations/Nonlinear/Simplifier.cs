@@ -1,10 +1,11 @@
-﻿using System;
+﻿using ElectricalPowerSystems.Interpreter.Equations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.EquationInterpreter
+namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
 {
     //TODO свёртка констант для множественного суммирования и произведения
     public partial class EquationCompiler
@@ -255,7 +256,7 @@ namespace ElectricalPowerSystems.EquationInterpreter
                 case ASTNodeType.Power:
                     return simplifyPower((PowerNode)node);
             }
-            throw new Exception();
+            return node;
         }
     }
 }

@@ -1,34 +1,35 @@
-grammar EquationGrammar;
+grammar DAEImplicitGrammar;
 
 /*
  * Parser Rules
  */
-
 
 number		: value=(FLOAT|INT);
 
 compileUnit
 	:(state=statement)*	EOF
 	;
-
+	
 statement: eq=equation SEMICOLON #StatementRule
-| SEMICOLON #EmptyStatement;
+	| SEMICOLON #EmptyStatement;
+
 
 equation: left=expression ASSIGN right=expression #EquationRule
 	| 'set' id=ID ASSIGN right=expression #ParameterRule
-	| id=ID INVALUE ASSIGN expression #InitialValueAssignmentRule;
+	| id=ID T0 ASSIGN expression #InitialValueAssignmentRule;
 
 unaryOperator: op=(PLUS | MINUS);
 
-expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
+ expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
 	| LPAREN expression RPAREN #BracketExpression
 	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
 	| op=unaryOperator expression	#UnaryOperatorExpression
 	| left=expression op=(DIVISION|ASTERISK) right=expression	#BinaryOperatorExpression
 	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
+	| id=ID APOSTROPHE #DerivativeExpression 
 	| id=ID #IdentifierExpression
 	| value=number	#ConstantExpression
-	;	
+	;
 
 functionArguments: expression (COMMA expression)* | ;
 /*
@@ -44,8 +45,8 @@ FLOAT: (DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
 		;
 INT: DIGIT+ ; 
 ID: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;
-INVALUE: '(0)';
 
+T0 : '(t0)';
 
 PLUS               : '+' ;
 MINUS              : '-' ;

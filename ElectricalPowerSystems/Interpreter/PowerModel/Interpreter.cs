@@ -15,10 +15,15 @@ namespace ElectricalPowerSystems.Interpreter
         {
             AntlrInputStream inputStream = new AntlrInputStream(inputText);
             ModelGrammarLexer modelLexer = new ModelGrammarLexer(inputStream);
+            ErrorListener<int> lexerErrorListener = new ErrorListener<int>();
             modelLexer.RemoveErrorListeners();
-            modelLexer.AddErrorListener(new ErrorListener());
+            modelLexer.AddErrorListener(lexerErrorListener);
             CommonTokenStream commonTokenStream = new CommonTokenStream(modelLexer);
             ModelGrammarParser modelParser = new ModelGrammarParser(commonTokenStream);
+            ErrorListener<IToken> parserErrorListener = new ErrorListener<IToken>();
+            modelParser.RemoveErrorListeners();
+            modelParser.AddErrorListener(parserErrorListener);
+
             ModelGrammarParser.ModelContext modelContext= modelParser.model();
             Interpreter.ASTVisitor visitor = new Interpreter.ASTVisitor();
             Interpreter.ASTNode root=visitor.VisitModel(modelContext);

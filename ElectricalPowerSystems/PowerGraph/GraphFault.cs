@@ -8,110 +8,574 @@ using MathNet.Numerics;
 
 namespace ElectricalPowerSystems.PowerGraph
 {
-    public enum Fault
+    public class GraphFaultOC:GraphElement
     {
-        Fault2PhaseAB,
-        Fault2PhaseBC,
-        Fault2PhaseAC,
-        Fault1PhaseAGround,
-        Fault1PhaseBGround,
-        Fault1PhaseCGround,
-        Fault3Phase
-    }
-    //TODO: derive classes for each fault type with phase-to-phase and phase-to-ground complex resistances and other stuff
-    public class GraphFault : GraphElement
-    {
-        Fault faultType;
-        public GraphFault(string node,Fault faultType):base()
+        public enum Phases
         {
-            throw new NotImplementedException();
-            nodes.Add(node);
-            this.faultType = faultType;
+            A = 0x0001,
+            B = 0x0010,
+            C = 0x0100,
+            AB = 0x0011,
+            AC = 0x0101,
+            BC = 0x0110,
+            ABC = 0x0111
+        };
+        public Phases Type;
+        public GraphFaultOC(string node1, string node2, Phases type) : base()
+        {
+            nodes.Add(node1);
+            nodes.Add(node2);
+            this.Type = type;
         }
         public override PowerElementScheme generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph)
         {
-            return new Fault2PhaseScheme(nodes,acGraph,this);
+            return new FaultOCScheme(nodes,acGraph,this);
+            //throw new NotImplementedException();
         }
 
-        public override List<bool> getPhaseNodes()
-        {
-            return new List<bool>() { true };
-        }
-        public Fault getFaultType()
-        {
-            return faultType;
-        }
     }
-
-    public class Fault2PhaseScheme : PowerElementScheme
+    public class FaultOCScheme : PowerElementScheme
     {
-        int inoutA;
-        int inoutB;
-        int inoutC;
-        int inoutN;
+        int inA;
+        int inB;
+        int inC;
+        int outA;
+        int outB;
+        int outC;
 
-        Fault faultType;
+        int lineA;
+        int lineB;
+        int lineC;
+
         Dictionary<string, int> elements;
-        public Fault2PhaseScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFault fault)
+        public FaultOCScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultOC fault)
         {
-            inoutA = nodes[0].A;
-            inoutB = nodes[0].B;
-            inoutC = nodes[0].C;
-            inoutN = nodes[0].N;
+            inA = nodes[0].A;
+            inB = nodes[0].B;
+            inC = nodes[0].C;
+            outA = nodes[1].A;
+            outB = nodes[1].B;
+            outC = nodes[1].C;
             generate(acGraph, fault);
         }
-        private void generate(ACGraph.ACGraph acGraph, GraphFault fault)
+        private void generate(ACGraph.ACGraph acGraph, GraphFaultOC fault)
         {
-            this.faultType = fault.getFaultType();
-            switch (fault.getFaultType())
+            lineA = -1;
+            lineB = -1;
+            lineC = -1;
+            if (((int)fault.Type & (int)GraphFaultOC.Phases.A) ==0 )
             {
-                case Fault.Fault2PhaseAB:
-                    elements.Add("ABLine",acGraph.createLine(inoutA,inoutB));
+                lineA = acGraph.createLine(inA, outA);
+            }
+            if (((int)fault.Type & (int)GraphFaultOC.Phases.B) == 0)
+            {
+                lineB = acGraph.createLine(inB, outB);
+            }
+            if (((int)fault.Type & (int)GraphFaultOC.Phases.C) == 0)
+            {
+                lineC = acGraph.createLine(inC, outC);
+            }
+        }
+
+        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
+        {
+            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
+            power.A = new Complex32();
+            power.B = new Complex32();
+            power.C = new Complex32();
+            result.powers.Add(power);
+            result.currents.Add(new PowerGraphManager.ABCValue[] {
+                new PowerGraphManager.ABCValue()
+                {
+                    A=lineA!=-1? solution.currents[lineA]:new Complex32(),
+                    B=lineA!=-1? solution.currents[lineB]:new Complex32(),
+                    C=lineA!=-1? solution.currents[lineC]:new Complex32(),
+                },
+                new PowerGraphManager.ABCValue()
+                {
+                    A=lineA!=-1? -solution.currents[lineA]:new Complex32(),
+                    B=lineA!=-1? -solution.currents[lineB]:new Complex32(),
+                    C=lineA!=-1? -solution.currents[lineC]:new Complex32(),
+                }
+            });
+        }
+
+    }
+
+    public class GraphFaultSCLLG : GraphElement
+    {
+        public enum Phases
+        {
+            AB,
+            BC,
+            CA
+        };
+        public Complex32 Zl;
+        public Complex32 Zg;
+        public Phases phases;
+        public GraphFaultSCLLG(string node1, string node2, Complex32 Zg, Complex32 Zl,Phases phases) : base()
+        {
+            nodes.Add(node1);
+            nodes.Add(node2);
+            this.Zg = Zg;
+            this.Zl = Zl;
+            this.phases = phases;
+        }
+        public override PowerElementScheme generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph)
+        {
+            return new FaultSCLLGScheme(nodes, acGraph, this);
+        }
+    }
+    public class FaultSCLLGScheme : PowerElementScheme
+    {
+        int inA;
+        int inB;
+        int inC;
+        int outA;
+        int outB;
+        int outC;
+        int cA;
+        int cB;
+        int cC;
+        int lineInA;
+        int lineInB;
+        int lineInC;
+        int lineOutA;
+        int lineOutB;
+        int lineOutC;
+        int commonNode;
+        int groundNode;
+        Dictionary<string, int> elements;
+        public FaultSCLLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLG fault)
+        {
+            inA = nodes[0].A;
+            inB = nodes[0].B;
+            inC = nodes[0].C;
+            outA = nodes[1].A;
+            outB = nodes[1].B;
+            outC = nodes[1].C;
+            commonNode = acGraph.allocateNode();
+            groundNode = acGraph.allocateNode();
+            generate(acGraph, fault);
+        }
+        private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLLG fault)
+        {
+            acGraph.createGround(groundNode);
+            cA = acGraph.allocateNode();
+            cB = acGraph.allocateNode();
+            cC = acGraph.allocateNode();
+            lineInA = acGraph.createLine(cA, inA);
+            lineInB = acGraph.createLine(cB, inB);
+            lineInC = acGraph.createLine(cC, inC);
+            lineOutA = acGraph.createLine(cA, outA);
+            lineOutB = acGraph.createLine(cB, outB);
+            lineOutC = acGraph.createLine(cC, outC);
+            acGraph.createImpedanceWithCurrent(groundNode,commonNode,fault.Zg);
+            switch (fault.phases)
+            {
+                case GraphFaultSCLLG.Phases.AB:
+                    acGraph.createImpedance(commonNode, cA, fault.Zl);
+                    acGraph.createImpedance(commonNode, cB, fault.Zl);
                     break;
-                case Fault.Fault2PhaseBC:
-                    elements.Add("BCLine", acGraph.createLine(inoutB, inoutC));
+                case GraphFaultSCLLG.Phases.BC:
+                    acGraph.createImpedance(commonNode, cB, fault.Zl);
+                    acGraph.createImpedance(commonNode, cC, fault.Zl);
                     break;
-                case Fault.Fault2PhaseAC:
-                    elements.Add("ACLine", acGraph.createLine(inoutA, inoutC));
-                    break;
-                case Fault.Fault1PhaseAGround:
-                    acGraph.createGround(inoutA);
-                    break;
-                case Fault.Fault1PhaseBGround:
-                    acGraph.createGround(inoutB);
-                    break;
-                case Fault.Fault1PhaseCGround:
-                    acGraph.createGround(inoutC);
-                    break;
-                case Fault.Fault3Phase:
-                    elements.Add("ABLine", acGraph.createLine(inoutA, inoutB));
-                    elements.Add("BCLine", acGraph.createLine(inoutB, inoutC));
+                case GraphFaultSCLLG.Phases.CA:
+                    acGraph.createImpedance(commonNode, cC, fault.Zl);
+                    acGraph.createImpedance(commonNode, cA, fault.Zl);
                     break;
             }
-            /*int A1 = acGraph.allocateNode(), B1 = acGraph.allocateNode(), C1 = acGraph.allocateNode();
-            RA = acGraph.createResistor(inN, A1, load.resistanceA.Real);
-            RB = acGraph.createResistor(inN, B1, load.resistanceB.Real);
-            RC = acGraph.createResistor(inN, C1, load.resistanceC.Real);
-            LA = acGraph.createInductor(A1, inA, load.resistanceA.Imaginary);
-            LB = acGraph.createInductor(B1, inB, load.resistanceB.Imaginary);
-            LC = acGraph.createInductor(C1, inC, load.resistanceC.Imaginary);*/
-            //acGraph.createGround(inN);
         }
-        override public void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraph.ACGraphSolution solution)
+        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
         {
-            throw new NotImplementedException();
-            /*Complex32 opA = solution.currents[RA] * (solution.voltages[inA]);
-            Complex32 opB = solution.currents[RB] * (solution.voltages[inB]);
-            Complex32 opC = solution.currents[RC] * (solution.voltages[inC]);
             PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
-            power.A = opA;
-            power.B = opB;
-            power.C = opC;
-            result.powers.Add(power);*/
+            power.A = new Complex32();
+            power.B = new Complex32();
+            power.C = new Complex32();
+
+            result.powers.Add(power);
+            result.currents.Add(new PowerGraphManager.ABCValue[] {
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineInA],
+                B=solution.currents[lineInB],
+                C=solution.currents[lineInC]
+                }
+                ,
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineOutA],
+                B=solution.currents[lineOutB],
+                C=solution.currents[lineOutC]
+                }
+            });
         }
     }
 
+    public class GraphFaultSCLLLG : GraphElement
+    {
+        public Complex32 Zl;
+        public Complex32 Zg;
+        public GraphFaultSCLLLG(string node1, string node2, Complex32 Zg, Complex32 Zl) : base()
+        {
+            nodes.Add(node1);
+            nodes.Add(node2);
+            this.Zg = Zg;
+            this.Zl = Zl;
+        }
+        public override PowerElementScheme generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph)
+        {
+            return new FaultSCLLLGScheme(nodes, acGraph, this);
+        }
+    }
+    public class FaultSCLLLGScheme:PowerElementScheme
+    {
+        int inA;
+        int inB;
+        int inC;
+        int outA;
+        int outB;
+        int outC;
+        int cA;
+        int cB;
+        int cC;
+        int commonNode;
+        int groundNode;
 
 
+        int lineInA;
+        int lineInB;
+        int lineInC;
+        int lineOutA;
+        int lineOutB;
+        int lineOutC;
+        public FaultSCLLLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLLG fault)
+        {
+            inA = nodes[0].A;
+            inB = nodes[0].B;
+            inC = nodes[0].C;
+            outA = nodes[1].A;
+            outB = nodes[1].B;
+            outC = nodes[1].C;
+            commonNode = acGraph.allocateNode();
+            groundNode = acGraph.allocateNode();
+            generate(acGraph, fault);
+        }
+        private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLLLG fault)
+        {
+            acGraph.createGround(groundNode);
+            cA = acGraph.allocateNode();
+            cB = acGraph.allocateNode();
+            cC = acGraph.allocateNode();
+            lineInA = acGraph.createLine(cA, inA);
+            lineInB = acGraph.createLine(cB, inB);
+            lineInC = acGraph.createLine(cC, inC);
+            lineOutA = acGraph.createLine(cA, outA);
+            lineOutB = acGraph.createLine(cB, outB);
+            lineOutC = acGraph.createLine(cC, outC);
+            acGraph.createImpedance(commonNode, cA, fault.Zl);
+            acGraph.createImpedance(commonNode, cB, fault.Zl);
+            acGraph.createImpedance(commonNode, cC, fault.Zl);
+            acGraph.createImpedanceWithCurrent(groundNode, commonNode, fault.Zg);
+        }
+        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
+        {
+            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
+            power.A = new Complex32();
+            power.B = new Complex32();
+            power.C = new Complex32();
+            result.powers.Add(power);
+            result.currents.Add(new PowerGraphManager.ABCValue[] {
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineInA],
+                B=solution.currents[lineInB],
+                C=solution.currents[lineInC]
+                }
+                ,
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineOutA],
+                B=solution.currents[lineOutB],
+                C=solution.currents[lineOutC]
+                }
+            });
+        }
+    }
+    public class GraphFaultSCLG : GraphElement
+    {
+        public enum Phase
+        {
+            A,
+            B,
+            C
+        };
+        public Phase phase;
+        public Complex32 Zg;
+        public GraphFaultSCLG(string node1, string node2, Complex32 Zg, Phase phase):base()
+        {
+            nodes.Add(node1);
+            nodes.Add(node2);
+            this.Zg = Zg;
+            this.phase = phase;
+        }
+        public override PowerElementScheme generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph)
+        {
+            return new FaultSCLGScheme(nodes, acGraph, this);
+        }
+    }
+    public class FaultSCLGScheme : PowerElementScheme
+    {
+        int inA;
+        int inB;
+        int inC;
+        int outA;
+        int outB;
+        int outC;
+        int cA;
+        int cB;
+        int cC;
+        int groundNode;
+
+
+        int lineInA;
+        int lineInB;
+        int lineInC;
+        int lineOutA;
+        int lineOutB;
+        int lineOutC;
+        public FaultSCLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLG fault)
+        {
+            inA = nodes[0].A;
+            inB = nodes[0].B;
+            inC = nodes[0].C;
+            outA = nodes[1].A;
+            outB = nodes[1].B;
+            outC = nodes[1].C;
+            groundNode = acGraph.allocateNode();
+            generate(acGraph, fault);
+        }
+        private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLG fault)
+        {
+            cA = acGraph.allocateNode();
+            cB = acGraph.allocateNode();
+            cC = acGraph.allocateNode();
+            lineInA = acGraph.createLine(cA, inA);
+            lineInB = acGraph.createLine(cB, inB);
+            lineInC = acGraph.createLine(cC, inC);
+            lineOutA = acGraph.createLine(cA, outA);
+            lineOutB = acGraph.createLine(cB, outB);
+            lineOutC = acGraph.createLine(cC, outC);
+            acGraph.createGround(groundNode);
+            switch (fault.phase)
+            {
+                case GraphFaultSCLG.Phase.A:
+                    acGraph.createImpedanceWithCurrent(cA,groundNode,fault.Zg);
+                    break;
+                case GraphFaultSCLG.Phase.B:
+                    acGraph.createImpedanceWithCurrent(cB, groundNode, fault.Zg);
+                    break;
+                case GraphFaultSCLG.Phase.C:
+                    acGraph.createImpedanceWithCurrent(cC, groundNode, fault.Zg);
+                    break;
+            }
+        }
+        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
+        {
+            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
+            power.A = new Complex32();
+            power.B = new Complex32();
+            power.C = new Complex32();
+            result.powers.Add(power);
+            result.currents.Add(new PowerGraphManager.ABCValue[] {
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineInA],
+                B=solution.currents[lineInB],
+                C=solution.currents[lineInC]
+                }
+                ,
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineOutA],
+                B=solution.currents[lineOutB],
+                C=solution.currents[lineOutC]
+                }
+            });
+        }
+    }
+    public class GraphFaultSCLL : GraphElement
+    {
+        public enum Phases
+        {
+            AB,
+            BC,
+            CA
+        };
+        public Phases phases;
+        public Complex32 Zl;
+        public GraphFaultSCLL(string node1, string node2, Complex32 Zl,Phases phases):base()
+        {
+            nodes.Add(node1);
+            nodes.Add(node2);
+            this.Zl = Zl;
+            this.phases = phases;
+        }
+        public override PowerElementScheme generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph)
+        {
+            return new FaultSCLLScheme(nodes, acGraph, this);
+        }
+    }
+    public class FaultSCLLScheme : PowerElementScheme
+    {
+        int inA;
+        int inB;
+        int inC;
+        int outA;
+        int outB;
+        int outC;
+        int cA;
+        int cB;
+        int cC;
+
+        int lineInA;
+        int lineInB;
+        int lineInC;
+        int lineOutA;
+        int lineOutB;
+        int lineOutC;
+        public FaultSCLLScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLL fault)
+        {
+            inA = nodes[0].A;
+            inB = nodes[0].B;
+            inC = nodes[0].C;
+            outA = nodes[1].A;
+            outB = nodes[1].B;
+            outC = nodes[1].C;
+            generate(acGraph, fault);
+        }
+        private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLL fault)
+        {
+            cA = acGraph.allocateNode();
+            cB = acGraph.allocateNode();
+            cC = acGraph.allocateNode();
+            lineInA = acGraph.createLine(cA, inA);
+            lineInB = acGraph.createLine(cB, inB);
+            lineInC = acGraph.createLine(cC, inC);
+            lineOutA = acGraph.createLine(cA, outA);
+            lineOutB = acGraph.createLine(cB, outB);
+            lineOutC = acGraph.createLine(cC, outC);
+            switch (fault.phases)
+            {
+                case GraphFaultSCLL.Phases.AB:
+                    acGraph.createImpedance(cA, cB, fault.Zl);
+                    break;
+                case GraphFaultSCLL.Phases.BC:
+                    acGraph.createImpedance(cB, cC, fault.Zl);
+                    break;
+                case GraphFaultSCLL.Phases.CA:
+                    acGraph.createImpedance(cC, cA, fault.Zl);
+                    break;
+            }
+        }
+        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
+        {
+            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
+            power.A = new Complex32();
+            power.B = new Complex32();
+            power.C = new Complex32();
+            result.powers.Add(power);
+            result.currents.Add(new PowerGraphManager.ABCValue[] {
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineInA],
+                B=solution.currents[lineInB],
+                C=solution.currents[lineInC]
+                }
+                ,
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineOutA],
+                B=solution.currents[lineOutB],
+                C=solution.currents[lineOutC]
+                }
+            });
+        }
+    }
+    public class GraphFaultSCLLL : GraphElement
+    {
+        public Complex32 Zl;
+        public GraphFaultSCLLL(string node1,string node2, Complex32 Zl) : base()
+        {
+            nodes.Add(node1);
+            nodes.Add(node2);
+            this.Zl = Zl;
+        }
+        public override PowerElementScheme generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph)
+        {
+            return new FaultSCLLLScheme(nodes, acGraph, this);
+        }
+    }
+    public class FaultSCLLLScheme : PowerElementScheme
+    {
+        int inA;
+        int inB;
+        int inC;
+        int outA;
+        int outB;
+        int outC;
+        int cA;
+        int cB;
+        int cC;
+        int commonNode;
+        int lineInA;
+        int lineInB;
+        int lineInC;
+        int lineOutA;
+        int lineOutB;
+        int lineOutC;
+        public FaultSCLLLScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLL fault)
+        {
+            inA = nodes[0].A;
+            inB = nodes[0].B;
+            inC = nodes[0].C;
+            outA = nodes[1].A;
+            outB = nodes[1].B;
+            outC = nodes[1].C;
+            commonNode = acGraph.allocateNode();
+            generate(acGraph, fault);
+        }
+
+        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
+        {
+            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
+            power.A = new Complex32();
+            power.B = new Complex32();
+            power.C = new Complex32();
+            result.powers.Add(power);
+            result.currents.Add(new PowerGraphManager.ABCValue[] {
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineInA],
+                B=solution.currents[lineInB],
+                C=solution.currents[lineInC]
+                }
+                ,
+                new PowerGraphManager.ABCValue{
+                A=solution.currents[lineOutA],
+                B=solution.currents[lineOutB],
+                C=solution.currents[lineOutC]
+                }
+            });
+        }
+        private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLLL fault)
+        {
+            cA = acGraph.allocateNode();
+            cB = acGraph.allocateNode();
+            cC = acGraph.allocateNode();
+            lineInA = acGraph.createLine(cA, inA);
+            lineInB = acGraph.createLine(cB, inB);
+            lineInC = acGraph.createLine(cC, inC);
+            lineOutA = acGraph.createLine(cA, outA);
+            lineOutB = acGraph.createLine(cB, outB);
+            lineOutC = acGraph.createLine(cC, outC);
+            acGraph.createGround(commonNode);
+            acGraph.createImpedanceWithCurrent(cA, commonNode, fault.Zl);
+            acGraph.createImpedanceWithCurrent(cB, commonNode, fault.Zl);
+            acGraph.createImpedanceWithCurrent(cC, commonNode, fault.Zl);
+        }
+    }
 }
 

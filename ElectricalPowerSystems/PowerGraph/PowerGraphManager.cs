@@ -28,15 +28,20 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         public class PowerGraphSolveResult
         {
+            ///<summary>Мощность для элемента</summary>
             public List<ABCValue> powers;
-            public List<ABCValue> voltagesNodes;
+            ///<summary>Потенциалы узлов в формате ABC относительно земли</summary>
+            public List<ABCValue> nodeVoltages;
+            ///<summary>Исходящий ток для узлов элемента</summary>
+            public List<ABCValue[]> currents;
             public PowerGraphSolveResult()
             {
                 powers = new List<ABCValue>();
-                voltagesNodes = new List<ABCValue>();
+                nodeVoltages = new List<ABCValue>();
+                currents = new List<ABCValue[]>();
             }
         }
-        class PowerModelElement
+        public class PowerModelElement
         {
             public GraphElement element;
             public List<int> nodes;
@@ -59,16 +64,22 @@ namespace ElectricalPowerSystems.PowerGraph
             }
             ACGraph.ACGraph acGraph;
             List<PowerElementScheme> elementsSchemes;
+            List<PowerModelElement> elements;
             //List<ABCNode> nodes;
             PowerGraphManager managerRef;
             List<ABCNode> abcNodes;
             Dictionary<string, int> nodes;
+            List<string> nodeNames;
+            public PowerModelElement getElement(int elementId)
+            {
+                return elements[elementId];
+            }
             public PowerGraphModel(PowerGraphManager manager)
             {
                 managerRef = manager;
                 acGraph = new ACGraph.ACGraph();
                 abcNodes = new List<ABCNode>();
-                List<PowerModelElement> elements = new List<PowerModelElement>(manager.elements.Count);
+                elements = new List<PowerModelElement>(manager.elements.Count);
                 nodes = new Dictionary<string, int>();
                 List<List<NodeIdPair>> nodeElements=new List<List<NodeIdPair>>();//Elements, connected to node
                 elementsSchemes = new List<PowerElementScheme>();
@@ -88,6 +99,7 @@ namespace ElectricalPowerSystems.PowerGraph
                             abcNodes.Add(null);
                             nodeElements.Add(new List<NodeIdPair>());
                             nodeElements[nodeId].Add(new NodeIdPair ( elementId, nodeLocalId ));
+                            nodeNames.Add(node);
                             nodeId++;
                         }
                         else
@@ -111,16 +123,15 @@ namespace ElectricalPowerSystems.PowerGraph
                     ABCElement abcElement = new ABCElement(
                         element.element);
                     abcElements.Add(abcElement);
-                    List<bool> phaseNodes = element.element.getPhaseNodes();
+                    int nodeCount = element.nodes.Count;
                     int counter = 0;
                     //for each node generate indexes for abcn nodes
-                    foreach (var node in phaseNodes)
+                    for(int j=0;j<nodeCount;j++)
                     {
                         ABCNode abcNode=new ABCNode();
                         abcNode.A = acGraph.allocateNode();
                         abcNode.B = acGraph.allocateNode();
                         abcNode.C = acGraph.allocateNode();
-                        abcNode.N = node ? acGraph.allocateNode() : -1;
                         abcElement.Nodes.Add(abcNode);
                         abcNodes[element.nodes[counter]]=abcNode;
                         counter++;
@@ -138,13 +149,12 @@ namespace ElectricalPowerSystems.PowerGraph
                         ABCElement currentElement = abcElements[nodeList[j].elementId];
                         ABCNode currentABCNode = currentElement.Nodes[nodeList[j].nodeLocalId];
                         //create line between firstElement and this node
-                        acGraph.createLine(firstABCNode.A,currentABCNode.A);
+                        acGraph.createLine(firstABCNode.A, currentABCNode.A);
                         acGraph.createLine(firstABCNode.B, currentABCNode.B);
                         acGraph.createLine(firstABCNode.C, currentABCNode.C);
-                        if(firstABCNode.N!=-1&&currentABCNode.N!=-1)
-                            acGraph.createLine(firstABCNode.N, currentABCNode.N);
                     }
                 }
+                //если в схеме нет заземлений, то необходимо добавить одно заземление куда-нибудь для коректного расчёта
                 if (acGraph.groundsCount == 0)
                 {
                     acGraph.createGround(0);
@@ -158,6 +168,10 @@ namespace ElectricalPowerSystems.PowerGraph
                 }
                 throw new Exception($"Node {label} doesn't exist.");
             }
+            public string getNodeName(int id)
+            {
+                return nodeNames[id];
+            }
             public bool validate(ref List<string> errors)
             {
                 throw new NotImplementedException();
@@ -165,7 +179,7 @@ namespace ElectricalPowerSystems.PowerGraph
             }
             public PowerGraphSolveResult solve()//in phase coordinates
             {
-                ACGraph.ACGraphSolution acSolution = acGraph.SolveAC(powerFrequency);
+                ACGraph.ACGraphSolution acSolution = acGraph.solveEquationsAC(powerFrequency);
                 PowerGraphSolveResult result = new PowerGraphSolveResult();
                 for (int i = 0; i < managerRef.elements.Count; i++)
                 {
@@ -178,7 +192,7 @@ namespace ElectricalPowerSystems.PowerGraph
                     phaseVoltages.A = acSolution.voltages[node.A];
                     phaseVoltages.B = acSolution.voltages[node.B];
                     phaseVoltages.C = acSolution.voltages[node.C];
-                    result.voltagesNodes.Add(phaseVoltages);
+                    result.nodeVoltages.Add(phaseVoltages);
 
                 }
                 //get results

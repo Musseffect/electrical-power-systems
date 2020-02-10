@@ -119,10 +119,20 @@ namespace ElectricalPowerSystems.ACGraph
         }
         public void addVoltageOutput(string node1, string node2)
         {
-            //TODO ADD exception and change grammar to include output section
             int node1Id = retrieveNodeId(node1);
             int node2Id = retrieveNodeId(node2);
             outputVoltageDifference.Add(new NodePair(node1Id, node2Id));
+        }
+        public string testEquationGeneration()
+        {
+            string result = "";
+            foreach (float frequency in frequencies)
+            {
+                float hz = (float)(frequency / (2.0 * Math.PI));
+                result += acGraph.solveEquationsAC(frequency);
+                result += "\r\n\r\n";
+            }
+            return result;
         }
         public List<string> Solve()
         {
@@ -149,7 +159,7 @@ namespace ElectricalPowerSystems.ACGraph
             foreach (float frequency in frequencies)
             {
                 float hz = (float)(frequency / (2.0*Math.PI));
-                ACGraphSolution solution = acGraph.SolveAC(frequency);
+                ACGraphSolution solution = acGraph.solveEquationsAC(frequency);
                 int outputIndex = 0;
                 foreach (var element in outputCurrent)
                 {
@@ -161,7 +171,7 @@ namespace ElectricalPowerSystems.ACGraph
                     ElementsAC.Element el = acGraph.elements[element];
                     if (el is ElementsAC.Element2N)
                     {
-                        Complex32 voltageDrop = solution.voltages[el.nodes[1]] - solution.voltages[el.nodes[1]];
+                        Complex32 voltageDrop = solution.voltageDrops[element];
                         output[outputIndex++] += ($" [{hz} Hz]({voltageDrop.Magnitude}@{Utils.degrees(voltageDrop.Phase)})");
                     }
                 }
@@ -177,7 +187,7 @@ namespace ElectricalPowerSystems.ACGraph
         {
             try
             {
-                return acGraph.elements[index].toString();
+                return acGraph.elements[index].ToString();
             }
             catch (Exception)
             {

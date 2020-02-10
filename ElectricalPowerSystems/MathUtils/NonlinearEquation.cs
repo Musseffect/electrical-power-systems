@@ -1,4 +1,5 @@
-﻿using ElectricalPowerSystems.EquationInterpreter;
+﻿using ElectricalPowerSystems.Interpreter.Equations;
+using ElectricalPowerSystems.Interpreter.Equations.Nonlinear;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace ElectricalPowerSystems.MathUtils
         public abstract Matrix<double> dF(Vector<double> x);
         public int Size { get; set; }
     };
-    public abstract class NonlinearEquationNumericCentralDifference : NonlinearSystem
+    public abstract class NonlinearSystemNumericCentralDifference : NonlinearSystem
     {
         public double Epsilon { get; set; }
         public override Matrix<double> dF(Vector<double> x)
@@ -71,7 +72,7 @@ namespace ElectricalPowerSystems.MathUtils
             return result;
         }
     };
-    public class NonlinearSystemSymbolicNumerical : NonlinearEquationNumericCentralDifference
+    public class NonlinearSystemSymbolicNumerical : NonlinearSystemNumericCentralDifference
     {
         private List<RPNExpression> equations;
         public NonlinearSystemSymbolicNumerical(NonlinearEquationDefinition system)
