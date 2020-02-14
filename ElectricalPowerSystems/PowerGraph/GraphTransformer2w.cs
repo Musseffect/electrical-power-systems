@@ -54,19 +54,14 @@ namespace ElectricalPowerSystems.PowerGraph
         int iA1;
         int iB1;
         int iC1;
-        int iA2;
-        int iB2;
-        int iC2;
         int oA1;
         int oB1;
         int oC1;
-        int oA2;
-        int oB2;
-        int oC2;
 
         int iRA;
         int iRB;
         int iRC;
+
         int iLA;
         int iLB;
         int iLC;

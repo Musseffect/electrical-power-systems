@@ -190,18 +190,20 @@ namespace ElectricalPowerSystems.PowerGraph
         int VAB;
         int VBC;
         int VCA;
+        List<int> elements;
         public GeneratorSchemeVDelta(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphGeneratorVDelta generator)
         {
             outA = nodes[0].A;
             outB = nodes[0].B;
             outC = nodes[0].C;
+            elements = new List<int>();
             generate(acGraph, generator);
         }
         private void generate(ACGraph.ACGraph acGraph, GraphGeneratorVDelta generator)
         {
-            acGraph.createVoltageSource(outC, outA, generator.voltage, 0.0f, PowerGraphManager.powerFrequency);
-            acGraph.createVoltageSource(outA, outB, generator.voltage, (float)(Math.PI) * 2.0f / 3.0f, PowerGraphManager.powerFrequency);
-            acGraph.createVoltageSource(outB, outC, generator.voltage, (float)(Math.PI) * 4.0f / 3.0f, PowerGraphManager.powerFrequency);
+            VCA = acGraph.createVoltageSource(outC, outA, generator.voltage, 0.0f, PowerGraphManager.powerFrequency);
+            VAB = acGraph.createVoltageSource(outA, outB, generator.voltage, (float)(Math.PI) * 2.0f / 3.0f, PowerGraphManager.powerFrequency);
+            VBC = acGraph.createVoltageSource(outB, outC, generator.voltage, (float)(Math.PI) * 4.0f / 3.0f, PowerGraphManager.powerFrequency);
         }
         override public void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraph.ACGraphSolution solution)
         {

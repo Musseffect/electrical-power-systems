@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.Interpreter.Equations.DAE
 {
+#if DAE
     public partial class DAECompiler
     {
         void validateIdentifier(IdentifierNode node)
@@ -176,4 +177,5 @@ namespace ElectricalPowerSystems.Interpreter.Equations.DAE
             throw new Exception();
         }
     }
+#endif
 }

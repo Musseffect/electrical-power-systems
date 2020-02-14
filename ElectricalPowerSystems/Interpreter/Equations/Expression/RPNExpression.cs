@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.Interpreter.Equations
+namespace ElectricalPowerSystems.Interpreter.Equations.Expression
 {
     struct PrintElement
     {
@@ -134,13 +134,13 @@ namespace ElectricalPowerSystems.Interpreter.Equations
                             operands.Push(new PrintElement
                             {
                                 Type = PrintElement.ElementType.Identifier,
-                                String = variableNames[((Variable)rpn[i]).index]
+                                String = variableNames[((StackVariable)rpn[i]).index]
                             });
                             break;
                         }
                     case StackElementType.Function:
                         {
-                            Function func = (Function)rpn[i];
+                            StackFunction func = (StackFunction)rpn[i];
                             FunctionEntry entry = func.getFunctionEntry();
                             string @string = "";
                             for (int j = 0; j < entry.ArgNumber; j++)
@@ -274,13 +274,13 @@ namespace ElectricalPowerSystems.Interpreter.Equations
                             operands.Push(new PrintElement
                             {
                                 Type = PrintElement.ElementType.Identifier,
-                                String = "var[" + ((Variable)rpn[i]).index.ToString()+"]"
+                                String = "var[" + ((StackVariable)rpn[i]).index.ToString()+"]"
                             });
                             break;
                         }
                     case StackElementType.Function:
                         {
-                            Function func = (Function)rpn[i];
+                            StackFunction func = (StackFunction)rpn[i];
                             FunctionEntry entry = func.getFunctionEntry();
                             string @string = "";
                             for (int j = 0; j < entry.ArgNumber; j++)
@@ -326,11 +326,11 @@ namespace ElectricalPowerSystems.Interpreter.Equations
                 }
                 else if (rpn[i].Type == StackElementType.Function)
                 {
-                    ((Function)rpn[i]).exec(operands);
+                    ((StackFunction)rpn[i]).exec(operands);
                 }
                 else if (rpn[i].Type == StackElementType.Variable)
                 {
-                    operands.Push(new Operand(variables[((Variable)rpn[i]).index]));
+                    operands.Push(new Operand(variables[((StackVariable)rpn[i]).index]));
                 }
                 else
                 {

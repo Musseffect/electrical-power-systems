@@ -1,4 +1,4 @@
-﻿using ElectricalPowerSystems.Interpreter.Equations;
+﻿using ElectricalPowerSystems.Interpreter.Equations.Expression;
 using ElectricalPowerSystems.Interpreter.Equations.Nonlinear;
 using MathNet.Numerics.LinearAlgebra;
 using System;

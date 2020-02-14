@@ -55,7 +55,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Test\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;TEST</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -107,8 +107,7 @@
     <Compile Include="Interpreter\Equations\DAE\DAEImplicitGrammar.g4.parser.cs" />
     <Compile Include="Interpreter\Equations\DAE\DAESimplifier.cs" />
     <Compile Include="Interpreter\Equations\DAE\DAEValidator.cs" />
-    <Compile Include="Interpreter\Equations\DAE\DAEDifferentiationVisitor.cs" />
-    <Compile Include="Interpreter\Equations\ExpressionAST.cs" />
+    <Compile Include="Interpreter\Equations\Expression\Expression.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\ASTNode.cs" />
     <Compile Include="PowerGraph\GraphAutotransformer.cs" />
     <Compile Include="PowerGraph\GraphBreak.cs" />
@@ -128,12 +127,12 @@
     <Compile Include="EquationGrammar.g4.parser.cs">
       <DependentUpon>EquationGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="Interpreter\Equations\Nonlinear\DifferentiationVisitor.cs" />
+    <Compile Include="Interpreter\Equations\Expression\DifferentiationVisitor.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\EquationCompiler.cs" />
-    <Compile Include="Interpreter\Equations\FunctionTable.cs" />
+    <Compile Include="Interpreter\Equations\Expression\FunctionTable.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\EquationGrammarVisitor.cs" />
-    <Compile Include="Interpreter\Equations\ExpressionCompiler.cs" />
-    <Compile Include="Interpreter\Equations\RPNExpression.cs" />
+    <Compile Include="Interpreter\Equations\Expression\ExpressionCompiler.cs" />
+    <Compile Include="Interpreter\Equations\Expression\RPNExpression.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\Simplifier.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\Validator.cs" />
     <Compile Include="GUI\GraphViewer.xaml.cs">

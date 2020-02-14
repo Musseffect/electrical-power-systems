@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.Interpreter.Equations
+namespace ElectricalPowerSystems.Interpreter.Equations.Expression
 {
-    public delegate ExpressionNode FunctionDerivative(List<ExpressionNode> node);
+    public delegate Expression FunctionDerivative(List<Expression> node);
     public class FunctionEntry
     {
         public string FuncName { get; set; }
@@ -49,7 +49,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations
             {
                 return functionTable[functionName];
             }
-            catch (Exception exc)
+            catch (KeyNotFoundException)
             {
                 throw new Exception("Incorrect function name [\"" + functionName + "\"].");
             }
@@ -118,61 +118,57 @@ namespace ElectricalPowerSystems.Interpreter.Equations
         {
             return new Operand(args[0].value * args[0].value);
         }
-        static public ExpressionNode SinDer(List<ExpressionNode> args)
+        static public Expression SinDer(List<Expression> args)
         {
-            return new FunctionNode
+            return new Function(functionTable["cos"], args);
+        }
+        static public Expression CosDer(List<Expression> args)
+        {
+            return new Negation
             {
-                FunctionName = "cos",
-                Arguments = args
+                InnerNode = new Function(functionTable["sin"], args)
             };
         }
-        static public ExpressionNode CosDer(List<ExpressionNode> args)
+        static public Expression TanDer(List<Expression> args)
         {
-            return new NegationNode
+            return new Division
             {
-                InnerNode = new FunctionEntryNode(functionTable["sin"], args)
-            };
-        }
-        static public ExpressionNode TanDer(List<ExpressionNode> args)
-        {
-            return new DivisionNode
-            {
-                Left = new FloatNode
+                Left = new Float
                 {
                     Value = 1.0
                 },
-                Right = new FunctionEntryNode(functionTable["cos"], args)
+                Right = new Function(functionTable["cos"], args)
             };
         }
-        static public ExpressionNode CtgDer(List<ExpressionNode> args)
+        static public Expression CtgDer(List<Expression> args)
         {
-            return new DivisionNode
+            return new Division
             {
-                Left = new FloatNode
+                Left = new Float
                 {
                     Value = -1.0
                 },
-                Right = new FunctionEntryNode(functionTable["sin"], args)
+                Right = new Function(functionTable["sin"], args)
             };
         }
-        static public ExpressionNode AtanDer(List<ExpressionNode> args)
+        static public Expression AtanDer(List<Expression> args)
         {
-            return new DivisionNode
+            return new Division
             {
-                Left = new FloatNode
+                Left = new Float
                 {
                     Value = 1.0
                 },
-                Right = new AdditionNode
+                Right = new Addition
                 {
-                    Left = new FloatNode
+                    Left = new Float
                     {
                         Value = 1.0
                     },
-                    Right = new PowerNode
+                    Right = new Power
                     {
                         Left = args[0],
-                        Right = new FloatNode
+                        Right = new Float
                         {
                             Value = 2.0
                         }
@@ -180,26 +176,26 @@ namespace ElectricalPowerSystems.Interpreter.Equations
                 }
             };
         }
-        static public ExpressionNode ActgDer(List<ExpressionNode> args)
+        static public Expression ActgDer(List<Expression> args)
         {
-            return new NegationNode
+            return new Negation
             {
-                InnerNode = new DivisionNode
+                InnerNode = new Division
                 {
-                    Left = new FloatNode
+                    Left = new Float
                     {
                         Value = 1.0
                     },
-                    Right = new AdditionNode
+                    Right = new Addition
                     {
-                        Left = new FloatNode
+                        Left = new Float
                         {
                             Value = 1.0
                         },
-                        Right = new PowerNode
+                        Right = new Power
                         {
                             Left = args[0],
-                            Right = new FloatNode
+                            Right = new Float
                             {
                                 Value = 2.0
                             }
@@ -208,164 +204,164 @@ namespace ElectricalPowerSystems.Interpreter.Equations
                 }
             };
         }
-        static public ExpressionNode AcosDer(List<ExpressionNode> args)
+        static public Expression AcosDer(List<Expression> args)
         {
-            return new NegationNode
+            return new Negation
             {
-                InnerNode = new PowerNode
+                InnerNode = new Power
                 {
-                    Left = new SubtractionNode
+                    Left = new Subtraction
                     {
-                        Left = new FloatNode
+                        Left = new Float
                         {
                             Value = 1.0
                         },
-                        Right = new PowerNode
+                        Right = new Power
                         {
                             Left = args[0],
-                            Right = new FloatNode
+                            Right = new Float
                             {
                                 Value = 2.0
                             }
                         }
                     },
-                    Right = new FloatNode
+                    Right = new Float
                     {
                         Value = -0.5
                     }
                 }
             };
         }
-        static public ExpressionNode AsinDer(List<ExpressionNode> args)
+        static public Expression AsinDer(List<Expression> args)
         {
-            return new PowerNode
+            return new Power
             {
-                Left = new SubtractionNode
+                Left = new Subtraction
                 {
-                    Left = new FloatNode
+                    Left = new Float
                     {
                         Value = 1.0
                     },
-                    Right = new PowerNode
+                    Right = new Power
                     {
                         Left = args[0],
-                        Right = new FloatNode
+                        Right = new Float
                         {
                             Value = 2.0
                         }
                     }
                 },
-                Right = new FloatNode
+                Right = new Float
                 {
                     Value = -0.5
                 }
             };
         }
-        static public ExpressionNode ExpDer(List<ExpressionNode> args)
+        static public Expression ExpDer(List<Expression> args)
         {
-            return new FunctionEntryNode(functionTable["exp"], args);
+            return new Function(functionTable["exp"], args);
         }
-        static public ExpressionNode LnDer(List<ExpressionNode> args)
+        static public Expression LnDer(List<Expression> args)
         {
-            return new DivisionNode
+            return new Division
             {
-                Left = new FloatNode
+                Left = new Float
                 {
                     Value = 1.0
                 },
                 Right = args[0]
             };
         }
-        static public ExpressionNode LogDer1(List<ExpressionNode> args)
+        static public Expression LogDer1(List<Expression> args)
         {
-            return new DivisionNode
+            return new Division
             {
-                Left = new FloatNode
+                Left = new Float
                 {
                     Value = 1.0
                 },
-                Right = new MultiplicationNode
+                Right = new Multiplication
                 {
                     Left = args[0],
-                    Right = new FunctionEntryNode(functionTable["ln"], new List<ExpressionNode> { args[1] })
+                    Right = new Function(functionTable["ln"], new List<Expression> { args[1] })
                 }
             };
         }
-        static public ExpressionNode LogDer2(List<ExpressionNode> args)
+        static public Expression LogDer2(List<Expression> args)
         {
-            return new NegationNode
+            return new Negation
             {
-                InnerNode = new DivisionNode
+                InnerNode = new Division
                 {
-                    Left = new MultiplicationNode
+                    Left = new Multiplication
                     {
-                        Left = new FunctionEntryNode(functionTable["ln"], new List<ExpressionNode> { args[0] }),
+                        Left = new Function(functionTable["ln"], new List<Expression> { args[0] }),
                         Right = args[0],
                     },
-                    Right = new MultiplicationNode
+                    Right = new Multiplication
                     {
                         Left = args[1],
-                        Right = new MultiplicationNode
+                        Right = new Multiplication
                         {
-                            Left = new FunctionEntryNode(functionTable["ln"], new List<ExpressionNode> { args[1] }),
-                            Right = new FunctionEntryNode(functionTable["ln"], new List<ExpressionNode> { args[1] })
+                            Left = new Function(functionTable["ln"], new List<Expression> { args[1] }),
+                            Right = new Function(functionTable["ln"], new List<Expression> { args[1] })
                         }
                     },
                 }
             };
         }
-        static public ExpressionNode SqrtDer(List<ExpressionNode> args)
+        static public Expression SqrtDer(List<Expression> args)
         {
-            return new MultiplicationNode
+            return new Multiplication
             {
-                Left = new FloatNode
+                Left = new Float
                 {
                     Value = -0.5
                 },
-                Right = new PowerNode
+                Right = new Power
                 {
                     Left = args[0],
-                    Right = new FloatNode
+                    Right = new Float
                     {
                         Value = -0.5
                     }
                 }
             };
         }
-        static public ExpressionNode SqrDer(List<ExpressionNode> args)
+        static public Expression SqrDer(List<Expression> args)
         {
-            return new MultiplicationNode
+            return new Multiplication
             {
-                Left = new FloatNode
+                Left = new Float
                 {
                     Value = 2.0
                 },
                 Right = args[0]
             };
         }
-        static public ExpressionNode PowDer1(List<ExpressionNode> args)
+        static public Expression PowDer1(List<Expression> args)
         {
-            return new MultiplicationNode
+            return new Multiplication
             {
-                Left = new PowerNode
+                Left = new Power
                 {
                     Left = args[0],
                     Right = args[1]
                 },
-                Right = new FunctionEntryNode(functionTable["ln"], new List<ExpressionNode> { args[0] })
+                Right = new Function(functionTable["ln"], new List<Expression> { args[0] })
             };
         }
-        static public ExpressionNode PowDer2(List<ExpressionNode> args)
+        static public Expression PowDer2(List<Expression> args)
         {
-            return new MultiplicationNode
+            return new Multiplication
             {
-                Left = new PowerNode
+                Left = new Power
                 {
                     Left = args[0],
-                    Right = new SubtractionNode
+                    Right = new Subtraction
                     {
                         Left = args[1],
-                        Right = new FloatNode
+                        Right = new Float
                         {
                             Value=1.0
                         }
@@ -405,10 +401,10 @@ namespace ElectricalPowerSystems.Interpreter.Equations
             this.value = value;
         }
     }
-    class Variable : StackElement
+    class StackVariable : StackElement
     {
         public int index;
-        public Variable(int index) : base(StackElementType.Variable)
+        public StackVariable(int index) : base(StackElementType.Variable)
         {
             this.index = index;
         }
@@ -475,10 +471,10 @@ namespace ElectricalPowerSystems.Interpreter.Equations
             return op;
         }
     }
-    class Function : StackElement
+    class StackFunction : StackElement
     {
         FunctionEntry func;
-        public Function(FunctionEntry func) : base(StackElementType.Function)
+        public StackFunction(FunctionEntry func) : base(StackElementType.Function)
         {
             this.func = func;
         }

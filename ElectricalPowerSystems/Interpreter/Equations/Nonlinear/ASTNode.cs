@@ -20,8 +20,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
         Assignment,
         InitialValue,
         Parameter,
-        Root,
-        FunctionEntry
+        Root
     }
     public class ASTNode
     {
@@ -94,17 +93,6 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             Type = ASTNodeType.Function;
         }
         public string FunctionName { get; set; }
-        public List<ExpressionNode> Arguments { get; set; }
-    }
-    public class FunctionEntryNode : ExpressionNode
-    {
-        public FunctionEntryNode(FunctionEntry entry, List<ExpressionNode> arguments)
-        {
-            Type = ASTNodeType.FunctionEntry;
-            Entry = entry;
-            Arguments = arguments;
-        }
-        public FunctionEntry Entry { get; set; }
         public List<ExpressionNode> Arguments { get; set; }
     }
     public class IdentifierNode : ExpressionNode

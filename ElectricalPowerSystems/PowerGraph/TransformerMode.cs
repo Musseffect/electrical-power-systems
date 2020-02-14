@@ -131,8 +131,19 @@ namespace ElectricalPowerSystems.PowerGraph
     //TODO
     public class ZigZagWinding : TransformerWinding
     {
+        public enum Mode
+        {
+            ZZ0
+        };
         GroundingType grounding;
+        Mode mode;
 
+        public ZigZagWinding(Mode mode, GroundingType grounding)
+        {
+            WindingType = Type.ZigZag;
+            this.mode = mode;
+            this.grounding = grounding;
+        }
         public override int[] generateWinding(int wA, int wB, int wC, ACGraph.ACGraph acGraph)
         {
             int n = acGraph.allocateNode();

@@ -65,9 +65,8 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 return $"v_{nodes[i]}_im";
             }
-            public abstract List<EquationBlock> getParametersAC();
-            public abstract List<EquationBlock> generateEquationsAC();
-            public abstract string ToString();
+            public abstract List<EquationBlock> GetParametersAC();
+            public abstract List<EquationBlock> GenerateEquationsAC();
             public abstract Complex32 GetCurrent(NonlinearSystemSolution acSolution, float frequency);
             public virtual Complex32 GetVoltageDrop(NonlinearSystemSolution acSolution)
             {
@@ -128,7 +127,7 @@ namespace ElectricalPowerSystems.ACGraph
                 this.resistance = resistance;
                 this.ElementType = ElementTypeEnum.ResistorWithCurrent;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -137,7 +136,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 string R = $"R_{elementIndex}";
@@ -189,7 +188,7 @@ namespace ElectricalPowerSystems.ACGraph
                 this.impedance = impedance;
                 this.ElementType = ElementTypeEnum.Impedance;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -202,7 +201,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 string R = $"R_{elementIndex}";
@@ -255,7 +254,7 @@ namespace ElectricalPowerSystems.ACGraph
                 this.impedance = impedance;
                 this.ElementType = ElementTypeEnum.Impedance;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 Complex32 Y = new Complex32(1.0f,0.0f) / impedance;
@@ -269,7 +268,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 string G = $"G_{elementIndex}";
@@ -307,7 +306,7 @@ namespace ElectricalPowerSystems.ACGraph
                 this.resistance = resistance;
                 this.ElementType = ElementTypeEnum.Resistor;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -316,7 +315,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 string G = $"G_{elementIndex}";
@@ -356,7 +355,7 @@ namespace ElectricalPowerSystems.ACGraph
                 this.b2 = b2;
                 this.ElementType = ElementTypeEnum.Transformer3w;
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 string I1re = $"I_{elementIndex}_1_re";
@@ -433,7 +432,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -463,7 +462,7 @@ namespace ElectricalPowerSystems.ACGraph
                 this.b = b;
                 this.ElementType = ElementTypeEnum.Transformer2w;
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 string I1re = $"I_{elementIndex}_1_re";
@@ -521,7 +520,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -547,7 +546,7 @@ namespace ElectricalPowerSystems.ACGraph
                 this.b = b;
                 this.ElementType = ElementTypeEnum.Autotransformer;
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 string I1re = $"I_{elementIndex}_1_re";
@@ -603,7 +602,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -629,7 +628,7 @@ namespace ElectricalPowerSystems.ACGraph
                 this.capacity = capacity;
                 this.ElementType = ElementTypeEnum.Capacitor;
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 string v1re = $"v_{nodes[0]}_re";
                 string v1im = $"v_{nodes[0]}_im";
@@ -639,19 +638,19 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $" - {C} * frequence * ({v1im} - {v2im})",
+                    Equation = $" - {C} * frequency * ({v1im} - {v2im})",
                     Node1 = v1re,
                     Node2 = v2re
                 });
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $" {C} * frequence * ({v1re} - {v2re})",
+                    Equation = $" {C} * frequency * ({v1re} - {v2re})",
                     Node1 = v1im,
                     Node2 = v2im
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -679,7 +678,7 @@ namespace ElectricalPowerSystems.ACGraph
                 this.inductivity = inductivity;
                 this.ElementType = ElementTypeEnum.Inductor;
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 string v1re = $"v_{nodes[0]}_re";
                 string v1im = $"v_{nodes[0]}_im";
@@ -711,7 +710,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -732,7 +731,7 @@ namespace ElectricalPowerSystems.ACGraph
         }
         public class Ground : Element1N
         {
-            public Ground(int node) : base(node,-1)
+            public Ground(int node,int index) : base(node,index)
             {
                 this.ElementType = ElementTypeEnum.Ground;
             }
@@ -740,7 +739,7 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 return $"Ground{{n = {nodes[0]} }}";
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new CurrentFlowBlock
@@ -761,11 +760,11 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"v{nodes[0]}_im = 0;"
+                    Equation = $"v_{nodes[0]}_im = 0;"
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 return new List<EquationBlock>();
             }
@@ -785,7 +784,7 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 return $"Line{{n1 = {nodes[0]}, n2 = {nodes[1]} }}";
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new CurrentFlowBlock
@@ -810,7 +809,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 return new List<EquationBlock>();
             }
@@ -836,7 +835,7 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 return $"Voltage Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, voltage = {voltage}@{Utils.degrees(phase)}, frequency = {frequency}}}";
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new CurrentFlowBlock
@@ -861,7 +860,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -892,7 +891,7 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 return $"Switch{{n1 = {nodes[0]}, n2 = {nodes[1]}, state = {state}}}";
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 string p = $"switch_state_{elementIndex}";
@@ -918,7 +917,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
@@ -951,7 +950,7 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 return $"Current Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, current = {current}@{Utils.degrees(phase)}, frequency = {frequency}}}";
             }
-            public override List<EquationBlock> generateEquationsAC()
+            public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 string p = $"switch_state_{elementIndex}";
@@ -969,7 +968,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
-            public override List<EquationBlock> getParametersAC()
+            public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock

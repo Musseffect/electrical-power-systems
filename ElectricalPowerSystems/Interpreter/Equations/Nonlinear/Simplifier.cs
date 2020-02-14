@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
 {
+#if OLD
     //TODO свёртка констант для множественного суммирования и произведения
     public partial class EquationCompiler
     {
@@ -259,4 +260,5 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             return node;
         }
     }
+#endif
 }

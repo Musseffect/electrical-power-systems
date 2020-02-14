@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.Interpreter.Equations.DAE
 {
+#if DAE
     public partial class DAECompiler
     {
         ExpressionNode simplifyAddition(AdditionNode node)
@@ -270,4 +271,5 @@ namespace ElectricalPowerSystems.Interpreter.Equations.DAE
             return node;
         }
     }
+#endif
 }

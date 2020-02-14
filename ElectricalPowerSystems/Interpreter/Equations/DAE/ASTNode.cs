@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.Interpreter.Equations
+namespace ElectricalPowerSystems.Interpreter.Equations.DAE
 {
     public enum ASTNodeType
     {

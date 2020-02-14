@@ -115,11 +115,12 @@ namespace ElectricalPowerSystems
             dt.Tick += DispatcherTimerTick;
             dt.Start();
 
-            Test.Test.testNonlinearEquationSolver();
-            //Test.Test.testNonlinearEquationParser();
+#if TEST
+            Test.Test.RunTests();
+            this.Close();
             //NodeCanvas canvas = new NodeCanvas();
             //canvas.Show();
-            //this.Close();
+#endif
         }
         private void DispatcherTimerTick(object sender, EventArgs e)
         {
@@ -414,15 +415,15 @@ namespace ElectricalPowerSystems
         }
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            FileTabItem item = FileTab.SelectedItem as FileTabItem;
+            /*FileTabItem item = FileTab.SelectedItem as FileTabItem;
             if (item != null)
             {
                 //item.Changed = true;
-            }
+            }*/
         }
         private void RunPowerTestButton_Click(object sender, RoutedEventArgs e)
         {
-            Test.Test.testPowerModel();
+            Test.Test.TestPowerModel();
         }
         private void SaveAll_Click(object sender, RoutedEventArgs e)
         {

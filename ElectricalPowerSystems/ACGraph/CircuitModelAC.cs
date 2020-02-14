@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics;
+﻿using ElectricalPowerSystems.Interpreter.Equations.Nonlinear;
+using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace ElectricalPowerSystems.ACGraph
         Dictionary<string, int> nodes;
         public List<string> nodeLabels;
         ACGraph acGraph;
+        List<ErrorMessage> errors;
         public CircuitModelAC()
         {
             acGraph = new ACGraph();
@@ -36,6 +38,7 @@ namespace ElectricalPowerSystems.ACGraph
             outputVoltageDifference = new List<NodePair>();
             outputCurrent = new List<int>();
             outputNodeVoltage = new List<int>();
+            errors = new List<ErrorMessage>();
         }
         private int retrieveNodeId(string key)
         {
@@ -129,8 +132,13 @@ namespace ElectricalPowerSystems.ACGraph
             foreach (float frequency in frequencies)
             {
                 float hz = (float)(frequency / (2.0 * Math.PI));
-                result += acGraph.solveEquationsAC(frequency);
-                result += "\r\n\r\n";
+                string equations = acGraph.EquationGeneration(frequency);
+                EquationCompiler compiler = new EquationCompiler();
+                NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equations);
+                result += equations + Environment.NewLine;
+                result += compiledEquation.PrintEquations()+ Environment.NewLine;
+                result += compiledEquation.PrintJacobiMatrix() + Environment.NewLine;
+                result += Environment.NewLine;
             }
             return result;
         }

@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime;
 using ElectricalPowerSystems.Interpreter.Equations.DAE;
 using ElectricalPowerSystems.Interpreter.Equations;
+using ElectricalPowerSystems.Interpreter.Equations.Expression;
 using ElectricalPowerSystems.Interpreter;
 using System;
 using System.Collections.Generic;
@@ -85,6 +86,8 @@ namespace ElectricalPowerSystems.Interpreter.Equations.DAE
             return result;
         }
     }
+
+#if DAE
     public partial class DAECompiler
     {
         class Variable
@@ -485,4 +488,5 @@ namespace ElectricalPowerSystems.Interpreter.Equations.DAE
 
         }
     }
+#endif
 }

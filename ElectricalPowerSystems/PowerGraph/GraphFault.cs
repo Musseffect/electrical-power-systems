@@ -47,7 +47,6 @@ namespace ElectricalPowerSystems.PowerGraph
         int lineB;
         int lineC;
 
-        Dictionary<string, int> elements;
         public FaultOCScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultOC fault)
         {
             inA = nodes[0].A;
@@ -145,7 +144,6 @@ namespace ElectricalPowerSystems.PowerGraph
         int lineOutC;
         int commonNode;
         int groundNode;
-        Dictionary<string, int> elements;
         public FaultSCLLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLG fault)
         {
             inA = nodes[0].A;

@@ -1,6 +1,6 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
-using ElectricalPowerSystems.Interpreter.Equations;
+using ElectricalPowerSystems.Interpreter.Equations.Expression;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -25,6 +25,18 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
         }
 
     }
+    public class CompilerException : Exception
+    {
+        public List<ErrorMessage> Errors { get; private set; }
+        public CompilerException(List<ErrorMessage> errors)
+        {
+            Errors = errors;
+        }
+        public CompilerException(List<ErrorMessage> errors, string message) : base(message)
+        {
+            Errors = errors;
+        }
+    }
     public class NonlinearEquationDefinition
     {
         double[] initialValues;
@@ -39,7 +51,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
         private NonlinearEquationDefinition()
         {
         }
-        public NonlinearSystemSolution getSolution(Vector<double> values)
+        public NonlinearSystemSolution GetSolution(Vector<double> values)
         {
             return new NonlinearSystemSolution(variableMap, values);
         }
@@ -49,6 +61,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             this.variableNames = variableNames;
             this.equations = equations;
             this.jacobiMatrix = jacobiMatrix;
+            variableMap = new Dictionary<string, int>();
             int i = 0;
             foreach (var variableName in variableNames)
             {
@@ -98,11 +111,11 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
         public EquationCompiler()
         {
         }
-        public List<ErrorMessage> getErrors()
+        public List<ErrorMessage> GetErrors()
         {
             return compilerErrors;
         }
-        public NonlinearEquationDefinition compileEquations(string text)
+        public NonlinearEquationDefinition CompileEquations(string text)
         {
             compilerErrors = new List<ErrorMessage>();
             parameters = new Dictionary<string, double>();
@@ -144,15 +157,15 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
         private NonlinearEquationDefinition compileEquations(RootNode root)
         {
             List<RPNExpression> rpnEquations = new List<RPNExpression>();
-            List<ExpressionNode> equations = new List<ExpressionNode>();
+            List<Expression.Expression> equations = new List<Expression.Expression>();
 
             foreach (var parameter in root.parameters)
             {
-                //Expression right = convertToExpression(parameter.Right)
-                ExpressionNode right = simplify(parameter.Right);
-                if (right is FloatNode)
+                Expression.Expression right = ExpressionSimplifier.simplify(convertToExpression(parameter.Right));
+                //ExpressionNode right = simplify(parameter.Right);
+                if (right is Float)
                 {
-                    parameters.Add(parameter.Identifier, ((FloatNode)right).Value);
+                    parameters.Add(parameter.Identifier, ((Float)right).Value);
                 }
                 else
                 {
@@ -162,18 +175,15 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
 
             foreach (var equation in root.equations)
             {
-                SubtractionNode exp = new SubtractionNode
+                SubtractionNode subtraction = new SubtractionNode
                 {
                     Left = equation.Left,
                     Right = equation.Right,
                     Line = equation.Line,
                     Position = equation.Position
                 };
-                //Expression expression = convertToExpression(subtraction)
-                validate(exp);
-                equations.Add(exp);
-                //simplify
-                //index variables
+                Expression.Expression expression = ExpressionSimplifier.simplify(convertToExpression(subtraction));
+                equations.Add(expression);
             }
 
             //initialValues aren't important
@@ -181,11 +191,11 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             {
                 if (variables.ContainsKey(initialValue.Identifier))
                 {
-                    ExpressionNode right = simplify(initialValue.Right);
+                    Expression.Expression right = ExpressionSimplifier.simplify(convertToExpression(initialValue.Right));
                     //Expression expression = convertToExpression(right)
-                    if (right is FloatNode)
+                    if (right is Float)
                     {
-                        initialValues[variables[initialValue.Identifier]] = ((FloatNode)right).Value;
+                        initialValues[variables[initialValue.Identifier]] = ((Float)right).Value;
                     }
                     else
                     {
@@ -210,18 +220,17 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             }
             if (compilerErrors.Count>0)
             {
-                throw new Exception("Equation definition errors");
+                throw new CompilerException(compilerErrors);
+                //throw new Exception("Equation definition errors");
                 //fall back;
             }
             ExpressionCompiler expCompiler = new ExpressionCompiler(variables);
             for (int i = 0; i < equations.Count; i++)
             {
-                //equations[i] = simplify(equations[i])
-                equations[i] = simplify(equations[i]);
                 rpnEquations.Add(expCompiler.compile(equations[i]));
             }
             RPNExpression [,] jacobiMatrix = new RPNExpression[equations.Count, equations.Count];
-            DifferentiationVisitor difVisitor = new DifferentiationVisitor(); 
+            Expression.DifferentiationVisitor difVisitor = new Expression.DifferentiationVisitor(); 
             int j = 0;
             foreach (var equation in equations)
             {
@@ -229,30 +238,130 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
                 foreach (var variable in variableNames)
                 {
                     //find derivative for variable 
-                    ExpressionNode derivative = difVisitor.differentiate(equation, variable);
+                    Expression.Expression derivative = ExpressionSimplifier.simplify(difVisitor.differentiate(equation, variable));
                     //simplify derivative expression
-                    RPNExpression exp = expCompiler.compile(simplify(derivative));
+                    RPNExpression exp = expCompiler.compile(derivative);
                     jacobiMatrix[i, j] = exp;
+                    i++;
                 }
+                j++;
             }
             NonlinearEquationDefinition ned = new NonlinearEquationDefinition(initialValues.ToArray(),variableNames.ToArray(),
                 rpnEquations,jacobiMatrix);
             return ned;
-        }/*
-        public static ExpressionStack compileASTExpression(ASTSimpleNode root)
+        }
+        private Expression.Expression convertIdentifier(IdentifierNode node)
         {
-            varCount = 0;
-            indicies = new Dictionary<string, int>();
-            rpn = new List<StackElement>();
-            try
+            if (!variables.ContainsKey(node.Value))
             {
-                compileVisitor(root);
+                if (parameters.ContainsKey(node.Value))
+                {
+                    return new Float { Value = parameters[node.Value] };
+                }
+                else
+                {
+                    variables.Add(node.Value, variableNames.Count);
+                    variableNames.Add(node.Value);
+                    initialValues.Add(0.0);
+                }
+                //compilerErrors.Add(new ErrorMessage("Параметр " + node.Value + " не определён", node.Line, node.Position));
             }
-            catch (Exception exc)
+            return new Variable { Name = node.Value}; ;
+        }
+        private Expression.Expression convertNegation(NegationNode node)
+        {
+            return new Negation { InnerNode = convertToExpression(node.InnerNode) };
+        }
+        private Expression.Expression convertAddition(AdditionNode node)
+        {
+            return new Addition
             {
-                throw new Exception(exc.Message);
+                Left = convertToExpression(node.Left),
+                Right = convertToExpression(node.Right)
+            };
+        }
+        private Expression.Expression convertSubtraction(SubtractionNode node)
+        {
+            return new Subtraction
+            {
+                Left = convertToExpression(node.Left),
+                Right = convertToExpression(node.Right)
+            };
+        }
+        private Expression.Expression convertDivision(DivisionNode node)
+        {
+            return new Division
+            {
+                Left = convertToExpression(node.Left),
+                Right = convertToExpression(node.Right)
+            };
+        }
+        private Expression.Expression convertMultiplication(MultiplicationNode node)
+        {
+            return new Multiplication
+            {
+                Left = convertToExpression(node.Left),
+                Right = convertToExpression(node.Right)
+            };
+        }
+        private Expression.Expression convertFunction(FunctionNode node)
+        {
+            if (FunctionTable.isValidFunction(node.FunctionName))
+            {
+                //check number of arguments
+                FunctionEntry entry = FunctionTable.getFunctionEntry(node.FunctionName);
+                if (entry.ArgNumber != node.Arguments.Count)
+                {
+                    compilerErrors.Add(new ErrorMessage(entry.ArgNumber.ToString() + "arguments expected in function " + node.FunctionName, node.Line, node.Position));
+                    return null;
+                }
+                List<Expression.Expression> arguments = new List<Expression.Expression>();
+                foreach (var argument in node.Arguments)
+                {
+                    arguments.Add(convertToExpression(argument));
+                }
+                return new Function(entry,arguments);
             }
-            return new ExpressionStack(rpn, indicies);
-        }*/
+            else
+            {
+                compilerErrors.Add(new ErrorMessage("Unknown function " + node.FunctionName, node.Line, node.Position));
+                return null;
+            }
+        }
+        private Expression.Expression convertPower(PowerNode node)
+        {
+            return new Power
+            {
+                Left = convertToExpression(node.Left),
+                Right = convertToExpression(node.Right)
+            };
+        }
+        private Expression.Expression convertToExpression(ExpressionNode node)
+        {
+            switch (node.Type)
+            {
+                case ASTNodeType.Negation:
+                    return convertNegation((NegationNode)node);
+                case ASTNodeType.Addition:
+                    return convertAddition((AdditionNode)node);
+                case ASTNodeType.Subtraction:
+                    return convertSubtraction((SubtractionNode)node);
+                case ASTNodeType.Division:
+                    return convertDivision((DivisionNode)node);
+                case ASTNodeType.Multiplication:
+                    return convertMultiplication((MultiplicationNode)node);
+                case ASTNodeType.Float:
+                    return new Float() {
+                        Value = ((FloatNode)node).Value
+                    };
+                case ASTNodeType.Identifier:
+                    return convertIdentifier((IdentifierNode)node);
+                case ASTNodeType.Function:
+                    return convertFunction((FunctionNode)node);
+                case ASTNodeType.Power:
+                    return convertPower((PowerNode)node);
+            }
+            throw new Exception("Unknown type in convertToExpression function");
+        }
     }
 }

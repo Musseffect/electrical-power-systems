@@ -107,8 +107,7 @@ namespace ElectricalPowerSystems.MathUtils
         /*
          kxi=f(xn+sum aij*kxj,zn+sum aij*kzj,tn+ci*h)
          0=g(xn+sum aij*kxj,zn+sum aij*kzj,tn+ci*h)
-             
-             */
+         */
         public Vector<double> IntegrateStep(DAESemiExplicitSystem system, Vector<double> x, Vector<double> z, double t)
         {
             int sizeX = system.SizeX * Stages;

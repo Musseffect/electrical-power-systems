@@ -1,5 +1,6 @@
 ﻿using ElectricalPowerSystems.Interpreter.Equations;
 using ElectricalPowerSystems.Interpreter.Equations.DAE;
+using ElectricalPowerSystems.Interpreter.Equations.Expression;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -81,6 +82,7 @@ namespace ElectricalPowerSystems.MathUtils
         public DAEImplicitSystemAnalytic(DAEImplicitDefinition definition)
         {
             Size = equations.Length;
+            equations = definition.F.ToArray();
             throw new NotImplementedException();
         }
         public override double[,] dFddX(Vector<double> x, Vector<double> dx, double t)

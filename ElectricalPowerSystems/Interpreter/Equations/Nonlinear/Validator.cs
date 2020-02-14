@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
 {
+#if OLD
     public partial class EquationCompiler
     {
         void validateIdentifier(IdentifierNode node)
@@ -99,4 +100,5 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
         }
 
     }
+#endif
 }

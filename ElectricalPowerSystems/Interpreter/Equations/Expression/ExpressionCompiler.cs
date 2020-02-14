@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.Interpreter.Equations
+namespace ElectricalPowerSystems.Interpreter.Equations.Expression
 {
     class ExpressionCompiler
     {
@@ -15,103 +15,101 @@ namespace ElectricalPowerSystems.Interpreter.Equations
         {
             this.variableIndicies = variableIndicies;
         }
-        public RPNExpression compile(ExpressionNode root)
+        public RPNExpression compile(Expression root)
         {
             rpnStack = new List<StackElement>();
             compileVisitor(root);
             return new RPNExpression(rpnStack);
         }
 
-        void compileNegation(NegationNode node)
+        void compileNegation(Negation node)
         {
             compileVisitor(node.InnerNode);
             rpnStack.Add(new NegationOperator());
         }
-        void compilePower(PowerNode node)
+        void compilePower(Power node)
         {
             compileVisitor(node.Left);
             compileVisitor(node.Right);
             rpnStack.Add(new PowerOperator());
         }
-        void compileMultiplication(MultiplicationNode node)
+        void compileMultiplication(Multiplication node)
         {
             compileVisitor(node.Left);
             compileVisitor(node.Right);
             rpnStack.Add(new MultiplicationOperator());
         }
-        void compileDivision(DivisionNode node)
+        void compileDivision(Division node)
         {
             compileVisitor(node.Left);
             compileVisitor(node.Right);
             rpnStack.Add(new DivisionOperator());
         }
-        void compileFunction(FunctionEntryNode node)
+        void compileFunction(Function node)
         {
             //check function signature
             foreach (var arg in node.Arguments)
                 compileVisitor(arg);
-            rpnStack.Add(new Function(node.Entry));
+            rpnStack.Add(new StackFunction(node.Entry));
         }
-        void compileSubtraction(SubtractionNode node)
+        void compileSubtraction(Subtraction node)
         {
             compileVisitor(node.Left);
             compileVisitor(node.Right);
             rpnStack.Add(new SubtractionOperator());
         }
-        void compileAddition(AdditionNode node)
+        void compileAddition(Addition node)
         {
             compileVisitor(node.Left);
             compileVisitor(node.Right);
             rpnStack.Add(new AdditionOperator());
         }
-        void compileIdentifier(IdentifierNode node)
+        void compileVariable(Variable node)
         {
-            if (variableIndicies.ContainsKey(node.Value))
+            if (variableIndicies.ContainsKey(node.Name))
             {
-                rpnStack.Add(new Variable(variableIndicies[node.Value]));
+                rpnStack.Add(new StackVariable(variableIndicies[node.Name]));
             }
             else
             {
                 throw new Exception("Couldn't find identifier index.");
             }
         }
-        void compileConstant(FloatNode node)
+        void compileConstant(Float node)
         {
             rpnStack.Add(new Operand(node.Value));
         }
-        void compileVisitor(ExpressionNode node)
+        void compileVisitor(Expression node)
         {
             switch (node.Type)
             {
-                case ASTNodeType.Negation:
-                    compileNegation((NegationNode)node);
+                case ExpressionType.Negation:
+                    compileNegation((Negation)node);
                     break;
-                case ASTNodeType.Power:
-                    compilePower((PowerNode)node);
+                case ExpressionType.Power:
+                    compilePower((Power)node);
                     break;
-                case ASTNodeType.Multiplication:
-                    compileMultiplication((MultiplicationNode)node);
+                case ExpressionType.Multiplication:
+                    compileMultiplication((Multiplication)node);
                     break;
-                case ASTNodeType.Division:
-                    compileDivision((DivisionNode)node);
+                case ExpressionType.Division:
+                    compileDivision((Division)node);
                     break;
-                case ASTNodeType.FunctionEntry:
-                    compileFunction((FunctionEntryNode)node);
+                case ExpressionType.Function:
+                    compileFunction((Function)node);
                     break;
-                case ASTNodeType.Subtraction:
-                    compileSubtraction((SubtractionNode)node);
+                case ExpressionType.Subtraction:
+                    compileSubtraction((Subtraction)node);
                     break;
-                case ASTNodeType.Addition:
-                    compileAddition((AdditionNode)node);
+                case ExpressionType.Addition:
+                    compileAddition((Addition)node);
                     break;
-                case ASTNodeType.Identifier:
-                    compileIdentifier((IdentifierNode)node);
+                case ExpressionType.Variable:
+                    compileVariable((Variable)node);
                     break;
-                case ASTNodeType.Float:
-                    compileConstant((FloatNode)node);
+                case ExpressionType.Float:
+                    compileConstant((Float)node);
                     break;
-                case ASTNodeType.Function:
-                    throw new Exception("");
             }
             return;
         }

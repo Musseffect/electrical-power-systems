@@ -123,7 +123,7 @@ namespace ElectricalPowerSystems.ACGraph
         {
             nodesList[node].connectedElements.Add(elements.Count);
             nodesList[node].grounded = true;
-            elements.Add(new ElementsAC.Ground(node));
+            elements.Add(new ElementsAC.Ground(node,elements.Count));
             groundsCount++;
         }
         public int createInductor(int node1, int node2, float inductivity)
@@ -446,7 +446,7 @@ namespace ElectricalPowerSystems.ACGraph
             return solution;
         }
 #endif
-        public string testEquationGenerationSystem(float frequency)
+        public string EquationGeneration(float frequency)
         {
             string equations = "";
             Dictionary<string, List<ElementsAC.CurrentFlowBlock>> nodeEquationsIn = new Dictionary<string, List<ElementsAC.CurrentFlowBlock>>();
@@ -460,7 +460,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             foreach (var element in elements)
             {
-                List<ElementsAC.EquationBlock> blocks = element.generateEquationsAC();
+                List<ElementsAC.EquationBlock> blocks = element.GenerateEquationsAC();
                 foreach (var block in blocks)
                 {
                     if (block is ElementsAC.CurrentFlowBlock)
@@ -469,22 +469,22 @@ namespace ElectricalPowerSystems.ACGraph
                         if (currentFlowBlock.Node1 != null)
                             nodeEquationsIn[currentFlowBlock.Node1].Add(currentFlowBlock);
                         if (currentFlowBlock.Node2 != null)
-                            nodeEquationsOut[currentFlowBlock.Node1].Add(currentFlowBlock);
+                            nodeEquationsOut[currentFlowBlock.Node2].Add(currentFlowBlock);
                     }
                     else
                     {
-                        equations += block.Equation;
+                        equations += block.Equation+Environment.NewLine;
                     }
                 }
             }
             for (int i = 0; i < nodesList.Count; i++)
             {
-                var real = $"v_re_{i}";
-                var im = $"v_im_{i}";
+                var real = $"v_{i}_re";
+                var im = $"v_{i}_im";
                 var nodeInRe = nodeEquationsIn[real];
                 var nodeOutRe = nodeEquationsOut[real];
-                var nodeInIm = nodeEquationsIn[real];
-                var nodeOutIm = nodeEquationsOut[real];
+                var nodeInIm = nodeEquationsIn[im];
+                var nodeOutIm = nodeEquationsOut[im];
                 string eqRe = "";
                 int k = 0;
                 foreach (var block in nodeOutRe)
@@ -496,116 +496,52 @@ namespace ElectricalPowerSystems.ACGraph
                 }
                 foreach (var block in nodeInRe)
                 {
-                    eqRe += " - " + block.Equation;
+                    eqRe += " - " + "("+block.Equation+")";
                     k++;
                 }
-                eqRe += " = 0";
-                equations += eqRe;
+                eqRe += " = 0;"+$" //node {i}_re";
+                if(nodeOutRe.Count+nodeInRe.Count>0)
+                    equations += eqRe+ Environment.NewLine;
                 string eqIm = "";
                 k = 0;
                 foreach (var block in nodeOutIm)
                 {
                     if (k != 0)
-                        eqRe += " + ";
+                        eqIm += " + ";
                     eqIm += block.Equation;
                     k++;
                 }
                 foreach (var block in nodeInIm)
                 {
-                    eqIm += "- " + block.Equation;
+                    eqIm += "- " + "(" + block.Equation + ")";
                     k++;
                 }
-                eqIm += " = 0;\n";
-                equations += eqIm;
+                eqIm += " = 0;" + $" //node {i}_im";
+                if (nodeOutIm.Count + nodeInIm.Count > 0)
+                    equations += eqIm+ Environment.NewLine;
             }
             foreach (var element in elements)
             {
-                equations += element.getParametersAC();
+                var blocks = element.GetParametersAC();
+                foreach (var block in blocks)
+                {
+                    equations += block.Equation + Environment.NewLine;
+                }
             }
+            /*for (int i = 0; i < nodesList.Count; i++)
+            {
+                equations += $"v_{i}_re(0) = {1}\n";
+                equations += $"v_{i}_im(0) = {0}\n";
+            }*/
             equations += $"set frequency = {frequency};";
             return equations;
         }
         public ACGraphSolution solveEquationsAC(float frequency)
         {
-            string equations = "";
-            Dictionary<string,List<ElementsAC.CurrentFlowBlock>> nodeEquationsIn = new Dictionary<string, List<ElementsAC.CurrentFlowBlock>>();
-            Dictionary<string, List<ElementsAC.CurrentFlowBlock>> nodeEquationsOut = new Dictionary<string, List<ElementsAC.CurrentFlowBlock>>();
-            for (int i = 0; i < nodesList.Count; i++)
-            {
-                nodeEquationsIn.Add($"v_{i}_re",new List<ElementsAC.CurrentFlowBlock>());
-                nodeEquationsIn.Add($"v_{i}_im", new List<ElementsAC.CurrentFlowBlock>());
-                nodeEquationsOut.Add($"v_{i}_re", new List<ElementsAC.CurrentFlowBlock>());
-                nodeEquationsOut.Add($"v_{i}_im", new List<ElementsAC.CurrentFlowBlock>());
-            }
-            foreach (var element in elements)
-            {
-                List<ElementsAC.EquationBlock> blocks = element.generateEquationsAC();
-                foreach (var block in blocks)
-                {
-                    if (block is ElementsAC.CurrentFlowBlock)
-                    {
-                        ElementsAC.CurrentFlowBlock currentFlowBlock = (ElementsAC.CurrentFlowBlock)block;
-                        if (currentFlowBlock.Node1 != null)
-                            nodeEquationsIn[currentFlowBlock.Node1].Add(currentFlowBlock);
-                        if (currentFlowBlock.Node2 != null)
-                            nodeEquationsOut[currentFlowBlock.Node1].Add(currentFlowBlock);
-                    }
-                    else
-                    {
-                        equations += block.Equation;
-                    }
-                }
-            }
-            for (int i = 0; i < nodesList.Count; i++)
-            {
-                var real = $"v_re_{i}";
-                var im = $"v_im_{i}";
-                var nodeInRe = nodeEquationsIn[real];
-                var nodeOutRe = nodeEquationsOut[real];
-                var nodeInIm = nodeEquationsIn[real];
-                var nodeOutIm = nodeEquationsOut[real];
-                string eqRe = "";
-                int k = 0;
-                foreach (var block in nodeOutRe)
-                {
-                    if (k != 0)
-                        eqRe += " + ";
-                    eqRe += block.Equation;
-                    k++;
-                }
-                foreach (var block in nodeInRe)
-                {
-                    eqRe += " - " + block.Equation;
-                    k++;
-                }
-                eqRe += " = 0";
-                equations += eqRe;
-                string eqIm = "";
-                k = 0;
-                foreach (var block in nodeOutIm)
-                {
-                    if (k != 0)
-                        eqRe += " + ";
-                    eqIm += block.Equation;
-                    k++;
-                }
-                foreach (var block in nodeInIm)
-                {
-                    eqIm += "- " + block.Equation;
-                    k++;
-                }
-                eqIm += " = 0;\n";
-                equations += eqIm;
-            }
-            foreach (var element in elements)
-            {
-                equations+= element.getParametersAC();
-            }
-            equations += $"set frequency = {frequency};";
-
+            string equations = EquationGeneration(frequency);
             //create solver
             EquationCompiler compiler = new EquationCompiler();
-            NonlinearEquationDefinition compiledEquation = compiler.compileEquations(equations);
+            NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equations);
             NonlinearSystemSymbolicAnalytic system = new NonlinearSystemSymbolicAnalytic(compiledEquation);
             //calc solution
             Vector<double> values = NewtonRaphsonSolver.Solve(
@@ -615,7 +551,7 @@ namespace ElectricalPowerSystems.ACGraph
                 0.01,
                 1.0
                 );
-            NonlinearSystemSolution solution = compiledEquation.getSolution(values);
+            NonlinearSystemSolution solution = compiledEquation.GetSolution(values);
 
             ACGraphSolution acSolution = new ACGraphSolution();
             acSolution.frequency = frequency;

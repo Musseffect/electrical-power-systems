@@ -83,6 +83,7 @@ namespace ElectricalPowerSystems.PowerGraph
                 nodes = new Dictionary<string, int>();
                 List<List<NodeIdPair>> nodeElements=new List<List<NodeIdPair>>();//Elements, connected to node
                 elementsSchemes = new List<PowerElementScheme>();
+                nodeNames = new List<string>();
                 int nodeId = 0;
                 int elementId = 0;
                 foreach(var element in manager.elements)
