@@ -533,7 +533,7 @@ namespace ElectricalPowerSystems.ACGraph
                 equations += $"v_{i}_re(0) = {1}\n";
                 equations += $"v_{i}_im(0) = {0}\n";
             }*/
-            equations += $"set frequency = {frequency};";
+            equations += $"set frequency = {frequency} * 2 * pi();";
             return equations;
         }
         public ACGraphSolution solveEquationsAC(float frequency)

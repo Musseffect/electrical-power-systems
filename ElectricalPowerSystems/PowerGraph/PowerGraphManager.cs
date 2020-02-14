@@ -10,7 +10,7 @@ namespace ElectricalPowerSystems.PowerGraph
 {
     public class PowerGraphManager
     {
-        public static float powerFrequency = (float)(50.0 * 2.0 * Math.PI);
+        public static float powerFrequency = (float)(50.0);
         public class ABCValue
         {
             public Complex32 A { get { return abc[0]; } set { abc[0] = value; } }

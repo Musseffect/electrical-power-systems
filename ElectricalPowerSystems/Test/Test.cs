@@ -65,11 +65,12 @@ namespace ElectricalPowerSystems.Test
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             Stdout.WriteLine("\tTest circuit model");
             CircuitModelAC model = new CircuitModelAC();
-            model.addVoltageSource("a2", "a1", 10.0f, 50.0f, 10.0f);
-            model.addVoltageSource("a1", "a3", 10.0f, 50.0f, 0.5f);
+            model.addVoltageSource("a2", "a1", 10.0f, 60.0f, 50.0f);
+            model.addVoltageSource("a1", "a3", 10.0f, 0.0f, 50.0f);
             model.addCapacitor("a1", "a3", 0.1f);
             model.addResistor("a1", "a4", 15.0f);
             model.addResistor("a4", "a2", 4.0f);
+            model.addInductor("a4", "a3", 5.0f);
             model.addGround("a2");
             List<string> solution = model.Solve();
             foreach (var s in solution)

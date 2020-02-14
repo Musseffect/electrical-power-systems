@@ -81,7 +81,7 @@ namespace ElectricalPowerSystems.ACGraph
             int node2Id = retrieveNodeId(node2);
             return acGraph.createCapacitor(node1Id, node2Id, capacity);
         }
-        //используется угловая частота, то есть герц * 2 PI
+        //частота в герцах
         public int addVoltageSource(string node1, string node2, float voltage, float phase, float freq)
         {
             frequencies.Add(freq);
@@ -89,7 +89,7 @@ namespace ElectricalPowerSystems.ACGraph
             int node2Id = retrieveNodeId(node2);
             return acGraph.createVoltageSource(node1Id, node2Id, voltage,phase,freq);
         }
-        //используется угловая частота, то есть герц * 2 PI
+        //частота в герцах
         public int addCurrentSource(string node1, string node2, float current, float phase, float freq)
         {
             frequencies.Add(freq);
@@ -131,7 +131,7 @@ namespace ElectricalPowerSystems.ACGraph
             string result = "";
             foreach (float frequency in frequencies)
             {
-                float hz = (float)(frequency / (2.0 * Math.PI));
+                float hz = (float)(frequency);
                 string equations = acGraph.EquationGeneration(frequency);
                 EquationCompiler compiler = new EquationCompiler();
                 NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equations);
@@ -166,7 +166,7 @@ namespace ElectricalPowerSystems.ACGraph
             //множества решений схемы для источников отдельных частот
             foreach (float frequency in frequencies)
             {
-                float hz = (float)(frequency / (2.0*Math.PI));
+                float hz = (float)(frequency);
                 ACGraphSolution solution = acGraph.solveEquationsAC(frequency);
                 int outputIndex = 0;
                 foreach (var element in outputCurrent)

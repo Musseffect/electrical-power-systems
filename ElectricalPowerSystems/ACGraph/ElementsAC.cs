@@ -710,11 +710,11 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{v1re} - {v2re} + frequency * {L} * {Iim}"
+                    Equation = $"{v1re} - {v2re} = frequency * {L} * {Iim}"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{v1re} - {v2re} - frequency * {L} * {Ire}"
+                    Equation = $"{v1im} - {v2im} = - frequency * {L} * {Ire}"
                 });
                 return equations;
             }
@@ -841,7 +841,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public override string ToString()
             {
-                return $"Voltage Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, voltage = {voltage}@{Utils.degrees(phase)}, frequency = {frequency}}}";
+                return $"Voltage Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, voltage = {voltage}@{Utils.degrees(phase)}, frequency = {frequency} Hz}}";
             }
             public override List<EquationBlock> GenerateEquationsAC()
             {
@@ -956,7 +956,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public override string ToString()
             {
-                return $"Current Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, current = {current}@{Utils.degrees(phase)}, frequency = {frequency}}}";
+                return $"Current Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, current = {current}@{Utils.degrees(phase)}, frequency = {frequency} Hz}}";
             }
             public override List<EquationBlock> GenerateEquationsAC()
             {
