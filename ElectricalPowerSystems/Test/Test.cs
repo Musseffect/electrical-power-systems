@@ -50,7 +50,7 @@ namespace ElectricalPowerSystems.Test
                 TestNonlinearEquationSolver();
                 TestCircuitEquationGeneration();
                 TestCircuitModel();
-                //TestPowerModel();
+                TestPowerModel();
 
             } catch (Exception exc)
             {
@@ -67,7 +67,7 @@ namespace ElectricalPowerSystems.Test
             CircuitModelAC model = new CircuitModelAC();
             model.addVoltageSource("a2", "a1", 10.0f, 50.0f, 10.0f);
             model.addVoltageSource("a1", "a3", 10.0f, 50.0f, 0.5f);
-            model.addResistor("a1", "a3", 5.0f);
+            model.addCapacitor("a1", "a3", 0.1f);
             model.addResistor("a1", "a4", 15.0f);
             model.addResistor("a4", "a2", 4.0f);
             model.addGround("a2");
@@ -171,7 +171,8 @@ namespace ElectricalPowerSystems.Test
             //send output to console stream
             Stream StdoutStream = Console.OpenStandardOutput();
             StreamWriter Stdout = new StreamWriter(StdoutStream);
-            foreach(var line in output)
+            Stdout.WriteLine("\t Test three phase model");
+            foreach (var line in output)
                 Stdout.WriteLine(line);
             Stdout.Flush();
             Stdout.Close();

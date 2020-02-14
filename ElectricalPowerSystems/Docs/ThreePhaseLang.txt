@@ -1,0 +1,15 @@
+﻿
+
+
+
+
+
+element = element_name(node1,node2,...,nodeN){
+	key = value,
+	key = value,
+	key = value
+};
+
+
+
+

@@ -3,11 +3,12 @@ UI commands: more or less done
 Do something with tabs: done
 Improve expander placement: not important
 Check functionality
-Read about DAE : in progress
+Read about DAE : done
 Transient MNA : in progress
-Nonlinear equations : in progress
+Nonlinear equations : more or less done
 Add nonlinear models for elements :
-DAE index reduction : 
-Fault analysis
-Some basic inapp help
-Make UML
+DAE index reduction : not important
+variable step dae solver: 
+Fault analysis:
+Some basic inapp help:
+Make UML:

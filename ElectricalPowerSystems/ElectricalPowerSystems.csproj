@@ -323,6 +323,9 @@
   <ItemGroup>
     <Folder Include="PowerGraph\GraphElements\" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Docs\ThreePhaseLang.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -11,13 +11,27 @@ grammar ModelGrammar;
  statement: expression SEMICOLON #StatementRule
  | SEMICOLON #emptyStatement;
 
- expression: objectKeyWork=ID LCRLPAREN modelObjectContent RCRLPAREN #ModelObject
+ expression: objectKeyWork=ID LPAREN nodeList RPAREN LCRLPAREN modelObjectContent RCRLPAREN #ModelObject
+	|<assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
+	| LPAREN expression RPAREN #BracketExpression
+	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
+	| left=expression DOT id=ID #FieldExpression
+	| op=unaryOperator expression	#UnaryOperatorExpression
+	| LPAREN id=ID RPAREN right=expression #CastExpression
+	| left=expression op=(DIVISION|ASTERISK) right=expression	#BinaryOperatorExpression
+	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
+	|<assoc=right> lvalue=expression ASSIGN rvalue=expression #AssignmentExpression
+	| id=ID		#IdentifierExpression
+	| value=constant	#ConstantExpression
+	;	
+	
  modelObjectContent: keyValue(COMMA keyValue) | ;
  keyValue: key=ID ASSIGN value=expression;
+ nodeList: STRING (,STRING )* ;
 
  //example
- //TRANSFORMER { K=2.0,Type=TWO_WINDING }
-  //TRANSFORMER { K1=2.0,K2=4.0,Type=THREE_WINDING }
+ //TRANSFORMER(node1,node2,...) { K=2.0,Type=TWO_WINDING }
+  //TRANSFORMER(node1,node,...) { K1=2.0,K2=4.0,Type=THREE_WINDING }
  
  */
 

@@ -67,6 +67,14 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public abstract List<EquationBlock> GetParametersAC();
             public abstract List<EquationBlock> GenerateEquationsAC();
+            public List<EquationBlock> GetEquationsTransient()
+            {
+                throw new NotImplementedException();
+            }
+            public List<EquationBlock> GetParametersTransient()
+            {
+                throw new NotImplementedException();
+            }
             public abstract Complex32 GetCurrent(NonlinearSystemSolution acSolution, float frequency);
             public virtual Complex32 GetVoltageDrop(NonlinearSystemSolution acSolution)
             {

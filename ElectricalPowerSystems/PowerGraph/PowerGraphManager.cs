@@ -194,13 +194,7 @@ namespace ElectricalPowerSystems.PowerGraph
                     phaseVoltages.B = acSolution.voltages[node.B];
                     phaseVoltages.C = acSolution.voltages[node.C];
                     result.nodeVoltages.Add(phaseVoltages);
-
                 }
-                //get results
-                /*
-                 for each element calc power and voltage difference
-                 */
-                //return results
                 return result;
             }
         }
