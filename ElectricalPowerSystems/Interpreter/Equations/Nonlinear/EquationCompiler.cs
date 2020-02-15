@@ -169,6 +169,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
                 }
                 else
                 {
+                    parameters.Add(parameter.Identifier, float.NaN);
                     compilerErrors.Add(new ErrorMessage("Определение параметра " + parameter.Identifier + " не является константным выражением"));
                 }
             }
@@ -212,7 +213,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             //check that number of variables = number of equations
             if (variableNames.Count != equations.Count)
             {
-                compilerErrors.Add(new ErrorMessage("Количество переменных не совпадает с количеством уравнений"));
+                compilerErrors.Add(new ErrorMessage($"Количество переменных не совпадает с количеством уравнений: {variableNames.Count} переменных, {equations.Count} уравнений"));
             }
             if (equations.Count == 0)
             {

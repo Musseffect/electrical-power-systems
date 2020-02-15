@@ -126,18 +126,21 @@ namespace ElectricalPowerSystems.ACGraph
             int node2Id = retrieveNodeId(node2);
             outputVoltageDifference.Add(new NodePair(node1Id, node2Id));
         }
-        public string testEquationGeneration()
+        public string testEquationGeneration(bool useCompiledEquation = false)
         {
             string result = "";
             foreach (float frequency in frequencies)
             {
                 float hz = (float)(frequency);
                 string equations = acGraph.EquationGeneration(frequency);
-                EquationCompiler compiler = new EquationCompiler();
-                NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equations);
                 result += equations + Environment.NewLine;
-                result += compiledEquation.PrintEquations()+ Environment.NewLine;
-                result += compiledEquation.PrintJacobiMatrix() + Environment.NewLine;
+                if (useCompiledEquation)
+                {
+                    EquationCompiler compiler = new EquationCompiler();
+                    NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equations);
+                    result += compiledEquation.PrintEquations() + Environment.NewLine;
+                    result += compiledEquation.PrintJacobiMatrix() + Environment.NewLine;
+                }
                 result += Environment.NewLine;
             }
             return result;

@@ -2,6 +2,7 @@
 using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -140,7 +141,7 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set R_{elementIndex} = {resistance};"
+                    Equation = $"set R_{elementIndex} = {resistance.ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -169,11 +170,11 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{v1re} - {v2re} - {Ire} * {R}"
+                    Equation = $"{v1re} - {v2re} - {Ire} * {R} = 0;"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{v1im} - {v2im} - {Iim} * {R}"
+                    Equation = $"{v1im} - {v2im} - {Iim} * {R} = 0;"
                 });
                 return equations;
             }
@@ -201,11 +202,11 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set R_{elementIndex} = {impedance.Real};"
+                    Equation = $"set R_{elementIndex} = {impedance.Real.ToString(new CultureInfo("en-US"))};"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set X_{elementIndex} = {impedance.Imaginary};"
+                    Equation = $"set X_{elementIndex} = {impedance.Imaginary.ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -235,11 +236,11 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{v1re} - {v2re} - ({Ire} * {R} - {Iim} * {X})"
+                    Equation = $"{v1re} - {v2re} - ({Ire} * {R} - {Iim} * {X}) = 0;"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{v1im} - {v2im} - ({Ire} * {X} + {Iim} * {R})"
+                    Equation = $"{v1im} - {v2im} - ({Ire} * {X} + {Iim} * {R}) = 0;"
                 });
                 return equations;
             }
@@ -268,11 +269,11 @@ namespace ElectricalPowerSystems.ACGraph
                 Complex32 Y = new Complex32(1.0f,0.0f) / impedance;
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set G_{elementIndex} = {Y.Real};"
+                    Equation = $"set G_{elementIndex} = {Y.Real.ToString(new CultureInfo("en-US"))};"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set B_{elementIndex} = {Y.Imaginary};"
+                    Equation = $"set B_{elementIndex} = {Y.Imaginary.ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -312,6 +313,8 @@ namespace ElectricalPowerSystems.ACGraph
             public Resistor(int node1, int node2,int index, float resistance) : base(node1, node2,index)
             {
                 this.resistance = resistance;
+                if (index == 136)
+                    Console.Clear();
                 this.ElementType = ElementTypeEnum.Resistor;
             }
             public override List<EquationBlock> GetParametersAC()
@@ -319,7 +322,7 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set G_{elementIndex} = {1.0/resistance};"
+                    Equation = $"set G_{elementIndex} = {(1.0/resistance).ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -445,11 +448,11 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set k_{elementIndex}_1 = {this.b1};"
+                    Equation = $"set k_{elementIndex}_1 = {b1.ToString(new CultureInfo("en-US"))};"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set k_{elementIndex}_1 = {this.b2};"
+                    Equation = $"set k_{elementIndex}_1 = {b2.ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -512,7 +515,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{I1re} = {k} * {I2re}"
+                    Equation = $"{I1re} = {k} * {I2re};"
                 });
                 equations.Add(new EquationBlock
                 {
@@ -533,7 +536,7 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set k_{elementIndex} = {this.b};"
+                    Equation = $"set k_{elementIndex} = {b.ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -594,7 +597,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{I1re} = {k} * {I1re} + {k} * {I2re}"
+                    Equation = $"{I1re} = {k} * {I1re} + {k} * {I2re};"
                 });
                 equations.Add(new EquationBlock
                 {
@@ -615,7 +618,7 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set k_{elementIndex} = {this.b};"
+                    Equation = $"set k_{elementIndex} = {b.ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -663,7 +666,7 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set C_{elementIndex} = {this.capacity};"
+                    Equation = $"set C_{elementIndex} = {capacity.ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -710,11 +713,11 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{v1re} - {v2re} = frequency * {L} * {Iim}"
+                    Equation = $"{v1re} - {v2re} = - frequency * {L} * {Iim};"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{v1im} - {v2im} = - frequency * {L} * {Ire}"
+                    Equation = $"{v1im} - {v2im} = frequency * {L} * {Ire};"
                 });
                 return equations;
             }
@@ -723,7 +726,7 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set L_{elementIndex} = {this.inductivity};"
+                    Equation = $"set L_{elementIndex} = {inductivity.ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -873,11 +876,11 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set E_{elementIndex}_re = {voltage * Math.Cos(phase)};"
+                    Equation = $"set E_{elementIndex}_re = {(voltage * Math.Cos(phase)).ToString(new CultureInfo("en-US"))};"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set E_{elementIndex}_im = {voltage * Math.Sin(phase)};"
+                    Equation = $"set E_{elementIndex}_im = {(voltage * Math.Sin(phase)).ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -930,7 +933,7 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set switch_state_{elementIndex} = {(state ? 1.0 : 0.0)}"
+                    Equation = $"set switch_state_{elementIndex} = {(state ? 1.0 : 0.0).ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }
@@ -981,11 +984,11 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set J_{elementIndex}_re = {current*Math.Cos(phase)}"
+                    Equation = $"set J_{elementIndex}_re = {(current*Math.Cos(phase)).ToString(new CultureInfo("en-US"))};"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"set J_{elementIndex}_im = {current * Math.Sin(phase)}"
+                    Equation = $"set J_{elementIndex}_im = {(current * Math.Sin(phase)).ToString(new CultureInfo("en-US"))};"
                 });
                 return equations;
             }

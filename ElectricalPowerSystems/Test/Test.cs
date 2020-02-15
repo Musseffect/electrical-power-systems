@@ -72,10 +72,31 @@ namespace ElectricalPowerSystems.Test
             model.addResistor("a4", "a2", 4.0f);
             model.addInductor("a4", "a3", 5.0f);
             model.addGround("a2");
-            List<string> solution = model.Solve();
-            foreach (var s in solution)
+            model.addVoltageOutput("a2","a3");
+            model.addVoltageOutput("a2", "a4");
+            model.addVoltageOutput("a2", "a1");
+            Stdout.WriteLine(model.testEquationGeneration());
+
+            try
             {
-                Stdout.WriteLine(s);
+                List<string> solution = model.Solve();
+                foreach (var s in solution)
+                {
+                    Stdout.WriteLine(s);
+                }
+            }
+            catch (CompilerException exc)
+            {
+                Stdout.WriteLine(exc.Message);
+                var errors = exc.Errors;
+                foreach (var error in errors)
+                {
+                    Stdout.WriteLine(error.Message + " Line: " + error.Line + " Position: " + error.Position);
+                }
+            }
+            catch (Exception exc)
+            {
+                Stdout.WriteLine(exc.Message);
             }
             Stdout.Flush();
             Stdout.Close();
@@ -119,26 +140,26 @@ namespace ElectricalPowerSystems.Test
         {
             PowerGraph.PowerGraphManager graph = new PowerGraph.PowerGraphManager();
             PowerGraph.PowerGraphManager.powerFrequency = (float)(60.0 * 2.0 * Math.PI);
-            List<int> elements=new List<int>();
-            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVWye("a1", 100.0f,0.0f, new ResistanceGrounding(1000.0f))));
-            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVDelta("a10", 100.0f,0.0f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a2", 10,1,0.001f,1.0f,0.001f)));
+            List<int> elements = new List<int>();
+            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVWye("a1", 100.0f, 0.0f, new ResistanceGrounding(1000.0f))));
+            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVDelta("a10", 100.0f, 0.0f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a2", 10, 1, 0.001f, 1.0f, 0.001f)));
             elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a3", "a4", 20, 2, 0.005f, 3.0f, 0.006f)));
             elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a6", 20, 2, 0.005f, 3.0f, 0.006f)));
             elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a2", "a10", 20, 2, 0.005f, 3.0f, 0.006f)));
             elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a7", "a8", 20, 2, 0.005f, 3.0f, 0.006f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a2", "a3",10,
-                new Complex32(),new Complex32(),
-                new WyeWinding(WyeWinding.Mode.Y0,new SolidGrounding()),
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a2", "a3", 10,
+                new Complex32(), new Complex32(),
+                new WyeWinding(WyeWinding.Mode.Y0, new SolidGrounding()),
                 new DeltaWinding(DeltaWinding.Mode.D1))));
-            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a4", "a5",0.2f,
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a4", "a5", 0.2f,
                 new Complex32(25, 0.5f),
                 new Complex32(15, 0.2f),
                 new WyeWinding(WyeWinding.Mode.Y0, new Ungrounded()),
                 new WyeWinding(WyeWinding.Mode.Y0, new Ungrounded()))));
             elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a6", "a7", 0.2f,
-                new Complex32(10,2),
-                new Complex32(20,1),
+                new Complex32(10, 2),
+                new Complex32(20, 1),
                 new DeltaWinding(DeltaWinding.Mode.D1),
                 new DeltaWinding(DeltaWinding.Mode.D1))));
             elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a8", "a9", 0.2f,
@@ -148,7 +169,7 @@ namespace ElectricalPowerSystems.Test
                 new WyeWinding(WyeWinding.Mode.Y0, new Ungrounded()))));
             elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a3", 1.0f, 1.0f, 1.0f)));
             elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a5", 1.0f, 1.0f, 1.0f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoadWye("a9", 1.0f, 1.0f, 1.0f,new Ungrounded())));
+            elements.Add(graph.addElement(new PowerGraph.GraphLoadWye("a9", 1.0f, 1.0f, 1.0f, new Ungrounded())));
 
 
             foreach (var element in elements)
@@ -166,15 +187,34 @@ namespace ElectricalPowerSystems.Test
             graph.addOutput(new VoltageOutput(OutputMode.FULL, "a7"));
             graph.addOutput(new VoltageOutput(OutputMode.FULL, "a8"));
             graph.addOutput(new VoltageOutput(OutputMode.FULL, "a9"));
-            List<string> errors=new List<string>();
-            List<string> output = new List<string>();
-            graph.solve(ref errors,ref output);
             //send output to console stream
             Stream StdoutStream = Console.OpenStandardOutput();
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             Stdout.WriteLine("\t Test three phase model");
-            foreach (var line in output)
-                Stdout.WriteLine(line);
+            Stdout.WriteLine(graph.TestEquationGeneration());
+            try
+            {
+                List<string> errors = new List<string>();
+                List<string> output = new List<string>();
+                graph.solve(ref errors, ref output);
+                foreach (var line in errors)
+                    Stdout.WriteLine(line);
+                foreach (var line in output)
+                    Stdout.WriteLine(line);
+            }
+            catch (CompilerException exc)
+            {
+                Stdout.WriteLine(exc.Message);
+                var errors = exc.Errors;
+                foreach (var error in errors)
+                {
+                    Stdout.WriteLine(error.Message + " Line: " + error.Line + " Position: " + error.Position);
+                }
+            }
+            catch (Exception exc)
+            {
+                Stdout.WriteLine(exc.Message);
+            }
             Stdout.Flush();
             Stdout.Close();
         }

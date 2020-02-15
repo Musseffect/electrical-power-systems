@@ -4,6 +4,7 @@ using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -513,7 +514,7 @@ namespace ElectricalPowerSystems.ACGraph
                 }
                 foreach (var block in nodeInIm)
                 {
-                    eqIm += "- " + "(" + block.Equation + ")";
+                    eqIm += " - " + "(" + block.Equation + ")";
                     k++;
                 }
                 eqIm += " = 0;" + $" //node {i}_im";
@@ -533,7 +534,7 @@ namespace ElectricalPowerSystems.ACGraph
                 equations += $"v_{i}_re(0) = {1}\n";
                 equations += $"v_{i}_im(0) = {0}\n";
             }*/
-            equations += $"set frequency = {frequency} * 2 * pi();";
+            equations += $"set frequency = {frequency.ToString(new CultureInfo("en-US"))} * 2 * pi();";
             return equations;
         }
         public ACGraphSolution solveEquationsAC(float frequency)

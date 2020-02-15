@@ -16,7 +16,7 @@ namespace ElectricalPowerSystems.PowerGraph
             public Complex32 A { get { return abc[0]; } set { abc[0] = value; } }
             public Complex32 B { get { return abc[1]; } set { abc[1] = value; } }
             public Complex32 C { get { return abc[2]; } set { abc[2] = value; } }
-            private Complex32[] abc=new Complex32[3];
+            private Complex32[] abc = new Complex32[3];
             public Complex32 get(int index)
             {
                 return abc[index];
@@ -74,6 +74,10 @@ namespace ElectricalPowerSystems.PowerGraph
             {
                 return elements[elementId];
             }
+            public string GenerateEquations()
+            {
+                return acGraph.EquationGeneration(powerFrequency);
+            }
             public PowerGraphModel(PowerGraphManager manager)
             {
                 managerRef = manager;
@@ -81,12 +85,12 @@ namespace ElectricalPowerSystems.PowerGraph
                 abcNodes = new List<ABCNode>();
                 elements = new List<PowerModelElement>(manager.elements.Count);
                 nodes = new Dictionary<string, int>();
-                List<List<NodeIdPair>> nodeElements=new List<List<NodeIdPair>>();//Elements, connected to node
+                List<List<NodeIdPair>> nodeElements = new List<List<NodeIdPair>>();//Elements, connected to node
                 elementsSchemes = new List<PowerElementScheme>();
                 nodeNames = new List<string>();
                 int nodeId = 0;
                 int elementId = 0;
-                foreach(var element in manager.elements)
+                foreach (var element in manager.elements)
                 {
                     PowerModelElement el = new PowerModelElement();
                     int nodeLocalId = 0;
@@ -99,14 +103,14 @@ namespace ElectricalPowerSystems.PowerGraph
                             nodes.Add(node, nodeId);
                             abcNodes.Add(null);
                             nodeElements.Add(new List<NodeIdPair>());
-                            nodeElements[nodeId].Add(new NodeIdPair ( elementId, nodeLocalId ));
+                            nodeElements[nodeId].Add(new NodeIdPair(elementId, nodeLocalId));
                             nodeNames.Add(node);
                             nodeId++;
                         }
                         else
                         {
                             id = nodes[node];
-                            nodeElements[id].Add(new NodeIdPair ( elementId ,nodeLocalId));
+                            nodeElements[id].Add(new NodeIdPair(elementId, nodeLocalId));
                         }
                         el.nodes.Add(id);
                         nodeLocalId++;
@@ -117,7 +121,7 @@ namespace ElectricalPowerSystems.PowerGraph
                 }
                 //create abcn nodes
                 List<ABCElement> abcElements = new List<ABCElement>();
-                BitArray visitedElements=new BitArray(elements.Count,false);
+                BitArray visitedElements = new BitArray(elements.Count, false);
                 int i = 0;
                 foreach (PowerModelElement element in elements)
                 {
@@ -127,18 +131,18 @@ namespace ElectricalPowerSystems.PowerGraph
                     int nodeCount = element.nodes.Count;
                     int counter = 0;
                     //for each node generate indexes for abcn nodes
-                    for(int j=0;j<nodeCount;j++)
+                    for (int j = 0; j < nodeCount; j++)
                     {
-                        ABCNode abcNode=new ABCNode();
+                        ABCNode abcNode = new ABCNode();
                         abcNode.A = acGraph.allocateNode();
                         abcNode.B = acGraph.allocateNode();
                         abcNode.C = acGraph.allocateNode();
                         abcElement.Nodes.Add(abcNode);
-                        abcNodes[element.nodes[counter]]=abcNode;
+                        abcNodes[element.nodes[counter]] = abcNode;
                         counter++;
                     }
                     //generate local electric scheme for element
-                    elementsSchemes.Add(abcElement.getElementDescription().generateACGraph(abcElement.Nodes,acGraph));
+                    elementsSchemes.Add(abcElement.getElementDescription().generateACGraph(abcElement.Nodes, acGraph));
                     i++;
                 }
                 foreach (var nodeList in nodeElements)
@@ -185,7 +189,7 @@ namespace ElectricalPowerSystems.PowerGraph
                 for (int i = 0; i < managerRef.elements.Count; i++)
                 {
                     PowerElementScheme abcElement = elementsSchemes[i];
-                    abcElement.calcResults(ref result,acSolution);
+                    abcElement.calcResults(ref result, acSolution);
                 }
                 foreach (var node in abcNodes)
                 {
@@ -217,6 +221,11 @@ namespace ElectricalPowerSystems.PowerGraph
         public void addOutput(GraphOutput output)
         {
             outputs.Add(output);
+        }
+        public string TestEquationGeneration()
+        {
+            PowerGraphModel model = new PowerGraphModel(this);
+            return model.GenerateEquations();
         }
         public void solve(ref List<string> errors,ref List<string> output)
         {
