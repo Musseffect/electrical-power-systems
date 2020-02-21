@@ -16,9 +16,5 @@ namespace ElectricalPowerSystems.PowerGraph
     }
     class AutotransformerScheme : PowerElementScheme
     {
-        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

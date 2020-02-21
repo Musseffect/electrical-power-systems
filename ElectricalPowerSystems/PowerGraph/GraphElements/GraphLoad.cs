@@ -82,18 +82,10 @@ namespace ElectricalPowerSystems.PowerGraph
         {
             throw new NotImplementedException();
         }
-        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
-        {
-            throw new NotImplementedException();
-        }
     }
     public class LoadSchemePQWye : PowerElementScheme
     {
         public LoadSchemePQWye(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphLoadPQWye load)
-        {
-            throw new NotImplementedException();
-        }
-        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
         {
             throw new NotImplementedException();
         }
@@ -103,12 +95,6 @@ namespace ElectricalPowerSystems.PowerGraph
         int inA;
         int inB;
         int inC;
-        int RAB;
-        int LAB;
-        int RBC;
-        int LBC;
-        int RCA;
-        int LCA;
         public LoadSchemeDelta(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphLoadDelta load)
         {
             inA = nodes[0].A;
@@ -118,32 +104,9 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         private void generate(ACGraph.ACGraph acGraph, GraphLoadDelta load)
         {
-            int A1 = acGraph.allocateNode(), B1 = acGraph.allocateNode(), C1 = acGraph.allocateNode();
-
-            RCA = acGraph.createResistor(inC, A1, load.resistanceA.Real);
-            RAB = acGraph.createResistor(inA, B1, load.resistanceB.Real);
-            RBC = acGraph.createResistor(inB, C1, load.resistanceC.Real);
-            LCA = acGraph.createInductor(A1, inA, load.resistanceA.Imaginary);
-            LAB = acGraph.createInductor(B1, inB, load.resistanceB.Imaginary);
-            LBC = acGraph.createInductor(C1, inC, load.resistanceC.Imaginary);
-        }
-        override public void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraph.ACGraphSolution solution)
-        {
-            Complex32 opA = solution.currents[RCA] * (solution.voltages[inC] - solution.voltages[inA]);
-            Complex32 opB = solution.currents[RAB] * (solution.voltages[inA] - solution.voltages[inB]);
-            Complex32 opC = solution.currents[RBC] * (solution.voltages[inB] - solution.voltages[inC]);
-            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
-            power.A = opA;
-            power.B = opB;
-            power.C = opC;
-            result.powers.Add(power);
-            result.currents.Add(new PowerGraphManager.ABCValue[] {
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[RCA] - solution.currents[RAB],
-                B=solution.currents[RAB] - solution.currents[RBC],
-                C=solution.currents[RBC] - solution.currents[RCA]
-                }
-            });
+            AddElement(acGraph.createImpedanceWithCurrent(inC, inA, load.resistanceA));
+            AddElement(acGraph.createImpedanceWithCurrent(inA, inB, load.resistanceB));
+            AddElement(acGraph.createImpedanceWithCurrent(inB, inC, load.resistanceC));
         }
     }
     public class LoadSchemeWye : PowerElementScheme
@@ -153,16 +116,9 @@ namespace ElectricalPowerSystems.PowerGraph
         int inC;
         int inN;
 
-        int A1;
-        int B1;
-        int C1;
-
-        int RA;
-        int LA;
-        int RB;
-        int LB;
-        int RC;
-        int LC;
+        int ZA;
+        int ZB;
+        int ZC;
         public LoadSchemeWye(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphLoadWye load)
         {
             inA = nodes[0].A;
@@ -173,33 +129,10 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         private void generate(ACGraph.ACGraph acGraph, GraphLoadWye load)
         {
-            int A1 = acGraph.allocateNode(), B1 = acGraph.allocateNode(), C1 = acGraph.allocateNode();
-            RA = acGraph.createResistor(inN, A1, load.resistanceA.Real);
-            RB = acGraph.createResistor(inN, B1, load.resistanceB.Real);
-            RC = acGraph.createResistor(inN, C1, load.resistanceC.Real);
-            LA = acGraph.createInductor(A1, inA, load.resistanceA.Imaginary);
-            LB = acGraph.createInductor(B1, inB, load.resistanceB.Imaginary);
-            LC = acGraph.createInductor(C1, inC, load.resistanceC.Imaginary);
-            //acGraph.createGround(inN);
-        }
-        override public void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraph.ACGraphSolution solution)
-        {
-            Complex32 opA = solution.currents[RA] * (solution.voltages[inN] - solution.voltages[inA]);
-            Complex32 opB = solution.currents[RB] * (solution.voltages[inN] - solution.voltages[inB]);
-            Complex32 opC = solution.currents[RC] * (solution.voltages[inN] - solution.voltages[inC]);
-            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
-            power.A = opA;
-            power.B = opB;
-            power.C = opC;
-            result.powers.Add(power);
-            result.currents.Add(new PowerGraphManager.ABCValue[] {
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[RA],
-                B=solution.currents[RB],
-                C=solution.currents[RC]
-                }
-            });
-            //throw new NotImplementedException();
+            AddElement(acGraph.createImpedanceWithCurrent(inN, inA, load.resistanceA));
+            AddElement(acGraph.createImpedanceWithCurrent(inN, inB, load.resistanceB));
+            AddElement(acGraph.createImpedanceWithCurrent(inN, inC, load.resistanceC));
+            load.grounding.createScheme(acGraph, inN);
         }
     }
 

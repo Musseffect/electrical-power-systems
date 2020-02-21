@@ -75,7 +75,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                             PrintElement left = operands.Pop();
                             if (left.Type < PrintElement.ElementType.Addition)
                                 left.String = "(" + left.String + ")";
-                            if (right.Type < PrintElement.ElementType.Addition)
+                            if (right.Type <= PrintElement.ElementType.Addition)
                                 right.String = "(" + right.String + ")";
                             operands.Push(new PrintElement
                             {

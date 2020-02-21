@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics;
+﻿using ElectricalPowerSystems.Interpreter.Equations.Nonlinear;
+using MathNet.Numerics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,6 +11,9 @@ namespace ElectricalPowerSystems.PowerGraph
 {
     public class PowerGraphManager
     {
+        /// <summary>
+        /// Частота системы в герцах
+        /// </summary>
         public static float powerFrequency = (float)(50.0);
         public class ABCValue
         {
@@ -29,16 +33,15 @@ namespace ElectricalPowerSystems.PowerGraph
         public class PowerGraphSolveResult
         {
             ///<summary>Мощность для элемента</summary>
-            public List<ABCValue> powers;
+            public List<Complex32> powers;
             ///<summary>Потенциалы узлов в формате ABC относительно земли</summary>
             public List<ABCValue> nodeVoltages;
-            ///<summary>Исходящий ток для узлов элемента</summary>
-            public List<ABCValue[]> currents;
+            public List<string> meterData;
             public PowerGraphSolveResult()
             {
-                powers = new List<ABCValue>();
+                powers = new List<Complex32>();
                 nodeVoltages = new List<ABCValue>();
-                currents = new List<ABCValue[]>();
+                meterData = new List<string>();
             }
         }
         public class PowerModelElement
@@ -69,6 +72,7 @@ namespace ElectricalPowerSystems.PowerGraph
             PowerGraphManager managerRef;
             List<ABCNode> abcNodes;
             Dictionary<string, int> nodes;
+            List<MeterScheme> meters;
             List<string> nodeNames;
             public PowerModelElement getElement(int elementId)
             {
@@ -83,6 +87,7 @@ namespace ElectricalPowerSystems.PowerGraph
                 managerRef = manager;
                 acGraph = new ACGraph.ACGraph();
                 abcNodes = new List<ABCNode>();
+                meters = new List<MeterScheme>();
                 elements = new List<PowerModelElement>(manager.elements.Count);
                 nodes = new Dictionary<string, int>();
                 List<List<NodeIdPair>> nodeElements = new List<List<NodeIdPair>>();//Elements, connected to node
@@ -90,6 +95,7 @@ namespace ElectricalPowerSystems.PowerGraph
                 nodeNames = new List<string>();
                 int nodeId = 0;
                 int elementId = 0;
+                //создать список всех ABC узлов
                 foreach (var element in manager.elements)
                 {
                     PowerModelElement el = new PowerModelElement();
@@ -101,16 +107,17 @@ namespace ElectricalPowerSystems.PowerGraph
                         {
                             id = nodeId;
                             nodes.Add(node, nodeId);
-                            abcNodes.Add(null);
-                            nodeElements.Add(new List<NodeIdPair>());
-                            nodeElements[nodeId].Add(new NodeIdPair(elementId, nodeLocalId));
+                            ABCNode abcNode = new ABCNode();
+                            abcNode.A = acGraph.allocateNode();
+                            abcNode.B = acGraph.allocateNode();
+                            abcNode.C = acGraph.allocateNode();
+                            abcNodes.Add(abcNode);
                             nodeNames.Add(node);
                             nodeId++;
                         }
                         else
                         {
                             id = nodes[node];
-                            nodeElements[id].Add(new NodeIdPair(elementId, nodeLocalId));
                         }
                         el.nodes.Add(id);
                         nodeLocalId++;
@@ -129,35 +136,21 @@ namespace ElectricalPowerSystems.PowerGraph
                         element.element);
                     abcElements.Add(abcElement);
                     int nodeCount = element.nodes.Count;
-                    int counter = 0;
                     //for each node generate indexes for abcn nodes
                     for (int j = 0; j < nodeCount; j++)
                     {
-                        ABCNode abcNode = new ABCNode();
-                        abcNode.A = acGraph.allocateNode();
-                        abcNode.B = acGraph.allocateNode();
-                        abcNode.C = acGraph.allocateNode();
+                        int abcNodeIndex = element.nodes[j]; 
+                        ABCNode abcNode = abcNodes[abcNodeIndex];
                         abcElement.Nodes.Add(abcNode);
-                        abcNodes[element.nodes[counter]] = abcNode;
-                        counter++;
                     }
                     //generate local electric scheme for element
-                    elementsSchemes.Add(abcElement.getElementDescription().generateACGraph(abcElement.Nodes, acGraph));
-                    i++;
-                }
-                foreach (var nodeList in nodeElements)
-                {
-                    ABCElement firstElement = abcElements[nodeList[0].elementId];
-                    ABCNode firstABCNode = firstElement.Nodes[nodeList[0].nodeLocalId];
-                    for (int j = 1; j < nodeList.Count; j++)
+                    PowerElementScheme scheme;
+                    elementsSchemes.Add(scheme = abcElement.getElementDescription().generateACGraph(abcElement.Nodes, acGraph));
+                    if (scheme is MeterScheme)
                     {
-                        ABCElement currentElement = abcElements[nodeList[j].elementId];
-                        ABCNode currentABCNode = currentElement.Nodes[nodeList[j].nodeLocalId];
-                        //create line between firstElement and this node
-                        acGraph.createLine(firstABCNode.A, currentABCNode.A);
-                        acGraph.createLine(firstABCNode.B, currentABCNode.B);
-                        acGraph.createLine(firstABCNode.C, currentABCNode.C);
+                        meters.Add(scheme as MeterScheme);
                     }
+                    i++;
                 }
                 //если в схеме нет заземлений, то необходимо добавить одно заземление куда-нибудь для коректного расчёта
                 if (acGraph.groundsCount == 0)
@@ -189,7 +182,7 @@ namespace ElectricalPowerSystems.PowerGraph
                 for (int i = 0; i < managerRef.elements.Count; i++)
                 {
                     PowerElementScheme abcElement = elementsSchemes[i];
-                    abcElement.calcResults(ref result, acSolution);
+                    result.powers.Add(abcElement.ComputePower(acSolution));
                 }
                 foreach (var node in abcNodes)
                 {
@@ -198,6 +191,26 @@ namespace ElectricalPowerSystems.PowerGraph
                     phaseVoltages.B = acSolution.voltages[node.B];
                     phaseVoltages.C = acSolution.voltages[node.C];
                     result.nodeVoltages.Add(phaseVoltages);
+                }
+                foreach (var meter in meters)
+                {
+                    MeterValues values = meter.GetValues(acSolution);
+                    result.meterData.Add($"Meter {meter.label}: ");
+                    result.meterData.Add($"\tPower A: {values.PowerA}");
+                    result.meterData.Add($"\tPower B: {values.PowerB}");
+                    result.meterData.Add($"\tPower C: {values.PowerC}");
+                                           
+                    result.meterData.Add($"\tVoltage A: {values.VoltageA}");
+                    result.meterData.Add($"\tVoltage B: {values.VoltageB}");
+                    result.meterData.Add($"\tVoltage C: {values.VoltageC}");
+                                           
+                    result.meterData.Add($"\tVoltage AB: {values.VoltageAB}");
+                    result.meterData.Add($"\tVoltage BC: {values.VoltageBC}");
+                    result.meterData.Add($"\tVoltage CA: {values.VoltageCA}");
+                                           
+                    result.meterData.Add($"\tCurrent A: {values.CurrentA}");
+                    result.meterData.Add($"\tCurrent B: {values.CurrentB}");
+                    result.meterData.Add($"\tCurrent C: {values.CurrentC}");
                 }
                 return result;
             }
@@ -222,10 +235,20 @@ namespace ElectricalPowerSystems.PowerGraph
         {
             outputs.Add(output);
         }
-        public string TestEquationGeneration()
+        public string TestEquationGeneration(bool useCompiledEquation = false)
         {
             PowerGraphModel model = new PowerGraphModel(this);
-            return model.GenerateEquations();
+            string equations = model.GenerateEquations();
+            string result = equations + Environment.NewLine;
+            if (useCompiledEquation)
+            {
+                EquationCompiler compiler = new EquationCompiler();
+                NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equations);
+                result += compiledEquation.PrintVariables() + Environment.NewLine;
+                result += compiledEquation.PrintEquations() + Environment.NewLine;
+                result += compiledEquation.PrintJacobiMatrix() + Environment.NewLine;
+            }
+            return result;
         }
         public void solve(ref List<string> errors,ref List<string> output)
         {
@@ -241,6 +264,10 @@ namespace ElectricalPowerSystems.PowerGraph
             for (int i = 0; i < outputs.Count; i++)
             {
                 output.Add(outputs[i].generate(model,result));
+            }
+            for (int i = 0; i < result.meterData.Count; i++)
+            {
+                output.Add(result.meterData[i]);
             }
             //get values
             //return values

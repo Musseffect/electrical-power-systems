@@ -47,7 +47,7 @@ namespace ElectricalPowerSystems.PowerGraph
         int lineB;
         int lineC;
 
-        public FaultOCScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultOC fault)
+        public FaultOCScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultOC fault) : base()
         {
             inA = nodes[0].A;
             inB = nodes[0].B;
@@ -75,30 +75,6 @@ namespace ElectricalPowerSystems.PowerGraph
                 lineC = acGraph.createLine(inC, outC);
             }
         }
-
-        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
-        {
-            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
-            power.A = new Complex32();
-            power.B = new Complex32();
-            power.C = new Complex32();
-            result.powers.Add(power);
-            result.currents.Add(new PowerGraphManager.ABCValue[] {
-                new PowerGraphManager.ABCValue()
-                {
-                    A=lineA!=-1? solution.currents[lineA]:new Complex32(),
-                    B=lineA!=-1? solution.currents[lineB]:new Complex32(),
-                    C=lineA!=-1? solution.currents[lineC]:new Complex32(),
-                },
-                new PowerGraphManager.ABCValue()
-                {
-                    A=lineA!=-1? -solution.currents[lineA]:new Complex32(),
-                    B=lineA!=-1? -solution.currents[lineB]:new Complex32(),
-                    C=lineA!=-1? -solution.currents[lineC]:new Complex32(),
-                }
-            });
-        }
-
     }
 
     public class GraphFaultSCLLG : GraphElement
@@ -144,7 +120,7 @@ namespace ElectricalPowerSystems.PowerGraph
         int lineOutC;
         int commonNode;
         int groundNode;
-        public FaultSCLLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLG fault)
+        public FaultSCLLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLG fault) : base()
         {
             inA = nodes[0].A;
             inB = nodes[0].B;
@@ -185,28 +161,6 @@ namespace ElectricalPowerSystems.PowerGraph
                     break;
             }
         }
-        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
-        {
-            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
-            power.A = new Complex32();
-            power.B = new Complex32();
-            power.C = new Complex32();
-
-            result.powers.Add(power);
-            result.currents.Add(new PowerGraphManager.ABCValue[] {
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineInA],
-                B=solution.currents[lineInB],
-                C=solution.currents[lineInC]
-                }
-                ,
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineOutA],
-                B=solution.currents[lineOutB],
-                C=solution.currents[lineOutC]
-                }
-            });
-        }
     }
 
     public class GraphFaultSCLLLG : GraphElement
@@ -246,7 +200,7 @@ namespace ElectricalPowerSystems.PowerGraph
         int lineOutA;
         int lineOutB;
         int lineOutC;
-        public FaultSCLLLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLLG fault)
+        public FaultSCLLLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLLG fault) : base()
         {
             inA = nodes[0].A;
             inB = nodes[0].B;
@@ -274,27 +228,6 @@ namespace ElectricalPowerSystems.PowerGraph
             acGraph.createImpedance(commonNode, cB, fault.Zl);
             acGraph.createImpedance(commonNode, cC, fault.Zl);
             acGraph.createImpedanceWithCurrent(groundNode, commonNode, fault.Zg);
-        }
-        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
-        {
-            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
-            power.A = new Complex32();
-            power.B = new Complex32();
-            power.C = new Complex32();
-            result.powers.Add(power);
-            result.currents.Add(new PowerGraphManager.ABCValue[] {
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineInA],
-                B=solution.currents[lineInB],
-                C=solution.currents[lineInC]
-                }
-                ,
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineOutA],
-                B=solution.currents[lineOutB],
-                C=solution.currents[lineOutC]
-                }
-            });
         }
     }
     public class GraphFaultSCLG : GraphElement
@@ -339,7 +272,7 @@ namespace ElectricalPowerSystems.PowerGraph
         int lineOutA;
         int lineOutB;
         int lineOutC;
-        public FaultSCLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLG fault)
+        public FaultSCLGScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLG fault) : base()
         {
             inA = nodes[0].A;
             inB = nodes[0].B;
@@ -374,27 +307,6 @@ namespace ElectricalPowerSystems.PowerGraph
                     acGraph.createImpedanceWithCurrent(cC, groundNode, fault.Zg);
                     break;
             }
-        }
-        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
-        {
-            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
-            power.A = new Complex32();
-            power.B = new Complex32();
-            power.C = new Complex32();
-            result.powers.Add(power);
-            result.currents.Add(new PowerGraphManager.ABCValue[] {
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineInA],
-                B=solution.currents[lineInB],
-                C=solution.currents[lineInC]
-                }
-                ,
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineOutA],
-                B=solution.currents[lineOutB],
-                C=solution.currents[lineOutC]
-                }
-            });
         }
     }
     public class GraphFaultSCLL : GraphElement
@@ -437,7 +349,7 @@ namespace ElectricalPowerSystems.PowerGraph
         int lineOutA;
         int lineOutB;
         int lineOutC;
-        public FaultSCLLScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLL fault)
+        public FaultSCLLScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLL fault) : base()
         {
             inA = nodes[0].A;
             inB = nodes[0].B;
@@ -470,27 +382,6 @@ namespace ElectricalPowerSystems.PowerGraph
                     acGraph.createImpedance(cC, cA, fault.Zl);
                     break;
             }
-        }
-        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
-        {
-            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
-            power.A = new Complex32();
-            power.B = new Complex32();
-            power.C = new Complex32();
-            result.powers.Add(power);
-            result.currents.Add(new PowerGraphManager.ABCValue[] {
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineInA],
-                B=solution.currents[lineInB],
-                C=solution.currents[lineInC]
-                }
-                ,
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineOutA],
-                B=solution.currents[lineOutB],
-                C=solution.currents[lineOutC]
-                }
-            });
         }
     }
     public class GraphFaultSCLLL : GraphElement
@@ -525,7 +416,7 @@ namespace ElectricalPowerSystems.PowerGraph
         int lineOutA;
         int lineOutB;
         int lineOutC;
-        public FaultSCLLLScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLL fault)
+        public FaultSCLLLScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultSCLLL fault) : base()
         {
             inA = nodes[0].A;
             inB = nodes[0].B;
@@ -535,28 +426,6 @@ namespace ElectricalPowerSystems.PowerGraph
             outC = nodes[1].C;
             commonNode = acGraph.allocateNode();
             generate(acGraph, fault);
-        }
-
-        public override void calcResults(ref PowerGraphManager.PowerGraphSolveResult result, ACGraphSolution solution)
-        {
-            PowerGraphManager.ABCValue power = new PowerGraphManager.ABCValue();
-            power.A = new Complex32();
-            power.B = new Complex32();
-            power.C = new Complex32();
-            result.powers.Add(power);
-            result.currents.Add(new PowerGraphManager.ABCValue[] {
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineInA],
-                B=solution.currents[lineInB],
-                C=solution.currents[lineInC]
-                }
-                ,
-                new PowerGraphManager.ABCValue{
-                A=solution.currents[lineOutA],
-                B=solution.currents[lineOutB],
-                C=solution.currents[lineOutC]
-                }
-            });
         }
         private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLLL fault)
         {

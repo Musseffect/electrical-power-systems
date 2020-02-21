@@ -42,6 +42,7 @@ fragment DIGIT: [0-9] ;
 
 FLOAT: (DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
 	   |DOT DIGIT+ ([Ee][+-]? DIGIT+)?
+		|DIGIT+ ([Ee] [+-]? DIGIT+)?
 		;
 INT: DIGIT+ ; 
 ID: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;

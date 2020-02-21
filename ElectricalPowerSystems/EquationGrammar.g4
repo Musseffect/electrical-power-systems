@@ -39,8 +39,9 @@ fragment LOWERCASE  : [a-z] ;
 fragment UPPERCASE  : [A-Z] ;
 fragment DIGIT: [0-9] ;
 
-FLOAT: (DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
-	   |DOT DIGIT+ ([Ee][+-]? DIGIT+)?
+FLOAT: (DIGIT+ DOT DIGIT*) ([Ee] [+-]? DIGIT+)?
+	   |DOT DIGIT+ ([Ee] [+-]? DIGIT+)?
+		|DIGIT+ ([Ee] [+-]? DIGIT+)?
 		;
 INT: DIGIT+ ; 
 ID: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;

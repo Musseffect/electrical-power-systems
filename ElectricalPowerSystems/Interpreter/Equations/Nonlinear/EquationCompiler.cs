@@ -74,7 +74,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             string result = "";
             for (int i = 0; i < equations.Count; i++)
             {
-                result += variableNames[i] + " = " + initialValues[i].ToString() + Environment.NewLine;
+                result += i + ". " + variableNames[i] + " = " + initialValues[i].ToString() + Environment.NewLine;
             }
             return result;
         }
@@ -87,16 +87,28 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             }
             return result;
         }
-        public string PrintJacobiMatrix()
+        public string PrintJacobiMatrix(bool simplified = true)
         {
             string result = "";
             for (int i = 0; i < equations.Count; i++)
             {
-                for (int j = 0; j < equations.Count; j++)
+                if (simplified)
                 {
-                    result += $"df[{i}]/d{variableNames[j]} = " + RPNExpression.print(jacobiMatrix[j, i], variableNames) + Environment.NewLine;
+                    for (int j = 0; j < equations.Count; j++)
+                    {
+                        if (j != 0)
+                            result += ", ";
+                        result += RPNExpression.print(jacobiMatrix[j, i], variableNames);
+                    }
+                    result += Environment.NewLine;
+                } else
+                {
+                    for (int j = 0; j < equations.Count; j++)
+                    {
+                        result += $"df[{i}]/d{variableNames[j]} = " + RPNExpression.print(jacobiMatrix[j, i], variableNames) + Environment.NewLine;
+                    }
+                    result += Environment.NewLine;
                 }
-                result += Environment.NewLine;
             }
             return result;
         }

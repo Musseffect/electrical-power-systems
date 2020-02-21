@@ -109,13 +109,14 @@
     <Compile Include="Interpreter\Equations\DAE\DAEValidator.cs" />
     <Compile Include="Interpreter\Equations\Expression\Expression.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\ASTNode.cs" />
-    <Compile Include="PowerGraph\GraphAutotransformer.cs" />
-    <Compile Include="PowerGraph\GraphBreak.cs" />
-    <Compile Include="PowerGraph\GraphSwitch.cs" />
-    <Compile Include="PowerGraph\GraphTransformer3w.cs" />
-    <Compile Include="PowerGraph\GraphRecloser.cs" />
-    <Compile Include="PowerGraph\GroundingType.cs" />
-    <Compile Include="PowerGraph\TransformerMode.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphAutotransformer.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphBreak.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphMeter.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphSwitch.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphTransformer3w.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphRecloser.cs" />
+    <Compile Include="PowerGraph\GraphElements\GroundingType.cs" />
+    <Compile Include="PowerGraph\GraphElements\TransformerMode.cs" />
     <Compile Include="Windows\ChartWindow.xaml.cs">
       <DependentUpon>ChartWindow.xaml</DependentUpon>
     </Compile>
@@ -164,16 +165,16 @@
       <DependentUpon>NodeCanvas.xaml</DependentUpon>
     </Compile>
     <Compile Include="PowerGraph\ABCElement.cs" />
-    <Compile Include="PowerGraph\GraphAirLine.cs" />
-    <Compile Include="PowerGraph\GraphFault.cs" />
-    <Compile Include="PowerGraph\GraphGenerator.cs" />
-    <Compile Include="PowerGraph\GraphElement.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphAirLine.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphFault.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphGenerator.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphElement.cs" />
     <Compile Include="PowerGraph\GraphNode.cs" />
-    <Compile Include="PowerGraph\GraphLoad.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphLoad.cs" />
     <Compile Include="PowerGraph\GraphOutput.cs" />
     <Compile Include="PowerGraph\PowerElementScheme.cs" />
     <Compile Include="PowerGraph\PowerGraphManager.cs" />
-    <Compile Include="PowerGraph\GraphTransformer2w.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphTransformer2w.cs" />
     <Compile Include="Interpreter\PowerModel\ASTVisitor.cs" />
     <Compile Include="Interpreter\PowerModel\ObjectSystem.cs" />
     <Compile Include="Interpreter\PowerModel\Interpreter.cs" />
@@ -222,7 +223,6 @@
   <ItemGroup>
     <Compile Include="MathUtils.cs" />
     <Compile Include="ModelException.cs" />
-    <Compile Include="ModelGraph.cs" />
     <Compile Include="ErrorMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -320,9 +320,7 @@
   <ItemGroup>
     <Resource Include="TestModels\ThreePhaseStaticTest2.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="PowerGraph\GraphElements\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Docs\ThreePhaseLang.txt" />
   </ItemGroup>

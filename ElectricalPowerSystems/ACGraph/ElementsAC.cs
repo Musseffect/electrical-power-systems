@@ -79,7 +79,7 @@ namespace ElectricalPowerSystems.ACGraph
             public abstract Complex32 GetCurrent(NonlinearSystemSolution acSolution, float frequency);
             public virtual Complex32 GetVoltageDrop(NonlinearSystemSolution acSolution)
             {
-                return new Complex32();
+                return new Complex32(0.0f,0.0f);
             }
         }
         public abstract class Element2N : Element
@@ -92,7 +92,7 @@ namespace ElectricalPowerSystems.ACGraph
             public override Complex32 GetVoltageDrop(NonlinearSystemSolution acSolution)
             {
                 var re = acSolution.getValue(nodeVoltageRe(0)) - acSolution.getValue(nodeVoltageRe(1));
-                var im = acSolution.getValue(nodeVoltageIm(0)) - acSolution.getValue(nodeVoltageRe(1));
+                var im = acSolution.getValue(nodeVoltageIm(0)) - acSolution.getValue(nodeVoltageIm(1));
                 return new Complex32((float)re,(float)im);
             }
         }
@@ -290,7 +290,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $"(v_{nodes[0]}_im * {G} + v_{nodes[0]}_re * {B}) - (v_{nodes[1]}_im * {G} + v_nodes[0]_re * {B})",
+                    Equation = $"(v_{nodes[0]}_im * {G} + v_{nodes[0]}_re * {B}) - (v_{nodes[1]}_im * {G} + v_{nodes[0]}_re * {B})",
                     Node1 = $"v_{nodes[0]}_im",
                     Node2 = $"v_{nodes[1]}_im"
                 });
@@ -332,13 +332,13 @@ namespace ElectricalPowerSystems.ACGraph
                 string G = $"G_{elementIndex}";
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $"v_{nodes[0]}_re * {G} - v_{nodes[1]}_re * {G}",
+                    Equation = $"(v_{nodes[0]}_re * {G} - v_{nodes[1]}_re * {G})",
                     Node1 = $"v_{nodes[0]}_re",
                     Node2 = $"v_{nodes[1]}_re"
                 });
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $"v_{nodes[0]}_im * {G} - v_{nodes[1]}_im * {G}",
+                    Equation = $"(v_{nodes[0]}_im * {G} - v_{nodes[1]}_im * {G})",
                     Node1 = $"v_{nodes[0]}_im",
                     Node2 = $"v_{nodes[1]}_im"
                 });
@@ -355,6 +355,51 @@ namespace ElectricalPowerSystems.ACGraph
                 return new Complex32((float)dvRe, (float)dvIm) / resistance;
             }
         }
+        /*public class TransformerDeltaDelta:Element
+        {
+            public float k;
+            public TransformerDeltaDelta(int a1, int b1, int c1, int a2, int b2, int c2,int index, float k)
+            {
+                this.k = k;
+                nodes = new int[] { a1,b1,c1,a2,b2,c2 };
+                this.elementIndex = index;
+            }
+            public override List<EquationBlock> GetParametersAC()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set G_{elementIndex} = {(1.0 / resistance).ToString(new CultureInfo("en-US"))};"
+                });
+                return equations;
+            }
+            public override List<EquationBlock> GenerateEquationsAC()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                string G = $"G_{elementIndex}";
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"(v_{nodes[0]}_re * {G} - v_{nodes[1]}_re * {G})",
+                    Node1 = $"v_{nodes[0]}_re",
+                    Node2 = $"v_{nodes[1]}_re"
+                });
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"(v_{nodes[0]}_im * {G} - v_{nodes[1]}_im * {G})",
+                    Node1 = $"v_{nodes[0]}_im",
+                    Node2 = $"v_{nodes[1]}_im"
+                });
+                return equations;
+            }
+            public override string ToString()
+            {
+                return $"TransformerDeltaDelta{{a1 = {nodes[0]}, b1 = {nodes[1]}, c1 = {nodes[2]}, a2 = {nodes[3]}, b2 = {nodes[4]}, c2 = {nodes[5]} k = {k} }}";
+            }
+            public override Complex32 GetCurrent(NonlinearSystemSolution acSolution, float frequency)
+            {
+                return new Complex32();
+            }
+        }*/
         public class Transformer3w : Element6N
         {
             public float b1;
@@ -391,13 +436,13 @@ namespace ElectricalPowerSystems.ACGraph
                 string k2 = $"k_{elementIndex}_2";
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $"{I2re} * {k1} + {I3re} * {k2}",
+                    Equation = $"({I2re} * {k1} + {I3re} * {k2})",
                     Node1 = v1re,
                     Node2 = v2re
                 });
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $"{I2im} * {k1} + {I3im} * {k2}",
+                    Equation = $"({I2im} * {k1} + {I3im} * {k2})",
                     Node1 = v1im,
                     Node2 = v2im
                 });
@@ -649,7 +694,7 @@ namespace ElectricalPowerSystems.ACGraph
                 List<EquationBlock> equations = new List<EquationBlock>();
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $" - {C} * frequency * ({v1im} - {v2im})",
+                    Equation = $" {C} * frequency * (- {v1im} + {v2im})",
                     Node1 = v1re,
                     Node2 = v2re
                 });
@@ -835,7 +880,7 @@ namespace ElectricalPowerSystems.ACGraph
             public float voltage;
             public float phase;
             public float frequency;
-            public VoltageSource(int node1, int node2, int index, float voltage,float frequency, float phase) : base(node1, node2,index)
+            public VoltageSource(int node1, int node2, int index, float voltage, float phase, float frequency) : base(node1, node2,index)
             {
                 this.voltage = voltage;
                 this.frequency = frequency;
@@ -950,7 +995,7 @@ namespace ElectricalPowerSystems.ACGraph
             public float current;
             public float phase;
             public float frequency;
-            public CurrentSource(int node1, int node2, int index, float current, float frequency, float phase) : base(node1, node2, index)
+            public CurrentSource(int node1, int node2, int index, float current, float phase, float frequency) : base(node1, node2, index)
             {
                 this.current = current;
                 this.frequency = frequency;

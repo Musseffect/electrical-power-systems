@@ -58,6 +58,28 @@ namespace ElectricalPowerSystems.MathUtils
         }
         public override Matrix<double> dF(Vector<double> x)
         {
+            /*for (int i = 0; i < equations.Count; i++)
+            {
+                if (simplified)
+                {
+                    for (int j = 0; j < equations.Count; j++)
+                    {
+                        if (j != 0)
+                            result += ", ";
+                        result += RPNExpression.print(jacobiMatrix[j, i], variableNames);
+                    }
+                    result += Environment.NewLine;
+                }
+                else
+                {
+                    for (int j = 0; j < equations.Count; j++)
+                    {
+                        result += $"df[{i}]/d{variableNames[j]} = " + RPNExpression.print(jacobiMatrix[j, i], variableNames) + Environment.NewLine;
+                    }
+                    result += Environment.NewLine;
+                }
+            }*/
+
             Matrix<double> result = Matrix<double>.Build.Dense(Size, Size);
             double[] _x = x.ToArray();
             for (int j = 0; j < equations.Count; j++)
