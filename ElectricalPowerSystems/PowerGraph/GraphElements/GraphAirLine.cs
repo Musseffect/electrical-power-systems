@@ -52,35 +52,35 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         private void generate(ACGraph.ACGraph acGraph, GraphAirLinePiSection airLine)
         {
-            int A1 = acGraph.allocateNode();
-            int B1 = acGraph.allocateNode();
-            int C1 = acGraph.allocateNode();
-            int nG = acGraph.allocateNode();
-            AddElement(acGraph.createResistor(inA, A1, airLine.R));
-            AddElement(acGraph.createResistor(inB, B1, airLine.R));
-            AddElement(acGraph.createResistor(inC, C1, airLine.R));
-            AddElement(acGraph.createInductor(A1, outA, airLine.L));
-            AddElement(acGraph.createInductor(B1, outB, airLine.L));
-            AddElement(acGraph.createInductor(C1, outC, airLine.L));
-            AddElement(acGraph.createCapacitor(inA, inB, airLine.Bp * 0.5f));
-            AddElement(acGraph.createCapacitor(inB, inC, airLine.Bp * 0.5f));
-            AddElement(acGraph.createCapacitor(inC, inA, airLine.Bp * 0.5f));
-            AddElement(acGraph.createCapacitor(outA, outB, airLine.Bp * 0.5f));
-            AddElement(acGraph.createCapacitor(outB, outC, airLine.Bp * 0.5f));
-            AddElement(acGraph.createCapacitor(outC, outA, airLine.Bp * 0.5f));
-            AddElement(acGraph.createResistor(inA, nG, airLine.G * 0.5f));
-            AddElement(acGraph.createResistor(inB, nG, airLine.G * 0.5f));
-            AddElement(acGraph.createResistor(inC, nG, airLine.G * 0.5f));
-            AddElement(acGraph.createResistor(outA, nG, airLine.G * 0.5f));
-            AddElement(acGraph.createResistor(outB, nG, airLine.G * 0.5f));
-            AddElement(acGraph.createResistor(outC, nG, airLine.G * 0.5f));
-            AddElement(acGraph.createCapacitor(inA, nG, airLine.B * 0.5f));
-            AddElement(acGraph.createCapacitor(inB, nG, airLine.B * 0.5f));
-            AddElement(acGraph.createCapacitor(inC, nG, airLine.B * 0.5f));
-            AddElement(acGraph.createCapacitor(outA, nG, airLine.B * 0.5f));
-            AddElement(acGraph.createCapacitor(outB, nG, airLine.B * 0.5f));
-            AddElement(acGraph.createCapacitor(outC, nG, airLine.B * 0.5f));
-            acGraph.createGround(nG);
+            int A1 = acGraph.AllocateNode();
+            int B1 = acGraph.AllocateNode();
+            int C1 = acGraph.AllocateNode();
+            int nG = acGraph.AllocateNode();
+            AddElement(acGraph.CreateResistorWithCurrent(inA, A1, airLine.R));
+            AddElement(acGraph.CreateResistorWithCurrent(inB, B1, airLine.R));
+            AddElement(acGraph.CreateResistorWithCurrent(inC, C1, airLine.R));
+            AddElement(acGraph.CreateInductor(A1, outA, airLine.L));
+            AddElement(acGraph.CreateInductor(B1, outB, airLine.L));
+            AddElement(acGraph.CreateInductor(C1, outC, airLine.L));
+            AddElement(acGraph.CreateCapacitor(inA, inB, airLine.Bp * 0.5f));
+            AddElement(acGraph.CreateCapacitor(inB, inC, airLine.Bp * 0.5f));
+            AddElement(acGraph.CreateCapacitor(inC, inA, airLine.Bp * 0.5f));
+            AddElement(acGraph.CreateCapacitor(outA, outB, airLine.Bp * 0.5f));
+            AddElement(acGraph.CreateCapacitor(outB, outC, airLine.Bp * 0.5f));
+            AddElement(acGraph.CreateCapacitor(outC, outA, airLine.Bp * 0.5f));
+            AddElement(acGraph.CreateResistor(inA, nG, airLine.G * 0.5f));
+            AddElement(acGraph.CreateResistor(inB, nG, airLine.G * 0.5f));
+            AddElement(acGraph.CreateResistor(inC, nG, airLine.G * 0.5f));
+            AddElement(acGraph.CreateResistor(outA, nG, airLine.G * 0.5f));
+            AddElement(acGraph.CreateResistor(outB, nG, airLine.G * 0.5f));
+            AddElement(acGraph.CreateResistor(outC, nG, airLine.G * 0.5f));
+            AddElement(acGraph.CreateCapacitor(inA, nG, airLine.B * 0.5f));
+            AddElement(acGraph.CreateCapacitor(inB, nG, airLine.B * 0.5f));
+            AddElement(acGraph.CreateCapacitor(inC, nG, airLine.B * 0.5f));
+            AddElement(acGraph.CreateCapacitor(outA, nG, airLine.B * 0.5f));
+            AddElement(acGraph.CreateCapacitor(outB, nG, airLine.B * 0.5f));
+            AddElement(acGraph.CreateCapacitor(outC, nG, airLine.B * 0.5f));
+            acGraph.CreateGround(nG);
         }
     }
 }

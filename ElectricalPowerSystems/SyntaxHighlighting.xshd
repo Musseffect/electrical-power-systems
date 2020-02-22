@@ -1,0 +1,69 @@
+﻿<?xml version="1.0"?>
+<SyntaxDefinition name="Model language" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" foreground="Green" />
+  <Color name="String" foreground="DarkOrange" />
+
+  <!-- This is the main ruleset. -->
+  <RuleSet>
+    <Span color="Comment" begin="//" />
+    <Span color="Comment" multiline="true" begin="/\*" end="\*/" />
+
+    <Span color="String">
+      <Begin>"</Begin>
+      <End>"</End>
+      <RuleSet>
+        <!-- nested span for escape sequences -->
+        <Span begin="\\" end="." />
+      </RuleSet>
+    </Span>
+
+    <Keywords fontWeight="bold" foreground="Blue">
+      <Word>resistor</Word>
+      <Word>inductor</Word>
+      <Word>capacitor</Word>
+      <Word>ground</Word>
+      <Word>transformer</Word>
+      <Word>transformer3w</Word>
+      <Word>autotransformer</Word>
+      <Word>switch</Word>
+      <Word>line</Word>
+      <Word>impedance</Word>
+      <Word>voltageSource</Word>
+      <Word>currentSource</Word>
+    </Keywords>
+
+    <Keywords fontWeight="bold" foreground="DarkTurquoise">
+      <Word>voltage</Word>
+      <Word>current</Word>
+      <Word>print</Word>
+      <Word>re</Word>
+      <Word>im</Word>
+      <Word>magn</Word>
+      <Word>phase</Word>
+      <Word>radians</Word>
+      <Word>degrees</Word>
+      <Word>conj</Word>
+    </Keywords>
+
+    <!--
+		<Rule color="MethodCall">
+		\b
+		[\d\w_]+  # an identifier
+		(?=\s*\() # followed by (
+		</Rule>-->
+    <!--<Keywords fontWeight="bold" fontStyle="italic" foreground="Red">
+      <Word>AvalonEdit</Word>
+    </Keywords>-->
+    <Rule foreground="Black">
+      \b[_]*([A-Za-z])[A-Za-z0-9_]*
+    </Rule>
+
+    <!-- Digits -->
+    <Rule foreground="DarkBlue">
+      (    \b\d+(\.[0-9]+)?   #number with optional floating point
+      |    \.[0-9]+         #or just starting with floating point
+      )
+      ([eE][+-]?[0-9]+)? # optional exponent
+    </Rule>
+  </RuleSet>
+</SyntaxDefinition>

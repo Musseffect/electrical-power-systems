@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.PowerGraph
 {
-    public class GraphMeter : GraphElement
+    public class GraphWattmeter : GraphElement
     {
         public string label;
-        public GraphMeter(string inNode, string outNode,string meterLabel)
+        public GraphWattmeter(string inNode, string outNode,string meterLabel)
         {
             nodes.Add(inNode);
             nodes.Add(outNode);
@@ -18,10 +18,10 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         public override PowerElementScheme generateACGraph(List<ABCNode> nodes, ACGraph.ACGraph acGraph)
         {
-            return new MeterScheme(nodes, acGraph, this);
+            return new WattmeterScheme(nodes, acGraph, this);
         }
     }
-    public struct MeterValues
+    public struct WattmeterValues
     {
         public Complex32 VoltageAB;
         public Complex32 VoltageBC;
@@ -35,9 +35,8 @@ namespace ElectricalPowerSystems.PowerGraph
         public Complex32 CurrentA;
         public Complex32 CurrentB;
         public Complex32 CurrentC;
-        string label;
     }
-    class MeterScheme: PowerElementScheme
+    class WattmeterScheme : PowerElementScheme
     {
         public string label;
         int inA;
@@ -51,7 +50,7 @@ namespace ElectricalPowerSystems.PowerGraph
         int l1;
         int l2;
         int l3;
-        public MeterScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphMeter meter):base()
+        public WattmeterScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphWattmeter meter):base()
         {
             inA = nodes[0].A;
             inB = nodes[0].B;
@@ -63,15 +62,15 @@ namespace ElectricalPowerSystems.PowerGraph
             this.label = meter.label;
             generate(acGraph, meter);
         }
-        private void generate(ACGraph.ACGraph acGraph, GraphMeter meter)
+        private void generate(ACGraph.ACGraph acGraph, GraphWattmeter meter)
         {
-            AddElement(l1 = acGraph.createLine(inA,outA));
-            AddElement(l2 = acGraph.createLine(inB,outB));
-            AddElement(l3 = acGraph.createLine(inC,outC));
+            AddElement(l1 = acGraph.CreateLine(inA,outA));
+            AddElement(l2 = acGraph.CreateLine(inB,outB));
+            AddElement(l3 = acGraph.CreateLine(inC,outC));
         }
-        public MeterValues GetValues(ACGraph.ACGraphSolution solution)
+        public WattmeterValues GetValues(ACGraph.ACGraphSolution solution)
         {
-            MeterValues result = new MeterValues();
+            WattmeterValues result = new WattmeterValues();
             result.VoltageA = solution.voltages[inA];
             result.VoltageB = solution.voltages[inB];
             result.VoltageC = solution.voltages[inC];

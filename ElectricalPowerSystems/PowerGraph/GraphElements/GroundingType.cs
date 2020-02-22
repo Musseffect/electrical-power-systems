@@ -39,9 +39,9 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         public override void createScheme(ACGraph.ACGraph graph, int neutralNode)
         {
-            int groundNode = graph.allocateNode();
-            graph.createResistorWithCurrent(neutralNode, groundNode, Resistance);
-            graph.createGround(groundNode);
+            int groundNode = graph.AllocateNode();
+            graph.CreateResistorWithCurrent(neutralNode, groundNode, Resistance);
+            graph.CreateGround(groundNode);
         }
     }
     public class SolidGrounding : GroundingType
@@ -52,7 +52,7 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         public override void createScheme(ACGraph.ACGraph graph, int neutralNode)
         {
-            graph.createGround(neutralNode);
+            graph.CreateGround(neutralNode);
         }
     }
     public class ReactanceGrounding : GroundingType
@@ -65,9 +65,9 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         public override void createScheme(ACGraph.ACGraph graph, int neutralNode)
         {
-            int groundNode = graph.allocateNode();
-            graph.createInductor(neutralNode, groundNode, Reactance);
-            graph.createGround(groundNode);
+            int groundNode = graph.AllocateNode();
+            graph.CreateInductor(neutralNode, groundNode, Reactance);
+            graph.CreateGround(groundNode);
         }
     }
 }

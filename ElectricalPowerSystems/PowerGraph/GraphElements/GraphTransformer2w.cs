@@ -68,35 +68,35 @@ namespace ElectricalPowerSystems.PowerGraph
             w2B = outB;
             w2C = outC;*/
 
-            int w1A = acGraph.allocateNode();
-            int w1B = acGraph.allocateNode();
-            int w1C = acGraph.allocateNode();
-            int w2A = acGraph.allocateNode();
-            int w2B = acGraph.allocateNode();
-            int w2C = acGraph.allocateNode();
+            int w1A = acGraph.AllocateNode();
+            int w1B = acGraph.AllocateNode();
+            int w1C = acGraph.AllocateNode();
+            int w2A = acGraph.AllocateNode();
+            int w2B = acGraph.AllocateNode();
+            int w2C = acGraph.AllocateNode();
 
             int[] node1 = t.winding1.generateWinding(inA, inB, inC, acGraph);
             int[] node2 = t.winding2.generateWinding(outA, outB, outC, acGraph);
 
-            acGraph.createTransformer(w1A, node1[1], w2A, node2[1], t.kTrans);
-            acGraph.createTransformer(w1B, node1[3], w2B, node2[3], t.kTrans);
-            acGraph.createTransformer(w1C, node1[5], w2C, node2[5], t.kTrans);
+            acGraph.CreateTransformer(w1A, node1[1], w2A, node2[1], t.kTrans);
+            acGraph.CreateTransformer(w1B, node1[3], w2B, node2[3], t.kTrans);
+            acGraph.CreateTransformer(w1C, node1[5], w2C, node2[5], t.kTrans);
 
-            AddElement(acGraph.createImpedanceWithCurrent(node1[0], w1A, t.Zp));
-            AddElement(acGraph.createImpedanceWithCurrent(node1[2], w1B, t.Zp));
-            AddElement(acGraph.createImpedanceWithCurrent(node1[4], w1C, t.Zp));
+            AddElement(acGraph.CreateImpedanceWithCurrent(node1[0], w1A, t.Zp));
+            AddElement(acGraph.CreateImpedanceWithCurrent(node1[2], w1B, t.Zp));
+            AddElement(acGraph.CreateImpedanceWithCurrent(node1[4], w1C, t.Zp));
 
-            AddElement(acGraph.createResistor(w1A, node1[1], t.Rc));
-            AddElement(acGraph.createResistor(w1B, node1[3], t.Rc));
-            AddElement(acGraph.createResistor(w1C, node1[5], t.Rc));
+            AddElement(acGraph.CreateResistor(w1A, node1[1], t.Rc));
+            AddElement(acGraph.CreateResistor(w1B, node1[3], t.Rc));
+            AddElement(acGraph.CreateResistor(w1C, node1[5], t.Rc));
 
-            AddElement(acGraph.createInductor(w1A, node1[1], t.Xm/PowerGraphManager.powerFrequency));
-            AddElement(acGraph.createInductor(w1B, node1[3], t.Xm/PowerGraphManager.powerFrequency));
-            AddElement(acGraph.createInductor(w1C, node1[5], t.Xm/PowerGraphManager.powerFrequency));
+            AddElement(acGraph.CreateInductor(w1A, node1[1], t.Xm/(PowerGraphManager.powerFrequency * 2.0f * 3.1415f)));
+            AddElement(acGraph.CreateInductor(w1B, node1[3], t.Xm/(PowerGraphManager.powerFrequency*2.0f*3.1415f)));
+            AddElement(acGraph.CreateInductor(w1C, node1[5], t.Xm/(PowerGraphManager.powerFrequency * 2.0f * 3.1415f)));
 
-            AddElement(acGraph.createImpedanceWithCurrent(node2[0], w2A, t.Zs));
-            AddElement(acGraph.createImpedanceWithCurrent(node2[2], w2B, t.Zs));
-            AddElement(acGraph.createImpedanceWithCurrent(node2[4], w2C, t.Zs));
+            AddElement(acGraph.CreateImpedanceWithCurrent(node2[0], w2A, t.Zs));
+            AddElement(acGraph.CreateImpedanceWithCurrent(node2[2], w2B, t.Zs));
+            AddElement(acGraph.CreateImpedanceWithCurrent(node2[4], w2C, t.Zs));
         }
     }
 }

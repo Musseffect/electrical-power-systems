@@ -32,7 +32,7 @@ current(elN);
 current(elA);
 current(elB);
 current(elC);
-     */
+*/
 
 
 
@@ -46,12 +46,12 @@ namespace ElectricalPowerSystems.Test
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             try
             {
-                TestNonlinearEquationParser();
-                TestNonlinearEquationSolver();
-                TestCircuitEquationGeneration();
+                //TestNonlinearEquationParser();
+                //TestNonlinearEquationSolver();
+                //TestCircuitEquationGeneration();
                 TestCircuitModel2();
-                TestPowerModelSimple();
-                TestPowerModel();
+                //TestPowerModelSimple();
+                //TestPowerModel();
 
             } catch (Exception exc)
             {
@@ -67,31 +67,19 @@ namespace ElectricalPowerSystems.Test
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             Stdout.WriteLine("\tTest circuit model 2");
             CircuitModelAC model = new CircuitModelAC();
-            int v1 = model.addVoltageSource("6", "0", 10.0f, 0.0f, 50.0f);
-            int v2 = model.addVoltageSource("6", "1", 10.0f, 0.0f, 50.0f);
-            int v3 = model.addVoltageSource("6", "2", 10.0f, 0.0f, 50.0f);
-            model.addTransformer("0", "2", "3", "5", 4.0f);
-            model.addTransformer("1", "0", "4", "3", 4.0f);
-            model.addTransformer("2", "1", "5", "4", 4.0f);
-            //model.addTransformerDeltaDelta("0","1","2","3","4","5",4.0f);
-            int r1 = model.addResistor("8", "3", 1.0f);
-            int r2 = model.addResistor("8", "4", 1.0f);
-            int r3 = model.addResistor("8", "5", 1.0f);
-            int rg = model.addResistor("7", "6", 100.0f);
-            model.addGround("7");
-            model.addGround("8");
-            model.addVoltageOutput("8", "7");
-            model.addVoltageOutput("8", "3");
-            model.addVoltageOutput("8", "4");
-            model.addVoltageOutput("8", "5");
-            model.addCurrentOutput(v1);
-            model.addCurrentOutput(v2);
-            model.addCurrentOutput(v3);
-            model.addCurrentOutput(r1);
-            model.addCurrentOutput(r2);
-            model.addCurrentOutput(r3);
-            model.addCurrentOutput(rg);
-            Stdout.WriteLine(model.testEquationGeneration(true));
+            int v1 = model.AddVoltageSource("g", "0", 20412.41f, 0.0f, 60.0f);
+            int r1 = model.AddResistor("0","1",600.0f);
+            int r2 = model.AddInductor("1", "2", 20.0f);
+            int r3 = model.AddResistor("2", "3", 300.0f);
+            int rg = model.AddInductor("3", "g", 6.0f);
+            model.AddGround("g");
+            model.AddVoltageOutput("g", "2");
+            model.AddCurrentOutput(v1);
+            model.AddCurrentOutput(r1);
+            model.AddCurrentOutput(r2);
+            model.AddCurrentOutput(r3);
+            model.AddCurrentOutput(rg);
+            Stdout.WriteLine(model.TestEquationGeneration(true));
             try
             {
                 List<string> solution = model.Solve();
@@ -123,15 +111,15 @@ namespace ElectricalPowerSystems.Test
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             Stdout.WriteLine("\tTest circuit model");
             CircuitModelAC model = new CircuitModelAC();
-            int v = model.addVoltageSource("a1","a2",10.0f,0.0f,50.0f);
-            model.addTransformer("a1","a2","a3","a4",2.0f);
-            int r = model.addResistor("a3","a4",2.0f);
-            model.addGround("a1");
-            model.addGround("a3");
-            model.addVoltageOutput("a1", "a2");
-            model.addVoltageOutput("a3", "a4");
-            model.addCurrentOutput(v);
-            model.addCurrentOutput(r);
+            int v = model.AddVoltageSource("a1","a2",10.0f,0.0f,50.0f);
+            model.AddTransformer("a1","a2","a3","a4",2.0f);
+            int r = model.AddResistor("a3","a4",2.0f);
+            model.AddGround("a1");
+            model.AddGround("a3");
+            model.AddVoltageOutput("a1", "a2");
+            model.AddVoltageOutput("a3", "a4");
+            model.AddCurrentOutput(v);
+            model.AddCurrentOutput(r);
             /*model.addVoltageSource("a2", "a1", 10.0f, 60.0f, 50.0f);
             model.addVoltageSource("a1", "a3", 10.0f, 0.0f, 50.0f);
             model.addCapacitor("a1", "a3", 0.1f);
@@ -142,7 +130,7 @@ namespace ElectricalPowerSystems.Test
             model.addVoltageOutput("a2","a3");
             model.addVoltageOutput("a2", "a4");
             model.addVoltageOutput("a2", "a1");*/
-            Stdout.WriteLine(model.testEquationGeneration());
+            Stdout.WriteLine(model.TestEquationGeneration());
             try
             {
                 List<string> solution = model.Solve();
@@ -176,14 +164,14 @@ namespace ElectricalPowerSystems.Test
             try
             {
                 CircuitModelAC model = new CircuitModelAC();
-                model.addVoltageSource("a2", "a1", 10.0f, 50.0f, 10.0f);
-                model.addVoltageSource("a1", "a3", 10.0f, 50.0f, 0.5f);
-                model.addResistor("a1", "a3", 5.0f);
-                model.addResistor("a1", "a4", 15.0f);
-                model.addResistor("a4", "a2", 4.0f);
-                model.addGround("a2");
+                model.AddVoltageSource("a2", "a1", 10.0f, 50.0f, 10.0f);
+                model.AddVoltageSource("a1", "a3", 10.0f, 50.0f, 0.5f);
+                model.AddResistor("a1", "a3", 5.0f);
+                model.AddResistor("a1", "a4", 15.0f);
+                model.AddResistor("a4", "a2", 4.0f);
+                model.AddGround("a2");
                 Stdout.WriteLine("Equations: ");
-                string equations = model.testEquationGeneration();
+                string equations = model.TestEquationGeneration();
                 Stdout.WriteLine(equations);
             }
             catch (CompilerException exc)
@@ -215,8 +203,8 @@ namespace ElectricalPowerSystems.Test
             elements.Add(graph.addElement(
                 new PowerGraph.GraphTransformer2w("_a1", "_a2", 4, new Complex32(0.01f, 0.0001f),1000.0f,1000.0f, new Complex32(0.01f,0.0001f), 
                 new WyeWinding(WyeWinding.Mode.Y2,new Ungrounded()), new DeltaWinding(DeltaWinding.Mode.D1))));
-            elements.Add(graph.addElement(new PowerGraph.GraphMeter("a1","_a1","generator")));
-            elements.Add(graph.addElement(new PowerGraph.GraphMeter("_a2", "a2", "load")));
+            elements.Add(graph.addElement(new PowerGraph.GraphWattmeter("a1","_a1","generator")));
+            elements.Add(graph.addElement(new PowerGraph.GraphWattmeter("_a2", "a2", "load")));
             foreach (var element in elements)
             {
                 graph.addOutput(new PowerOutput(OutputMode.FULL, element));
@@ -260,6 +248,7 @@ namespace ElectricalPowerSystems.Test
             PowerGraph.PowerGraphManager graph = new PowerGraph.PowerGraphManager();
             PowerGraph.PowerGraphManager.powerFrequency = (float)(60.0);
             List<int> elements = new List<int>();
+            /*
             elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVWye("a1", 100.0f, 0.0f,new Complex32(0.01f,0.001f), new ResistanceGrounding(1000.0f))));
             elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVDelta("a10", 100.0f, 0.0f,new Complex32(0.01f,0.001f))));
             elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a2", 10, 1, 0.001f, 1.0f, 0.001f)));
@@ -294,8 +283,46 @@ namespace ElectricalPowerSystems.Test
             elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a3", 1.0f, 1.0f, 1.0f)));
             elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a5", 1.0f, 1.0f, 1.0f)));
             elements.Add(graph.addElement(new PowerGraph.GraphLoadWye("a9", 1.0f, 1.0f, 1.0f, new Ungrounded())));
+             */
+             
 
-
+            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVWye("a1", 100.0f, 0.0f,new Complex32(0.01f,0.001f), new ResistanceGrounding(1000.0f))));
+            
+            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVDelta("a10", 100.0f, 0.0f,new Complex32(0.01f,0.001f))));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a2", 0.2f, 0.1f, 0.001f, 100.0f, 0.001f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a3", "a4", 0.2f, 0.2f, 0.005f, 300.0f, 0.006f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a6", 0.2f, 0.2f, 0.005f, 300.0f, 0.006f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a2", "a10", 0.2f, 0.2f, 0.005f, 300.0f, 0.006f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a7", "a8", 0.2f, 0.2f, 0.005f, 300.0f, 0.006f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a2", "a3", 10,
+                new Complex32(0.1f, 0.5f),
+                1000.0f, 10000.0f,
+                new Complex32(0.01f, 0.1f),
+                new WyeWinding(WyeWinding.Mode.Y0, new SolidGrounding()),
+                new DeltaWinding(DeltaWinding.Mode.D1))));
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a4", "a5", 0.2f,
+                new Complex32(0.1f, 0.5f),
+                1000.0f, 10000.0f,
+                new Complex32(0.01f, 0.1f),
+                new WyeWinding(WyeWinding.Mode.Y0, new SolidGrounding()),
+                new WyeWinding(WyeWinding.Mode.Y0, new SolidGrounding()))));
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a1", "a7", 0.2f,
+                new Complex32(0.1f, 2),
+                1000.0f, 10000.0f,
+                new Complex32(0.01f, 1),
+                new DeltaWinding(DeltaWinding.Mode.D1),
+                new DeltaWinding(DeltaWinding.Mode.D1))));
+            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a8", "a9", 0.2f,
+                new Complex32(0.1f, 0.5f),
+                1000.0f, 10000.0f,
+                new Complex32(0.01f, 0.1f),
+                new DeltaWinding(DeltaWinding.Mode.D1),
+                new WyeWinding(WyeWinding.Mode.Y0, new SolidGrounding()))));
+            elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a3", 100.0f, 100.0f, 100.0f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a5", 100.0f, 100.0f, 100.0f)));
+            elements.Add(graph.addElement(new PowerGraph.GraphLoadWye("a9", 100.0f, 100.0f, 100.0f, new SolidGrounding())));
+            //elements.Add(graph.addElement(new PowerGraph.GraphFaultSCLG("a7","_a7",new Complex32(0.01f,0.02f),GraphFaultSCLG.Phase.A)));
+            
             foreach (var element in elements)
             {
                 graph.addOutput(new PowerOutput(OutputMode.FULL, element));
@@ -313,7 +340,7 @@ namespace ElectricalPowerSystems.Test
             Stream StdoutStream = Console.OpenStandardOutput();
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             Stdout.WriteLine("\t Test three phase model");
-            Stdout.WriteLine(graph.TestEquationGeneration());
+            Stdout.WriteLine(graph.TestEquationGeneration(false));
             try
             {
                 List<string> errors = new List<string>();

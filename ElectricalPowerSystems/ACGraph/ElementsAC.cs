@@ -68,14 +68,8 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public abstract List<EquationBlock> GetParametersAC();
             public abstract List<EquationBlock> GenerateEquationsAC();
-            public List<EquationBlock> GetEquationsTransient()
-            {
-                throw new NotImplementedException();
-            }
-            public List<EquationBlock> GetParametersTransient()
-            {
-                throw new NotImplementedException();
-            }
+            public abstract List<EquationBlock> GenerateEquationsTransient();
+            public abstract List<EquationBlock> GetParametersTransient();
             public abstract Complex32 GetCurrent(NonlinearSystemSolution acSolution, float frequency);
             public virtual Complex32 GetVoltageDrop(NonlinearSystemSolution acSolution)
             {
@@ -188,6 +182,32 @@ namespace ElectricalPowerSystems.ACGraph
                 string Iim = $"I_{elementIndex}_im";
                 return new Complex32((float)acSolution.getValue(Ire),(float)acSolution.getValue(Iim));
             }
+
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                string R = $"R_{elementIndex}";
+                string I = $"I_{elementIndex}";
+                string v1 = $"v_{nodes[0]}";
+                string v2 = $"v_{nodes[1]}";
+
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = I,
+                    Node1 = v1,
+                    Node2 = v2
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{v1} - {v2} - {I} * {R} = 0;"
+                });
+                return equations;
+            }
+
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                return this.GetParametersAC();
+            }
         }
         public class ImpedanceWithCurrent : Element2N
         {
@@ -254,6 +274,40 @@ namespace ElectricalPowerSystems.ACGraph
                 string Iim = $"I_{elementIndex}_im";
                 return new Complex32((float)acSolution.getValue(Ire), (float)acSolution.getValue(Iim));
             }
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                string R = $"R_{elementIndex}";
+                string X = $"X_{elementIndex}";
+                string I = $"I_{elementIndex}";
+                string v1 = $"v_{nodes[0]}";
+                string v2 = $"v_{nodes[1]}";
+
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = I,
+                    Node1 = v1,
+                    Node2 = v2
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{v1} - {v2} - ({I} * {R} - der({I}) * {X}/frequency) = 0;"
+                });
+                return equations;
+            }
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set R_{elementIndex} = {impedance.Real.ToString(new CultureInfo("en-US"))};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set X_{elementIndex} = {impedance.Imaginary.ToString(new CultureInfo("en-US"))};"
+                });
+                return equations;
+            }
         }
         public class Impedance : Element2N
         {
@@ -290,7 +344,7 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $"(v_{nodes[0]}_im * {G} + v_{nodes[0]}_re * {B}) - (v_{nodes[1]}_im * {G} + v_{nodes[0]}_re * {B})",
+                    Equation = $"(v_{nodes[0]}_im * {G} + v_{nodes[0]}_re * {B}) - (v_{nodes[1]}_im * {G} + v_{nodes[1]}_re * {B})",
                     Node1 = $"v_{nodes[0]}_im",
                     Node2 = $"v_{nodes[1]}_im"
                 });
@@ -306,6 +360,40 @@ namespace ElectricalPowerSystems.ACGraph
                 double dvIm = acSolution.getValue($"v_{nodes[0]}_im") - acSolution.getValue($"v_{nodes[1]}_im");
                 return new Complex32((float)dvRe,(float)dvIm)/ impedance;
             }
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                string R = $"R_{elementIndex}";
+                string X = $"X_{elementIndex}";
+                string I = $"I_{elementIndex}";
+                string v1 = $"v_{nodes[0]}";
+                string v2 = $"v_{nodes[1]}";
+
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = I,
+                    Node1 = v1,
+                    Node2 = v2
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{v1} - {v2} - ({I} * {R} - der({I}) * {X}/frequency) = 0;"
+                });
+                return equations;
+            }
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set R_{elementIndex} = {impedance.Real.ToString(new CultureInfo("en-US"))};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set X_{elementIndex} = {impedance.Imaginary.ToString(new CultureInfo("en-US"))};"
+                });
+                return equations;
+            }
         }
         public class Resistor : Element2N
         {
@@ -313,8 +401,6 @@ namespace ElectricalPowerSystems.ACGraph
             public Resistor(int node1, int node2,int index, float resistance) : base(node1, node2,index)
             {
                 this.resistance = resistance;
-                if (index == 136)
-                    Console.Clear();
                 this.ElementType = ElementTypeEnum.Resistor;
             }
             public override List<EquationBlock> GetParametersAC()
@@ -341,6 +427,27 @@ namespace ElectricalPowerSystems.ACGraph
                     Equation = $"(v_{nodes[0]}_im * {G} - v_{nodes[1]}_im * {G})",
                     Node1 = $"v_{nodes[0]}_im",
                     Node2 = $"v_{nodes[1]}_im"
+                });
+                return equations;
+            }
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set G_{elementIndex} = {(1.0 / resistance).ToString(new CultureInfo("en-US"))};"
+                });
+                return equations;
+            }
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                string G = $"G_{elementIndex}";
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"(v_{nodes[0]} * {G} - v_{nodes[1]} * {G})",
+                    Node1 = $"v_{nodes[0]}",
+                    Node2 = $"v_{nodes[1]}"
                 });
                 return equations;
             }
@@ -501,6 +608,49 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
+
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                string I1 = $"I_{elementIndex}_1";
+                string I2 = $"I_{elementIndex}_2";
+                string I3 = $"I_{elementIndex}_3";
+                string v1 = $"v_{nodes[0]}";
+                string v2 = $"v_{nodes[1]}";
+                string v3 = $"v_{nodes[2]}";
+                string v4 = $"v_{nodes[3]}";
+                string v5 = $"v_{nodes[4]}";
+                string v6 = $"v_{nodes[5]}";
+                string k1 = $"k_{elementIndex}_1";
+                string k2 = $"k_{elementIndex}_2";
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"({I2} * {k1} + {I3} * {k2})",
+                    Node1 = v1,
+                    Node2 = v2
+                });
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"{I2}",
+                    Node1 = v3,
+                    Node2 = v4
+                });
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"{I3}",
+                    Node1 = v5,
+                    Node2 = v6
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{k1} * ({v1} - {v2}) = ({v3} - {v4});"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{k2} * ({v1} - {v2}) = ({v5} - {v6});"
+                });
+                return equations;
+            }
             public override string ToString()
             {
                 return $"Transformer3w{{n1 = {nodes[0]}, n2 = {nodes[1]}, n3 = {nodes[2]}, n4 = {nodes[3]}, n5 = {nodes[4]}, n6 = {nodes[5]} b1 = {b1} , b2 = {b2} }}";
@@ -508,6 +658,11 @@ namespace ElectricalPowerSystems.ACGraph
             public override Complex32 GetCurrent(NonlinearSystemSolution acSolution, float frequency)
             {
                 return new Complex32();
+            }
+
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                return this.GetParametersAC();
             }
         }
         public class Transformer2w : Element4N
@@ -576,6 +731,50 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                string I1 = $"I_{elementIndex}_1";
+                string I2 = $"I_{elementIndex}_2";
+                string v1 = $"v_{nodes[0]}";
+                string v2 = $"v_{nodes[1]}";
+                string v3 = $"v_{nodes[2]}";
+                string v4 = $"v_{nodes[3]}";
+                string k = $"k_{elementIndex}";
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"{I1}",
+                    Node1 = v1,
+                    Node2 = v2
+                });
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"{I1}",
+                    Node1 = v1,
+                    Node2 = v2
+                });
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"{I2}",
+                    Node1 = v3,
+                    Node2 = v4
+                });
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"{I2}",
+                    Node1 = v3,
+                    Node2 = v4
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{I1} = {k} * {I2};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{k} * ({v1} - {v2}) = {v3} - {v4};"
+                });
+                return equations;
+            }
             public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
@@ -592,6 +791,10 @@ namespace ElectricalPowerSystems.ACGraph
             public override Complex32 GetCurrent(NonlinearSystemSolution acSolution, float frequency)
             {
                 return new Complex32();
+            }
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                return this.GetParametersAC();
             }
         }
         public class Autotransformer : Element3N
@@ -675,6 +878,43 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 return new Complex32();
             }
+
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                string I1 = $"I_{elementIndex}_1";
+                string I2 = $"I_{elementIndex}_2";
+                string v1 = $"v_{nodes[0]}";
+                string v2 = $"v_{nodes[1]}";
+                string v3 = $"v_{nodes[2]}";
+                string k = $"k_{elementIndex}";
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"{I1}",
+                    Node1 = v1,
+                    Node2 = v2
+                });
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"{I2}",
+                    Node1 = v3,
+                    Node2 = v2
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{I1} = {k} * {I1} + {k} * {I2};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{k} * ({v1} - {v3}) = {v2} - {v3};"
+                });
+                return equations;
+            }
+
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                return this.GetParametersAC();
+            }
         }
         public class Capacitor : Element2N
         {
@@ -706,6 +946,20 @@ namespace ElectricalPowerSystems.ACGraph
                 });
                 return equations;
             }
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                string v1re = $"v_{nodes[0]}";
+                string v2re = $"v_{nodes[1]}";
+                string C = $"C_{ elementIndex}";
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $" {C} * (der({v1re}) - der({v2re}))",
+                    Node1 = v1re,
+                    Node2 = v2re
+                });
+                return equations;
+            }
             public override List<EquationBlock> GetParametersAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
@@ -725,6 +979,11 @@ namespace ElectricalPowerSystems.ACGraph
                 double dvIm = acSolution.getValue($"v_{nodes[0]}_im") - acSolution.getValue($"v_{nodes[1]}_im");
                 return new Complex32((float)dvRe,(float)dvIm)*new Complex32(0,this.capacity * frequency);
             }
+
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                return this.GetParametersAC();
+            }
         }
         public class Inductor : Element2N
         {
@@ -733,6 +992,25 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 this.inductivity = inductivity;
                 this.ElementType = ElementTypeEnum.Inductor;
+            }
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                string v1 = $"v_{nodes[0]}";
+                string v2 = $"v_{nodes[1]}";
+                string L = $"L_{ elementIndex}";
+                string I = $"I_{elementIndex}";
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = I,
+                    Node1 = v1,
+                    Node2 = v2
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"{v1} - {v2} = {L} * der({I});"
+                });
+                return equations;
             }
             public override List<EquationBlock> GenerateEquationsAC()
             {
@@ -784,6 +1062,10 @@ namespace ElectricalPowerSystems.ACGraph
                 return new Complex32((float)acSolution.getValue($"I_{elementIndex}_re"), 
                     (float)acSolution.getValue($"I_{elementIndex}_im"));
             }
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                return this.GetParametersAC();
+            }
         }
         public class Ground : Element1N
         {
@@ -828,6 +1110,25 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 return new Complex32((float)acSolution.getValue($"I_{elementIndex}_re"),
                     (float)acSolution.getValue($"I_{elementIndex}_im"));
+            }
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"I_{elementIndex}",
+                    Node1 = $"v_{nodes[0]}",
+                    Node2 = null
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"v_{nodes[0]} = 0;"
+                });
+                return equations;
+            }
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                return this.GetParametersTransient();
             }
         }
         public class Line : Element2N
@@ -874,6 +1175,27 @@ namespace ElectricalPowerSystems.ACGraph
                 return new Complex32((float)acSolution.getValue($"I_{elementIndex}_re"),
                     (float)acSolution.getValue($"I_{elementIndex}_im"));
             }
+
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"I_{elementIndex}",
+                    Node1 = $"v_{nodes[0]}",
+                    Node2 = $"v_{nodes[1]}"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"v_{nodes[0]} - v_{nodes[1]} = 0;",
+                });
+                return equations;
+            }
+
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                return this.GetParametersAC();
+            }
         }
         public class VoltageSource : Element2N
         {
@@ -897,14 +1219,14 @@ namespace ElectricalPowerSystems.ACGraph
                 equations.Add(new CurrentFlowBlock
                 {
                     Equation = $"I_{elementIndex}_re",
-                    Node1 = $"v_{nodes[0]}_re",
-                    Node2 = $"v_{nodes[1]}_re"
+                    Node1 = $"v_{nodes[1]}_re",
+                    Node2 = $"v_{nodes[0]}_re"
                 });
                 equations.Add(new CurrentFlowBlock
                 {
                     Equation = $"I_{elementIndex}_im",
-                    Node1 = $"v_{nodes[0]}_im",
-                    Node2 = $"v_{nodes[1]}_im"
+                    Node1 = $"v_{nodes[1]}_im",
+                    Node2 = $"v_{nodes[0]}_im"
                 });
                 equations.Add(new EquationBlock
                 {
@@ -933,6 +1255,40 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 return new Complex32((float)acSolution.getValue($"I_{elementIndex}_re"),
                     (float)acSolution.getValue($"I_{elementIndex}_im"));
+            }
+
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"I_{elementIndex}",
+                    Node1 = $"v_{nodes[1]}",
+                    Node2 = $"v_{nodes[0]}"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"v_{nodes[1]} - v_{nodes[0]} = E_{elementIndex} * cos(w_{elementIndex} * t + ph_{elementIndex});",
+                });
+                return equations;
+            }
+
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set E_{elementIndex} = {(voltage).ToString(new CultureInfo("en-US"))};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set w_{elementIndex} = {frequency.ToString(new CultureInfo("en-US"))};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set ph_{elementIndex} = {phase.ToString(new CultureInfo("en-US"))};"
+                });
+                return equations;
             }
         }
         public class Switch : Element2N
@@ -989,6 +1345,16 @@ namespace ElectricalPowerSystems.ACGraph
                 string currentIm = $"I_{elementIndex}_re";
                 return new Complex32((float)acSolution.getValue(currentRe),(float)acSolution.getValue(currentIm));
             }
+
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                return this.GetParametersAC();
+            }
         }
         public class CurrentSource : Element2N
         {
@@ -1009,7 +1375,6 @@ namespace ElectricalPowerSystems.ACGraph
             public override List<EquationBlock> GenerateEquationsAC()
             {
                 List<EquationBlock> equations = new List<EquationBlock>();
-                string p = $"switch_state_{elementIndex}";
                 equations.Add(new CurrentFlowBlock
                 {
                     Equation = $"J_{elementIndex}_re",
@@ -1021,6 +1386,17 @@ namespace ElectricalPowerSystems.ACGraph
                     Equation = $"J_{elementIndex}_im",
                     Node1 = $"v_{nodes[0]}_im",
                     Node2 = $"v_{nodes[1]}_im"
+                });
+                return equations;
+            }
+            public override List<EquationBlock> GenerateEquationsTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new CurrentFlowBlock
+                {
+                    Equation = $"J_{elementIndex} * cos(w_{elementIndex} * t + ph_{elementIndex})",
+                    Node1 = $"v_{nodes[0]}",
+                    Node2 = $"v_{nodes[1]}"
                 });
                 return equations;
             }
@@ -1040,6 +1416,24 @@ namespace ElectricalPowerSystems.ACGraph
             public override Complex32 GetCurrent(NonlinearSystemSolution acSolution, float frequency)
             {
                 return new Complex32((float)(current*Math.Cos(phase)), (float)(current *Math.Sin(phase)));
+            }
+
+            public override List<EquationBlock> GetParametersTransient()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set J_{elementIndex} = {current.ToString(new CultureInfo("en-US"))};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set w_{elementIndex} = {frequency.ToString(new CultureInfo("en-US"))};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"set ph_{elementIndex} = {phase.ToString(new CultureInfo("en-US"))};"
+                });
+                return equations;
             }
         }
     }

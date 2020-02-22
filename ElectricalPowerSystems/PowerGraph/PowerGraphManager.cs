@@ -72,7 +72,7 @@ namespace ElectricalPowerSystems.PowerGraph
             PowerGraphManager managerRef;
             List<ABCNode> abcNodes;
             Dictionary<string, int> nodes;
-            List<MeterScheme> meters;
+            List<WattmeterScheme> wattmeters;
             List<string> nodeNames;
             public PowerModelElement getElement(int elementId)
             {
@@ -87,7 +87,7 @@ namespace ElectricalPowerSystems.PowerGraph
                 managerRef = manager;
                 acGraph = new ACGraph.ACGraph();
                 abcNodes = new List<ABCNode>();
-                meters = new List<MeterScheme>();
+                wattmeters = new List<WattmeterScheme>();
                 elements = new List<PowerModelElement>(manager.elements.Count);
                 nodes = new Dictionary<string, int>();
                 List<List<NodeIdPair>> nodeElements = new List<List<NodeIdPair>>();//Elements, connected to node
@@ -108,9 +108,9 @@ namespace ElectricalPowerSystems.PowerGraph
                             id = nodeId;
                             nodes.Add(node, nodeId);
                             ABCNode abcNode = new ABCNode();
-                            abcNode.A = acGraph.allocateNode();
-                            abcNode.B = acGraph.allocateNode();
-                            abcNode.C = acGraph.allocateNode();
+                            abcNode.A = acGraph.AllocateNode();
+                            abcNode.B = acGraph.AllocateNode();
+                            abcNode.C = acGraph.AllocateNode();
                             abcNodes.Add(abcNode);
                             nodeNames.Add(node);
                             nodeId++;
@@ -146,16 +146,11 @@ namespace ElectricalPowerSystems.PowerGraph
                     //generate local electric scheme for element
                     PowerElementScheme scheme;
                     elementsSchemes.Add(scheme = abcElement.getElementDescription().generateACGraph(abcElement.Nodes, acGraph));
-                    if (scheme is MeterScheme)
+                    if (scheme is WattmeterScheme)
                     {
-                        meters.Add(scheme as MeterScheme);
+                        wattmeters.Add(scheme as WattmeterScheme);
                     }
                     i++;
-                }
-                //если в схеме нет заземлений, то необходимо добавить одно заземление куда-нибудь для коректного расчёта
-                if (acGraph.groundsCount == 0)
-                {
-                    acGraph.createGround(0);
                 }
             }
             public int getNodeId(string label)
@@ -173,11 +168,10 @@ namespace ElectricalPowerSystems.PowerGraph
             public bool validate(ref List<string> errors)
             {
                 throw new NotImplementedException();
-                return true;
             }
             public PowerGraphSolveResult solve()//in phase coordinates
             {
-                ACGraph.ACGraphSolution acSolution = acGraph.solveEquationsAC(powerFrequency);
+                ACGraph.ACGraphSolution acSolution = acGraph.SolveEquationsAC(powerFrequency);
                 PowerGraphSolveResult result = new PowerGraphSolveResult();
                 for (int i = 0; i < managerRef.elements.Count; i++)
                 {
@@ -192,10 +186,10 @@ namespace ElectricalPowerSystems.PowerGraph
                     phaseVoltages.C = acSolution.voltages[node.C];
                     result.nodeVoltages.Add(phaseVoltages);
                 }
-                foreach (var meter in meters)
+                foreach (var wattmeter in wattmeters)
                 {
-                    MeterValues values = meter.GetValues(acSolution);
-                    result.meterData.Add($"Meter {meter.label}: ");
+                    WattmeterValues values = wattmeter.GetValues(acSolution);
+                    result.meterData.Add($"Wattmeter {wattmeter.label}: ");
                     result.meterData.Add($"\tPower A: {values.PowerA}");
                     result.meterData.Add($"\tPower B: {values.PowerB}");
                     result.meterData.Add($"\tPower C: {values.PowerC}");

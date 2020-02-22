@@ -104,9 +104,9 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         private void generate(ACGraph.ACGraph acGraph, GraphLoadDelta load)
         {
-            AddElement(acGraph.createImpedanceWithCurrent(inC, inA, load.resistanceA));
-            AddElement(acGraph.createImpedanceWithCurrent(inA, inB, load.resistanceB));
-            AddElement(acGraph.createImpedanceWithCurrent(inB, inC, load.resistanceC));
+            AddElement(acGraph.CreateImpedanceWithCurrent(inC, inA, load.resistanceA));
+            AddElement(acGraph.CreateImpedanceWithCurrent(inA, inB, load.resistanceB));
+            AddElement(acGraph.CreateImpedanceWithCurrent(inB, inC, load.resistanceC));
         }
     }
     public class LoadSchemeWye : PowerElementScheme
@@ -116,22 +116,19 @@ namespace ElectricalPowerSystems.PowerGraph
         int inC;
         int inN;
 
-        int ZA;
-        int ZB;
-        int ZC;
         public LoadSchemeWye(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphLoadWye load)
         {
             inA = nodes[0].A;
             inB = nodes[0].B;
             inC = nodes[0].C;
-            inN = acGraph.allocateNode();
+            inN = acGraph.AllocateNode();
             generate(acGraph, load);
         }
         private void generate(ACGraph.ACGraph acGraph, GraphLoadWye load)
         {
-            AddElement(acGraph.createImpedanceWithCurrent(inN, inA, load.resistanceA));
-            AddElement(acGraph.createImpedanceWithCurrent(inN, inB, load.resistanceB));
-            AddElement(acGraph.createImpedanceWithCurrent(inN, inC, load.resistanceC));
+            AddElement(acGraph.CreateImpedanceWithCurrent(inN, inA, load.resistanceA));
+            AddElement(acGraph.CreateImpedanceWithCurrent(inN, inB, load.resistanceB));
+            AddElement(acGraph.CreateImpedanceWithCurrent(inN, inC, load.resistanceC));
             load.grounding.createScheme(acGraph, inN);
         }
     }

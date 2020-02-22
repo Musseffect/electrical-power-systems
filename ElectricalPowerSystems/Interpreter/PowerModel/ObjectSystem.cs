@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace ElectricalPowerSystems.Interpreter
+namespace ElectricalPowerSystems.Interpreter.PowerModel
 {
     public class ASTInterpreter
     {
@@ -706,6 +706,100 @@ namespace ElectricalPowerSystems.Interpreter
                         }
                     }
                 },
+                {"transformer",new List<FunctionDefinition>
+                    {
+                        new FunctionDefinition
+                        {
+                            Exec=transformer,
+                            Signature=new FunctionSignature(new List<ArgumentDescription>
+                                {
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["Float"]}
+                                },false
+                                )
+                        }
+                    }
+                },
+                {"transformer3w",new List<FunctionDefinition>
+                    {
+                        new FunctionDefinition
+                        {
+                            Exec=transformer3w,
+                            Signature=new FunctionSignature(new List<ArgumentDescription>
+                                {
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["Float"]},
+                                    new ArgumentDescription { type = basicTypes["Float"]}
+                                },false
+                                )
+                        }
+                    }
+                },
+                {"autotransformer",new List<FunctionDefinition>
+                    {
+                        new FunctionDefinition
+                        {
+                            Exec=autotransformer,
+                            Signature=new FunctionSignature(new List<ArgumentDescription>
+                                {
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["Float"]},
+                                    new ArgumentDescription { type = basicTypes["Float"]}
+                                },false
+                                )
+                        }
+                    }
+                },
+                {"switch",new List<FunctionDefinition>
+                    {
+                        new FunctionDefinition
+                        {
+                            Exec=_switch,
+                            Signature=new FunctionSignature(new List<ArgumentDescription>
+                                {
+                                    new ArgumentDescription { type = basicTypes["Float"]}
+                                },false
+                                )
+                        }
+                    }
+                },
+                {"impedance",new List<FunctionDefinition>
+                    {
+                        new FunctionDefinition
+                        {
+                            Exec=impedance1,
+                            Signature=new FunctionSignature(new List<ArgumentDescription>
+                                {
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["Float"]},
+                                    new ArgumentDescription { type = basicTypes["Float"]}
+                                },false
+                                )
+                        },
+                        new FunctionDefinition
+                        {
+                            Exec=impedance2,
+                            Signature=new FunctionSignature(new List<ArgumentDescription>
+                                {
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["String"]},
+                                    new ArgumentDescription { type = basicTypes["Complex"]}
+                                },false
+                                )
+                        }
+                    }
+                },
                 {"capacitor",new List<FunctionDefinition>
                     {
                         new FunctionDefinition
@@ -887,22 +981,22 @@ namespace ElectricalPowerSystems.Interpreter
             };
             static public Object resistor(List<Object> args)
             {
-                int index = model.addResistor(((String)args[0]).Value, ((String)args[1]).Value, (float)((Float)args[2]).Value);
+                int index = model.AddResistor(((String)args[0]).Value, ((String)args[1]).Value, (float)((Float)args[2]).Value);
                 return new Element(index);
             }
             static public Object capacitor(List<Object> args)
             {
-                int index = model.addCapacitor(((String)args[0]).Value, ((String)args[1]).Value, (float)((Float)args[2]).Value);
+                int index = model.AddCapacitor(((String)args[0]).Value, ((String)args[1]).Value, (float)((Float)args[2]).Value);
                 return new Element(index);
             }
             static public Object inductor(List<Object> args)
             {
-                int index = model.addInductor(((String)args[0]).Value, ((String)args[1]).Value, (float)((Float)args[2]).Value);
+                int index = model.AddInductor(((String)args[0]).Value, ((String)args[1]).Value, (float)((Float)args[2]).Value);
                 return new Element(index);
             }
             static public Object line(List<Object> args)
             {
-                int index = model.addLine(((String)args[0]).Value, ((String)args[1]).Value);
+                int index = model.AddLine(((String)args[0]).Value, ((String)args[1]).Value);
                 return new Element(index);
             }
             static public Object voltageSource1(List<Object> args)
@@ -911,7 +1005,7 @@ namespace ElectricalPowerSystems.Interpreter
                 String arg2 = (String)args[1];
                 Complex arg3 = (Complex)args[2];
                 Float arg4 = (Float)args[3];
-                int index = model.addVoltageSource(arg1.Value, arg2.Value, (float)arg3.Magn, (float)arg3.Phase, (float)arg4.Value);
+                int index = model.AddVoltageSource(arg1.Value, arg2.Value, (float)arg3.Magn, (float)arg3.Phase, (float)arg4.Value);
                 return new Element(index);
             }
             static public Object voltageSource2(List<Object> args)
@@ -921,7 +1015,7 @@ namespace ElectricalPowerSystems.Interpreter
                 Float arg3 = (Float)args[2];
                 Float arg4 = (Float)args[3];
                 Float arg5 = (Float)args[4];
-                int index = model.addVoltageSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.radians(arg4.Value), (float)arg5.Value);
+                int index = model.AddVoltageSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.radians(arg4.Value), (float)arg5.Value);
                 return new Element(index);
             }
             static public Object currentSource1(List<Object> args)
@@ -930,7 +1024,7 @@ namespace ElectricalPowerSystems.Interpreter
                 String arg2 = (String)args[1];
                 Complex arg3 = (Complex)args[2];
                 Float arg4 = (Float)args[3];
-                int index = model.addCurrentSource(arg1.Value, arg2.Value, (float)arg3.Magn, (float)arg3.Phase, (float)arg4.Value);
+                int index = model.AddCurrentSource(arg1.Value, arg2.Value, (float)arg3.Magn, (float)arg3.Phase, (float)arg4.Value);
                 return new Element(index);
             }
             static public Object currentSource2(List<Object> args)
@@ -940,26 +1034,26 @@ namespace ElectricalPowerSystems.Interpreter
                 Float arg3 = (Float)args[2];
                 Float arg4 = (Float)args[3];
                 Float arg5 = (Float)args[4];
-                int index = model.addCurrentSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.radians(arg4.Value), (float)arg5.Value);
+                int index = model.AddCurrentSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.radians(arg4.Value), (float)arg5.Value);
                 return new Element(index);
             }
             static public Object current(List<Object> args)
             {
                 Element arg1 = (Element)args[0];
-                model.addCurrentOutput(arg1.Index);
+                model.AddCurrentOutput(arg1.Index);
                 return new Void();
             }
             static public Object voltage1(List<Object> args)
             {
                 Element arg1 = (Element)args[0];
-                model.addVoltageOutput(arg1.Index);
+                model.AddVoltageOutput(arg1.Index);
                 return new Void();
             }
             static public Object voltage2(List<Object> args)
             {
                 String arg1 = (String)args[0];
                 String arg2 = (String)args[1];
-                model.addVoltageOutput(arg1.Value, arg2.Value);
+                model.AddVoltageOutput(arg1.Value, arg2.Value);
                 return new Void();
             }
             static public Object transformer(List<Object> args)
@@ -969,12 +1063,12 @@ namespace ElectricalPowerSystems.Interpreter
                 String arg3 = (String)args[2];
                 String arg4 = (String)args[3];
                 Float arg5 = (Float)args[4];
-                int index = model.addTransformer(arg1.Value,arg2.Value,arg3.Value,arg4.Value,(float )arg5.Value);
+                int index = model.AddTransformer(arg1.Value,arg2.Value,arg3.Value,arg4.Value,(float)arg5.Value);
                 return new Element(index);
             }
             static public Object ground(List<Object> args)
             {
-                model.addGround(((String)args[0]).Value);
+                model.AddGround(((String)args[0]).Value);
                 return new Void();
             }
             static public Object print(List<Object> args)
@@ -984,7 +1078,7 @@ namespace ElectricalPowerSystems.Interpreter
             }
             static public Object printElement(List<Object> args)
             {
-                output.Add(model.getElementString(((Element)args[0]).Index));
+                output.Add(model.GetElementString(((Element)args[0]).Index));
                 return new Void();
             }
             static public Object re(List<Object> args)
@@ -1025,21 +1119,54 @@ namespace ElectricalPowerSystems.Interpreter
                 arg1.Im = -arg1.Im;
                 return arg1;
             }
-            static public Object generator(List<Object> args)
+            static public Object transformer3w(List<Object> args)
             {
-                throw new NotImplementedException();
+                String arg1 = (String)args[0];
+                String arg2 = (String)args[1];
+                String arg3 = (String)args[2];
+                String arg4 = (String)args[3];
+                String arg5 = (String)args[4];
+                String arg6 = (String)args[5];
+                Float arg7 = (Float)args[6];
+                Float arg8 = (Float)args[7];
+                int index = model.AddTransformer3w(arg1.Value, arg2.Value, arg3.Value, arg4.Value,arg5.Value,arg6.Value,
+                    (float)arg7.Value, (float)arg8.Value);
+                return new Element(index);
             }
-            static public Object load(List<Object> args)
+            static public Object _switch(List<Object> args)
             {
-                throw new NotImplementedException();
+                String arg1 = (String)args[0];
+                String arg2 = (String)args[1];
+                Float state = (Float)args[2];
+                int index = model.AddSwitch(arg1.Value, arg2.Value, state.Value==0.0f);
+                return new Element(index);
             }
-            static public Object transformer2w(List<Object> args)
+            static public Object impedance1(List<Object> args)
             {
-                throw new NotImplementedException();
+                String arg1 = (String)args[0];
+                String arg2 = (String)args[1];
+                Float arg3 = (Float)args[2];
+                Float arg4 = (Float)args[3];
+                int index = model.AddImpedance(arg1.Value,arg2.Value,new MathNet.Numerics.Complex32((float)arg3.Value, (float)arg4.Value));
+                return new Element(index);
             }
-            static public Object airline(List<Object> args)
+            static public Object impedance2(List<Object> args)
             {
-                throw new NotImplementedException();
+                String arg1 = (String)args[0];
+                String arg2 = (String)args[1];
+                Complex arg3 = (Complex)args[2];
+                int index = model.AddImpedance(arg1.Value, arg2.Value, new MathNet.Numerics.Complex32((float)arg3.Re,(float)arg3.Im));
+                return new Element(index);
+            }
+            static public Object autotransformer(List<Object> args)
+            {
+                String arg1 = (String)args[0];
+                String arg2 = (String)args[1];
+                String arg3 = (String)args[2];
+                Float arg4 = (Float)args[3];
+                int index = model.AddAutoTransformer(arg1.Value, arg2.Value, arg3.Value, (float)arg4.Value);
+                return new Element(index);
+
             }
         }
         public enum BasicType

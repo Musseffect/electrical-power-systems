@@ -1,0 +1,220 @@
+﻿<html>
+<head>
+    <title>
+    </title>
+    <style type="text/css">
+        .element {
+            font-family: Consolas;
+            font-size:12pt;
+            color:blue;
+            font-weight:bold;
+        }
+        .type {
+            font-family: Consolas;
+            font-size: 12pt;
+            color: darkblue;
+            font-weight: bold;
+        }
+        .function {
+            font-family: Consolas;
+            font-size: 12pt;
+            color: DarkTurquoise;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        Элементы
+    </div>
+    <ul>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">resistor</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">float</span> R)
+            </div>
+            <div>присоединить резистор к узлам node1 и node2 с сопротивлением R Ом</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">capacitor</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">float</span> C)
+            </div>
+            <div>присоединить конденсатор к узлам node1 и node2 с ёмкостью C Фарад</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">inductor</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">float</span> L)
+            </div>
+            <div>присоединить катушку индуктивности к узлам node1 и node2 с индуктивностью L Генри</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">impedance</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">complex</span> Z)
+            </div>
+            <div>присоединить комплексное сопротивление к узлам node1 и node2 с имендансом Z</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">transformer</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">string</span> node3,
+                <span class="type">string</span> node4,
+                <span class="type">float</span> k)
+            </div>
+            <div>присоединить идеальный двухобмоточный трансформатор к узлам node1, node2, node3, node4 с коэффициентом трансформации k</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">autotransformer</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">string</span> node3,
+                <span class="type">float</span> k)
+            </div>
+            <div>присоединить идеальный автотрансформатор к узлам node1, node2, node3 с коэффициентом трансформации k</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">transformer3w</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">string</span> node3,
+                <span class="type">string</span> node4,
+                <span class="type">string</span> node5,
+                <span class="type">string</span> node6,
+                <span class="type">float</span> k1,
+                <span class="type">float</span> k2)
+            </div>
+            <div>присоединить идеальный трёхобмоточный трансформатор к узлам node1, node2, node3, node4, node5, node6 с коэффициентами трансформации k1 и k2</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">line</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2)
+            </div>
+            <div>присоединить провод с нулевым сопротивлениям к узлам node1 и node2</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">voltageSource</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">complex</span> voltage,
+                <span class="type">float</span> frequency = 0)
+            </div>
+            <div>присоединить идеальный источник напряжения к узлам node1 и node2 с комплексным напряжением voltage и частотой frequency Герц</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">voltageSource</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">float</span> amp,
+                <span class="type">float</span> phase,
+                <span class="type">float</span> frequency = 0)
+            </div>
+            <div>присоединить идеальный источник напряжения к узлам node1 и node2 с комплексным напряжением amp&middot;e<sup>phase</sup> и частотой frequency Герц</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">currentSource</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">complex</span> current,
+                <span class="type">float</span> frequency = 0)
+            </div>
+            <div>присоединить идеальный источник тока к узлам node1 и node2 с комплексным током current и частотой frequency Герц</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">currentSource</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">float</span> amp,
+                <span class="type">float</span> phase,
+                <span class="type">float</span> frequency = 0)
+            </div>
+            <div>присоединить идеальный источник тока к узлам node1 и node2 с комплексным током amp&middot;e<sup>phase</sup> и частотой frequency Герц</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">void</span> <span class="element">ground</span>(<span class="type">string</span> node)
+            </div>
+            <div>присоединить заземление к узлу node</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">voltage</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2)
+            </div>
+            <div>добавить в список вывода разницу потенциалов на узлах node2 и node1 &#8594; V = &phi;(node2) - &phi;(node1)</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">voltage</span>(<span class="type">element</span> element)
+            </div>
+            <div>добавить в список вывода падения напряжения на элементе element</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">current</span>(<span class="type">element</span> element)
+            </div>
+            <div>добавить в список вывода ток на элементе element (положительное направление от node1 к node2)</div>
+        </li>
+    </ul>
+
+    <div>Вспомогательные функции</div>
+    <ul>
+
+        <li>
+            <div>
+                <span class="type">void</span> <span class="function">print</span>(<span class="type">any</span> arg)
+            </div>
+            <div>вывести значение аргумента в текстбоксе вывода</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">float</span> <span class="function">re</span>(<span class="type">complex</span> value)
+            </div>
+            <div>получить действительную часть комплексного аргумента value</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">float</span> <span class="function">im</span>(<span class="type">complex</span> value)
+            </div>
+            <div>получить мнимую часть комплексного аргумента value</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">float</span> <span class="function">magn</span>(<span class="type">complex</span> value)
+            </div>
+            <div>получить амплитуду комплексного аргумента value</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">float</span> <span class="function">phase</span>(<span class="type">complex</span> value)
+            </div>
+            <div>получить угол комплексного аргумента value</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">float</span> <span class="function">radians</span>(<span class="type">float</span> value)
+            </div>
+            <div>перевести значения аргументов из градусов в радианы</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">float</span> <span class="function">degrees</span>(<span class="type">float</span> value)
+            </div>
+            <div>перевести значения аргументов из радиан в градусы</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">complex</span> <span class="function">conj</span>(<span class="type">complex</span> value)
+            </div>
+            <div>получить комплексно-сопряжённое значение</div>
+        </li>
+    </ul>
+</body>
+</html>

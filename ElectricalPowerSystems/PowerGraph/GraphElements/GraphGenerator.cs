@@ -115,20 +115,20 @@ namespace ElectricalPowerSystems.PowerGraph
             outA = nodes[0].A;
             outB = nodes[0].B;
             outC = nodes[0].C;
-            outN = acGraph.allocateNode();
+            outN = acGraph.AllocateNode();
             generate(acGraph, generator);
         }
         private void generate(ACGraph.ACGraph acGraph, GraphGeneratorVWye generator)
         {
-            int wA = acGraph.allocateNode();
-            int wB = acGraph.allocateNode();
-            int wC = acGraph.allocateNode();
-            AddElement(acGraph.createImpedanceWithCurrent(wA, outA, generator.impedance));
-            AddElement(acGraph.createImpedanceWithCurrent(wB, outB, generator.impedance));
-            AddElement(acGraph.createImpedanceWithCurrent(wC, outC, generator.impedance));
-            AddElement(acGraph.createVoltageSource(outN, wA, generator.voltage, 0.0f, PowerGraphManager.powerFrequency));
-            AddElement(acGraph.createVoltageSource(outN, wB, generator.voltage, (float)(Math.PI) * 2.0f / 3.0f, PowerGraphManager.powerFrequency));
-            AddElement(acGraph.createVoltageSource(outN, wC, generator.voltage, (float)(Math.PI) * 4.0f / 3.0f, PowerGraphManager.powerFrequency));
+            int wA = acGraph.AllocateNode();
+            int wB = acGraph.AllocateNode();
+            int wC = acGraph.AllocateNode();
+            AddElement(acGraph.CreateImpedanceWithCurrent(wA, outA, generator.impedance));
+            AddElement(acGraph.CreateImpedanceWithCurrent(wB, outB, generator.impedance));
+            AddElement(acGraph.CreateImpedanceWithCurrent(wC, outC, generator.impedance));
+            AddElement(acGraph.CreateVoltageSource(outN, wA, generator.voltage, 0.0f, PowerGraphManager.powerFrequency));
+            AddElement(acGraph.CreateVoltageSource(outN, wB, generator.voltage, (float)(Math.PI) * 2.0f / 3.0f, PowerGraphManager.powerFrequency));
+            AddElement(acGraph.CreateVoltageSource(outN, wC, generator.voltage, (float)(Math.PI) * 4.0f / 3.0f, PowerGraphManager.powerFrequency));
             generator.grounding.createScheme(acGraph,outN);
         }
     }
@@ -146,15 +146,15 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         private void generate(ACGraph.ACGraph acGraph, GraphGeneratorVDelta generator)
         {
-            int wAB = acGraph.allocateNode();
-            int wBC = acGraph.allocateNode();
-            int wCA = acGraph.allocateNode();
-            AddElement(acGraph.createImpedanceWithCurrent(wCA, outA, generator.impedance));
-            AddElement(acGraph.createImpedanceWithCurrent(wAB, outB, generator.impedance));
-            AddElement(acGraph.createImpedanceWithCurrent(wBC, outC, generator.impedance));
-            AddElement(acGraph.createVoltageSource(outC, wCA, generator.voltage, 0.0f, PowerGraphManager.powerFrequency));
-            AddElement(acGraph.createVoltageSource(outA, wAB, generator.voltage, (float)(Math.PI) * 2.0f / 3.0f, PowerGraphManager.powerFrequency));
-            AddElement(acGraph.createVoltageSource(outB, wBC, generator.voltage, (float)(Math.PI) * 4.0f / 3.0f, PowerGraphManager.powerFrequency));
+            int wAB = acGraph.AllocateNode();
+            int wBC = acGraph.AllocateNode();
+            int wCA = acGraph.AllocateNode();
+            AddElement(acGraph.CreateImpedanceWithCurrent(wCA, outA, generator.impedance));
+            AddElement(acGraph.CreateImpedanceWithCurrent(wAB, outB, generator.impedance));
+            AddElement(acGraph.CreateImpedanceWithCurrent(wBC, outC, generator.impedance));
+            AddElement(acGraph.CreateVoltageSource(outC, wCA, generator.voltage, 0.0f, PowerGraphManager.powerFrequency));
+            AddElement(acGraph.CreateVoltageSource(outA, wAB, generator.voltage, (float)(Math.PI) * 2.0f / 3.0f, PowerGraphManager.powerFrequency));
+            AddElement(acGraph.CreateVoltageSource(outB, wBC, generator.voltage, (float)(Math.PI) * 4.0f / 3.0f, PowerGraphManager.powerFrequency));
         }
     }
 }

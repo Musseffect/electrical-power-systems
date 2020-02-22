@@ -4,15 +4,45 @@ grammar ModelGrammar;
  * Parser Rules
  */
 
+ 
+ //New Grammar
  /*
- New Grammar
+number		: value=(FLOAT|INT);
+complexExp	: left=number type=(IM| ANGLE) right=number;
+complex		: IM im=number;
+constant	: value=number  #NumberConstant
+	| value=complex #ComplexConstant
+	| value=complexExp #ComplexExprConstant
+	| value=STRING #StringConstant
+;
 
- model: (state=statement)* EOF;
- statement: expression SEMICOLON #StatementRule
+ model:statements ELEMENTS COLON elements CONNECTIONS COLON connections EOF
+ ;
+
+ statements: (statement)* 
+ ;
+
+ elements: (elementStatement)*
+;
+
+elementStatement: element = ID ASSIGN elementID = ID LCRLPAREN arguments RCRLPAREN SEMICOLON
+ | SEMICOLON;
+
+arguments: keyValue (COMMA keyValue)* | ;
+keyValue: key=ID ASSIGN value=expression;
+
+connections: (connectionStatement)*
+;
+
+connectionStatement: CONNECT LPAREN elementID=ID DOT nodeID=ID RPAREN SEMICOLON
+ | SEMICOLON;
+
+statement: expression SEMICOLON #StatementRule
  | SEMICOLON #emptyStatement;
 
- expression: objectKeyWork=ID LPAREN nodeList RPAREN LCRLPAREN modelObjectContent RCRLPAREN #ModelObject
-	|<assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
+unaryOperator: op=(PLUS | MINUS);
+
+expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
 	| LPAREN expression RPAREN #BracketExpression
 	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
 	| left=expression DOT id=ID #FieldExpression
@@ -23,19 +53,58 @@ grammar ModelGrammar;
 	|<assoc=right> lvalue=expression ASSIGN rvalue=expression #AssignmentExpression
 	| id=ID		#IdentifierExpression
 	| value=constant	#ConstantExpression
-	;	
+	;
 	
- modelObjectContent: keyValue(COMMA keyValue) | ;
- keyValue: key=ID ASSIGN value=expression;
- nodeList: STRING (,STRING )* ;
+functionArguments: expression (COMMA expression)* | ;*/
+
 
  //example
- //TRANSFORMER(node1,node2,...) { K=2.0,Type=TWO_WINDING }
-  //TRANSFORMER(node1,node,...) { K1=2.0,K2=4.0,Type=THREE_WINDING }
+/*
+elements:
+generator=Generator
+{
+	Vpeak=100.0f,
+	Phase = 0.0f,
+	Z = 0.001+j0.0001f,
+	Type=Wye
+};
+transformer=Transformator
+{
+	WindingTypePrimary=Wye,
+	WindingTypeSecondary=Delta,
+	Zp = 0.01+j0.0001,
+	Zs = 0.01+j0.0001,
+	G = 1000.0,
+	X = 1000.0
+}
+load=Load
+{
+	Za=100+10j,
+	Zb=100+10j,
+	Zc=100+10j,
+	Type=Wye
+};
+res = Resistance
+{
+	R=1000.0f
+};
+ground = Ground{};
+meter1 = Wattmeter{Label = "generator"};
+meter2 = Wattmeter{Label = "load"};
+
+connections:
+connect(generator.abc_out,meter1.abc_in);
+connect(generator.n,res.in);
+connect(res.out,ground.in);
+connect(meter1.abc_out,transformer.abc_in);
+connect(transformer.abc_out,meter2.abc_in);
+connect(meter2.abc_out,load.abc_in);
+connect(load.n,ground.in);
+*/
  
- */
+ 
 
-
+ 
 number		: value=(FLOAT|INT);
 complexExp	: left=number type=(IM| ANGLE) right=number;
 complex		: IM im=number;
@@ -88,6 +157,9 @@ INT: DIGIT+ ;
 IM					: [Jj] ;
 ID		: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;
 
+CONNECTIONS: 'connections';
+CONNECT: 'connect';
+ELEMENTS: 'elements';
 
 PLUS               : '+' ;
 MINUS              : '-' ;

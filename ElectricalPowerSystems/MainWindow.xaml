@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:avalonEdit="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"
         xmlns:local="clr-namespace:ElectricalPowerSystems"
         mc:Ignorable="d"
         Name="windowElement"
@@ -63,10 +64,30 @@
                 </DataTemplate.Triggers>
             </DataTemplate>
             <DataTemplate x:Key="itemContent">
-                <TextBox Text="{Binding Content}"
+                <local:MvvmTextEditor Text="{Binding Content}"
+                         ShowLineNumbers="True" 
                          HorizontalScrollBarVisibility="Auto"
                          VerticalScrollBarVisibility="Auto"
-                         ScrollViewer.CanContentScroll="True" TextChanged="TextBox_TextChanged"/>
+				         FontFamily="Consolas"
+				         FontSize="10pt"
+                         ScrollViewer.CanContentScroll="True" 
+				         SyntaxHighlighting="Model language"
+                                       >
+                    <local:MvvmTextEditor.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Command="Cut" Header="Cut" />
+                        <MenuItem Command="Copy" Header="Copy" />
+                        <MenuItem Command="Paste" Header="Paste" />
+                        <MenuItem Command="Delete" Header="Delete" />
+                        <MenuItem Command="Undo" Header="Undo" />
+                        <MenuItem Command="Redo" Header="Redo" />
+                    </ContextMenu>
+                    </local:MvvmTextEditor.ContextMenu>
+                </local:MvvmTextEditor>
+                <!--<TextBox Text="{Binding Content}"
+                         HorizontalScrollBarVisibility="Auto"
+                         VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.CanContentScroll="True" TextChanged="TextBox_TextChanged"/>-->
             </DataTemplate>
             <Style x:Key="ExpanderCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
                 <Setter Property="Template">
@@ -122,19 +143,16 @@
             </MenuItem>
             <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" >
                 <MenuItem IsEnabled="True" Header="Установившийся режим">
-                    <MenuItem x:Name="RunNonlinearTest" Header="Тестирование решения нелинейной системы" Click="RunNonlinearTest_Click"/>
-                    <MenuItem x:Name="RunDAETest" Header="Тестирование решения ДАУ системы" Click="RunDAETest_Click"  IsEnabled="False"/>
-                    <MenuItem x:Name="RunElectricalSchemeStatic" Header="Расчёт эл. схемы" Click="RunMenuButton_Click"/>
+                    <MenuItem x:Name="RunNonlinearTest" Header="Тестирование решения нелинейной системы" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIDisabled}"/>
+                    <MenuItem x:Name="RunElectricalSchemeStatic" Header="Расчёт эл. схемы" Click="RunMenuButton_Click" IsEnabled="{Binding Path = UIDisabled}"/>
+                    <MenuItem x:Name="GenerateEquations" Header="Генерация уравнений" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIDisabled}"/>
                     <MenuItem x:Name="RunPowerSystemStatic" Header="Расчёт трёхфазной схемы" IsEnabled="False"/>
                     <MenuItem x:Name="RunVariationStatic" Header="Варьирование параметров трёхфазной схемы" IsEnabled="False"/>
                 </MenuItem>
                 <MenuItem IsEnabled="False" Header="Переходные процессы">
+                    <MenuItem x:Name="RunDAETest" Header="Тестирование решения ДАУ системы" Click="RunDAETest_Click"  IsEnabled="False"/>
                     <MenuItem x:Name="RunElectricalSchemeTransient" Header="Расчёт эл. схемы"/>
                     <MenuItem x:Name="RunPowerSystemTransient" Header="Расчёт трёхфазной схемы"/>
-                </MenuItem>
-                <MenuItem IsEnabled="False" Header="Замыкания" >
-                    <MenuItem x:Name="RunFaultsStatic" Header="Статический расчёт"/>
-                    <MenuItem x:Name="RunFaultsDynamic" Header="Динамический расчёт"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="Тестовые примеры" IsEnabled="False">
@@ -153,7 +171,7 @@
                 </MenuItem>
             </MenuItem>
             <!--<MenuItem x:Name="RunPowerTestButton" Header="{DynamicResource m_menu_Run_Test}" Click="RunPowerTestButton_Click"></MenuItem>-->
-            <MenuItem Header="{DynamicResource m_menu_Help}" IsEnabled="False"></MenuItem>
+            <MenuItem Header="{DynamicResource m_menu_Help}" IsEnabled="True" Click="Help_Click"></MenuItem>
         </Menu>
         <ToolBar Grid.Row="1" Height="36" VerticalAlignment="Top" Width="Auto">
             <ToolBar.Resources>

@@ -56,7 +56,7 @@ namespace ElectricalPowerSystems.ACGraph
             transformers = new List<int>();
             elements=new List<ElementsAC.Element>();
         }
-        public int allocateNode()
+        public int AllocateNode()
         {
             nodesList.Add(new Node());
             return nodesList.Count - 1;
@@ -71,35 +71,35 @@ namespace ElectricalPowerSystems.ACGraph
                 this.node2 = node2;
             }
         }
-        public int createImpedance(int node1, int node2, Complex32 impedance)
+        public int CreateImpedance(int node1, int node2, Complex32 impedance)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
             elements.Add(new ElementsAC.Impedance(node1, node2, elements.Count, impedance));
             return elements.Count - 1;
         }
-        public int createImpedanceWithCurrent(int node1, int node2, Complex32 impedance)
+        public int CreateImpedanceWithCurrent(int node1, int node2, Complex32 impedance)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
             elements.Add(new ElementsAC.ImpedanceWithCurrent(node1, node2, elements.Count, impedance));
             return elements.Count - 1;
         }
-        public int createResistorWithCurrent(int node1, int node2, float resistance)
+        public int CreateResistorWithCurrent(int node1, int node2, float resistance)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
             elements.Add(new ElementsAC.ResistorWithCurrent(node1, node2, elements.Count, resistance));
             return elements.Count - 1;
         }
-        public int createResistor(int node1, int node2, float resistance)
+        public int CreateResistor(int node1, int node2, float resistance)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
             elements.Add(new ElementsAC.Resistor(node1, node2, elements.Count, resistance));
             return elements.Count - 1;
         }
-        public int createLine(int node1, int node2)
+        public int CreateLine(int node1, int node2)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
@@ -107,14 +107,14 @@ namespace ElectricalPowerSystems.ACGraph
             elements.Add(new ElementsAC.Line(node1, node2,elements.Count));
             return elements.Count - 1;
         }
-        public int createCapacitor(int node1, int node2, float capacity)
+        public int CreateCapacitor(int node1, int node2, float capacity)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
             elements.Add(new ElementsAC.Capacitor(node1, node2, elements.Count, capacity));
             return elements.Count - 1;
         }
-        public int createVoltageSource(int node1, int node2, float voltage, float phase, float freq)
+        public int CreateVoltageSource(int node1, int node2, float voltage, float phase, float freq)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
@@ -122,7 +122,7 @@ namespace ElectricalPowerSystems.ACGraph
             elements.Add(new ElementsAC.VoltageSource(node1, node2, elements.Count, voltage, phase, freq));
             return elements.Count - 1;
         }
-        public int createCurrentSource(int node1, int node2, float current, float phase, float freq)
+        public int CreateCurrentSource(int node1, int node2, float current, float phase, float freq)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
@@ -130,14 +130,14 @@ namespace ElectricalPowerSystems.ACGraph
             elements.Add(new ElementsAC.CurrentSource(node1, node2, elements.Count, current, phase, freq));
             return elements.Count - 1;
         }
-        public void createGround(int node)
+        public void CreateGround(int node)
         {
             nodesList[node].connectedElements.Add(elements.Count);
             nodesList[node].grounded = true;
             elements.Add(new ElementsAC.Ground(node,elements.Count));
             groundsCount++;
         }
-        public int createInductor(int node1, int node2, float inductivity)
+        public int CreateInductor(int node1, int node2, float inductivity)
         {
             nodesList[node1].connectedElements.Add(elements.Count);
             nodesList[node2].connectedElements.Add(elements.Count);
@@ -145,7 +145,7 @@ namespace ElectricalPowerSystems.ACGraph
             elements.Add(new ElementsAC.Inductor(node1, node2, elements.Count, inductivity));
             return elements.Count - 1;
         }
-        public int createTransformer(int n1, int n2, int n3, int n4, float k)
+        public int CreateTransformer(int n1, int n2, int n3, int n4, float k)
         {
             nodesList[n1].connectedElements.Add(elements.Count);
             nodesList[n2].connectedElements.Add(elements.Count);
@@ -154,6 +154,32 @@ namespace ElectricalPowerSystems.ACGraph
             transformers.Add(elements.Count);
             elements.Add(new ElementsAC.Transformer2w(n1,n2,n3,n4, elements.Count, k));
             return elements.Count-1;
+        }
+        public int CreateTransformer3w(int n1, int n2, int n3, int n4,int n5,int n6, float k1,float k2)
+        {
+            nodesList[n1].connectedElements.Add(elements.Count);
+            nodesList[n2].connectedElements.Add(elements.Count);
+            nodesList[n3].connectedElements.Add(elements.Count);
+            nodesList[n4].connectedElements.Add(elements.Count);
+            nodesList[n5].connectedElements.Add(elements.Count);
+            nodesList[n6].connectedElements.Add(elements.Count);
+            transformers.Add(elements.Count);
+            elements.Add(new ElementsAC.Transformer3w(n1, n2, n3, n4,n5,n6, elements.Count, k1,k2));
+            return elements.Count - 1;
+        }
+        public int CreateAutotransformer(int n1, int n2, int n3, float k)
+        {
+            nodesList[n1].connectedElements.Add(elements.Count);
+            nodesList[n2].connectedElements.Add(elements.Count);
+            nodesList[n3].connectedElements.Add(elements.Count);
+            transformers.Add(elements.Count);
+            elements.Add(new ElementsAC.Autotransformer(n1, n2, n3, elements.Count,k));
+            return elements.Count - 1;
+        }
+        public int CreateSwitch(int n1, int n2,bool state)
+        {
+            elements.Add(new ElementsAC.Switch(n1, n2, elements.Count, state));
+            return elements.Count - 1;
         }
         public string EquationGeneration(float frequency)
         {
@@ -263,7 +289,7 @@ namespace ElectricalPowerSystems.ACGraph
             equations += $"set frequency = {frequency.ToString(new CultureInfo("en-US"))} * 2 * pi();";
             return equations;
         }
-        public ACGraphSolution solveEquationsAC(float frequency)
+        public ACGraphSolution SolveEquationsAC(float frequency)
         {
             string equations = EquationGeneration(frequency);
             //create solver

@@ -41,7 +41,7 @@ namespace ElectricalPowerSystems.ACGraph
             outputNodeVoltage = new List<int>();
             errors = new List<ErrorMessage>();
         }
-        private int retrieveNodeId(string key)
+        private int RetrieveNodeId(string key)
         {
             int node = acGraph.nodesList.Count;
             try
@@ -51,83 +51,112 @@ namespace ElectricalPowerSystems.ACGraph
             catch (KeyNotFoundException)
             {
                 nodes.Add(key, node);
-                acGraph.allocateNode();
+                acGraph.AllocateNode();
                 nodeLabels.Add(key);
             }
             return node;
         }
-        public int addTransformer(string node1, string node2, string node3, string node4, float k)
+        public int AddTransformer(string node1, string node2, string node3, string node4, float k)
         {
-            int node1Id = retrieveNodeId(node1);
-            int node2Id = retrieveNodeId(node2);
-            int node3Id = retrieveNodeId(node3);
-            int node4Id = retrieveNodeId(node4);
-            return acGraph.createTransformer(node1Id, node2Id, node3Id, node4Id,k);
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            int node3Id = RetrieveNodeId(node3);
+            int node4Id = RetrieveNodeId(node4);
+            return acGraph.CreateTransformer(node1Id, node2Id, node3Id, node4Id,k);
         }
-        public int addResistor(string node1, string node2, float resistance)
+        public int AddTransformer3w(string node1, string node2, string node3, string node4, string node5, string node6, float k1,float k2)
         {
-            int node1Id = retrieveNodeId(node1);
-            int node2Id = retrieveNodeId(node2);
-            return acGraph.createResistor(node1Id,node2Id,resistance);
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            int node3Id = RetrieveNodeId(node3);
+            int node4Id = RetrieveNodeId(node4);
+            int node5Id = RetrieveNodeId(node5);
+            int node6Id = RetrieveNodeId(node6);
+            return acGraph.CreateTransformer3w(node1Id, node2Id, node3Id, node4Id, node5Id, node6Id, k1,k2);
         }
-        public int addLine(string node1, string node2)
+        public int AddAutoTransformer(string node1, string node2, string node3, float k)
         {
-            int node1Id = retrieveNodeId(node1);
-            int node2Id = retrieveNodeId(node2);
-            return acGraph.createLine(node1Id,node2Id);
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            int node3Id = RetrieveNodeId(node3);
+            return acGraph.CreateAutotransformer(node1Id, node2Id, node3Id, k);
         }
-        public int addCapacitor(string node1, string node2, float capacity)
+        public int AddSwitch(string node1, string node2, bool state)
         {
-            int node1Id = retrieveNodeId(node1);
-            int node2Id = retrieveNodeId(node2);
-            return acGraph.createCapacitor(node1Id, node2Id, capacity);
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            return acGraph.CreateSwitch(node1Id, node2Id, state);
+        }
+        public int AddImpedance(string node1, string node2, Complex32 impedance)
+        {
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            return acGraph.CreateImpedance(node1Id, node2Id, impedance);
+        }
+        public int AddResistor(string node1, string node2, float resistance)
+        {
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            return acGraph.CreateResistor(node1Id,node2Id,resistance);
+        }
+        public int AddLine(string node1, string node2)
+        {
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            return acGraph.CreateLine(node1Id,node2Id);
+        }
+        public int AddCapacitor(string node1, string node2, float capacity)
+        {
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            return acGraph.CreateCapacitor(node1Id, node2Id, capacity);
         }
         //частота в герцах
-        public int addVoltageSource(string node1, string node2, float voltage, float phase, float freq)
+        public int AddVoltageSource(string node1, string node2, float voltage, float phase, float freq)
         {
             frequencies.Add(freq);
-            int node1Id = retrieveNodeId(node1);
-            int node2Id = retrieveNodeId(node2);
-            return acGraph.createVoltageSource(node1Id, node2Id, voltage,phase,freq);
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            return acGraph.CreateVoltageSource(node1Id, node2Id, voltage,phase,freq);
         }
         //частота в герцах
-        public int addCurrentSource(string node1, string node2, float current, float phase, float freq)
+        public int AddCurrentSource(string node1, string node2, float current, float phase, float freq)
         {
             frequencies.Add(freq);
-            int node1Id = retrieveNodeId(node1);
-            int node2Id = retrieveNodeId(node2);
-            return acGraph.createCurrentSource(node1Id, node2Id, current, phase, freq);
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            return acGraph.CreateCurrentSource(node1Id, node2Id, current, phase, freq);
         }
-        public void addGround(string node)
+        public void AddGround(string node)
         {
-            int nodeId = retrieveNodeId(node);
-            acGraph.createGround(nodeId);
+            int nodeId = RetrieveNodeId(node);
+            acGraph.CreateGround(nodeId);
         }
-        public int addInductor(string node1, string node2, float inductivity)
+        public int AddInductor(string node1, string node2, float inductivity)
         {
-            int node1Id = retrieveNodeId(node1);
-            int node2Id = retrieveNodeId(node2);
-            return acGraph.createInductor(node1Id,node2Id,inductivity);
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
+            return acGraph.CreateInductor(node1Id,node2Id,inductivity);
         }
-        public void addCurrentOutput(int elementIndex)
+        public void AddCurrentOutput(int elementIndex)
         {
             if (elementIndex >= acGraph.elements.Count ||elementIndex<0)
                 throw new Exception("Incorrect element index.");
             outputCurrent.Add(elementIndex);
         }
-        public void addVoltageOutput(int elementIndex)
+        public void AddVoltageOutput(int elementIndex)
         {
             if (elementIndex >= acGraph.elements.Count || elementIndex < 0)
                 throw new Exception("Incorrect element index.");
             outputNodeVoltage.Add(elementIndex);
         }
-        public void addVoltageOutput(string node1, string node2)
+        public void AddVoltageOutput(string node1, string node2)
         {
-            int node1Id = retrieveNodeId(node1);
-            int node2Id = retrieveNodeId(node2);
+            int node1Id = RetrieveNodeId(node1);
+            int node2Id = RetrieveNodeId(node2);
             outputVoltageDifference.Add(new NodePair(node1Id, node2Id));
         }
-        public string testEquationGeneration(bool useCompiledEquation = false)
+        public string TestEquationGeneration(bool useCompiledEquation = false)
         {
             string result = "";
             foreach (float frequency in frequencies)
@@ -144,6 +173,20 @@ namespace ElectricalPowerSystems.ACGraph
                     result += compiledEquation.PrintJacobiMatrix() + Environment.NewLine;
                 }
                 result += Environment.NewLine;
+            }
+            return result;
+        }
+        public List<string> EquationGeneration()
+        {
+            List<string> result = new List<string>();
+            foreach (float frequency in frequencies)
+            {
+                float hz = (float)(frequency);
+                string equations = acGraph.EquationGeneration(frequency);
+                result.AddRange(
+                           equations.Split(new string[] { "\r\n", "\n" },
+                           StringSplitOptions.None)
+                           );
             }
             return result;
         }
@@ -172,7 +215,7 @@ namespace ElectricalPowerSystems.ACGraph
             foreach (float frequency in frequencies)
             {
                 float hz = (float)(frequency);
-                ACGraphSolution solution = acGraph.solveEquationsAC(frequency);
+                ACGraphSolution solution = acGraph.SolveEquationsAC(frequency);
                 int outputIndex = 0;
                 foreach (var element in outputCurrent)
                 {
@@ -196,7 +239,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             return output;
         }
-        public string getElementString(int index)
+        public string GetElementString(int index)
         {
             try
             {

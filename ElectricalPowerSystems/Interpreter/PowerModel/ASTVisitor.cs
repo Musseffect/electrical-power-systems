@@ -7,188 +7,172 @@ using System.Threading.Tasks;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
-namespace ElectricalPowerSystems.Interpreter
+namespace ElectricalPowerSystems.Interpreter.PowerModel
 {
-    public enum ASTNodeType
+#if NEW
+    #region NEW_GRAMMAR
+
+    public class ModelGrammarVisitor : ModelGrammarBaseVisitor<ASTNode>
     {
-        Model,
-        Statement,
-        Assignment,
-        Division,
-        Multiplication,
-        Negation,
-        Member,
-        Cast,
-        Addition,
-        Subtraction,
-        Function,
-        Float,
-        Int,
-        String,
-        Complex,
-        ComplexPhase,
-        Identifier,
-        Power
-    }
-    public class ASTNode
-    {
-        public ASTNodeType Type { get; protected set; }
-        public int Line { get; set; }
-        public int Position { get; set; }
-    }
-    public class StatementNode : ASTNode
-    {
-        public StatementNode()
+        public override ASTNode VisitArguments([NotNull] ModelGrammarParser.ArgumentsContext context)
         {
-            Type = ASTNodeType.Statement;
+            return base.VisitArguments(context);
         }
-        public ExpressionNode Expression { get; set; }
-    }
-    public class ModelNode : ASTNode
-    {
-        public ModelNode()
+
+        public override ASTNode VisitAssignmentExpression([NotNull] ModelGrammarParser.AssignmentExpressionContext context)
         {
-            Type = ASTNodeType.Model;
+            return base.VisitAssignmentExpression(context);
         }
-        public List<StatementNode> Statements { get; set; }
-    }
-    public class ExpressionNode : ASTNode
-    {
-    }
-    public class InfixExpressionNode : ExpressionNode
-    {
-        public ExpressionNode Left { get; set; }
-        public ExpressionNode Right { get; set; }
-    }
-    public class AdditionNode : InfixExpressionNode
-    {
-        public AdditionNode()
+
+        public override ASTNode VisitBinaryOperatorExpression([NotNull] ModelGrammarParser.BinaryOperatorExpressionContext context)
         {
-            Type = ASTNodeType.Addition;
+            return base.VisitBinaryOperatorExpression(context);
         }
-    }
-    public class SubtractionNode : InfixExpressionNode
-    {
-        public SubtractionNode()
+
+        public override ASTNode VisitBracketExpression([NotNull] ModelGrammarParser.BracketExpressionContext context)
         {
-            Type = ASTNodeType.Subtraction;
+            return base.VisitBracketExpression(context);
         }
-    }
-    public class MultiplicationNode : InfixExpressionNode
-    {
-        public MultiplicationNode()
+
+        public override ASTNode VisitCastExpression([NotNull] ModelGrammarParser.CastExpressionContext context)
         {
-            Type = ASTNodeType.Multiplication;
+            return base.VisitCastExpression(context);
         }
-    }
-    public class DivisionNode : InfixExpressionNode
-    {
-        public DivisionNode()
+
+        public override ASTNode VisitComplex([NotNull] ModelGrammarParser.ComplexContext context)
         {
-            Type = ASTNodeType.Division;
+            return base.VisitComplex(context);
         }
-    }
-    public class AssignmentNode : ExpressionNode
-    {
-        public AssignmentNode()
+
+        public override ASTNode VisitComplexConstant([NotNull] ModelGrammarParser.ComplexConstantContext context)
         {
-            Type = ASTNodeType.Assignment;
+            return base.VisitComplexConstant(context);
         }
-        public ExpressionNode Left { get; set; }
-        public ExpressionNode Right { get; set; }
-    }
-    public class MemberNode : ExpressionNode
-    {
-        public MemberNode()
+
+        public override ASTNode VisitComplexExp([NotNull] ModelGrammarParser.ComplexExpContext context)
         {
-            Type = ASTNodeType.Member;
+            return base.VisitComplexExp(context);
         }
-        public ExpressionNode Left { get; set; }
-        public IdentifierNode MemberId { get; set; }
-    }
-    public class CastNode : ExpressionNode
-    {
-        public CastNode()
+
+        public override ASTNode VisitComplexExprConstant([NotNull] ModelGrammarParser.ComplexExprConstantContext context)
         {
-            Type = ASTNodeType.Cast;
+            return base.VisitComplexExprConstant(context);
         }
-        public IdentifierNode CastType { get; set; }
-        public ExpressionNode Right { get; set; }
-    }
-    public class PowerNode : InfixExpressionNode
-    {
-        public PowerNode()
+
+        public override ASTNode VisitConnections([NotNull] ModelGrammarParser.ConnectionsContext context)
         {
-            Type = ASTNodeType.Power;
+            return base.VisitConnections(context);
         }
-    }
-    public class NegationNode : ExpressionNode
-    {
-        public NegationNode()
+
+        public override ASTNode VisitConnectionStatement([NotNull] ModelGrammarParser.ConnectionStatementContext context)
         {
-            Type = ASTNodeType.Negation;
+            return base.VisitConnectionStatement(context);
         }
-        public ExpressionNode InnerNode { get; set; }
-    }
-    public class StringNode : ExpressionNode
-    {
-        public StringNode()
+
+        public override ASTNode VisitConstant([NotNull] ModelGrammarParser.ConstantContext context)
         {
-            Type = ASTNodeType.String;
+            return base.VisitConstant(context);
         }
-        public string Value { get; set; }
-    }
-    public class FunctionNode : ExpressionNode
-    {
-        public FunctionNode()
+
+        public override ASTNode VisitConstantExpression([NotNull] ModelGrammarParser.ConstantExpressionContext context)
         {
-            Type = ASTNodeType.Function;
+            return base.VisitConstantExpression(context);
         }
-        public string FunctionName { get; set; }
-        public List<ExpressionNode> Arguments { get; set; }
-    }
-    public class ComplexPhaseNode : ExpressionNode
-    {
-        public ComplexPhaseNode()
+
+        public override ASTNode VisitElements([NotNull] ModelGrammarParser.ElementsContext context)
         {
-            Type = ASTNodeType.ComplexPhase;
+            return base.VisitElements(context);
         }
-        public double Magnitude { get; set; }
-        public double Phase { get; set; }
-    }
-    public class ComplexNode : ExpressionNode
-    {
-        public ComplexNode()
+
+        public override ASTNode VisitElementStatement([NotNull] ModelGrammarParser.ElementStatementContext context)
         {
-            Type = ASTNodeType.Complex;
+            return base.VisitElementStatement(context);
         }
-        public double Re { get; set; }
-        public double Im { get; set; }
-    }
-    public class IdentifierNode : ExpressionNode
-    {
-        public IdentifierNode()
+
+        public override ASTNode VisitEmptyStatement([NotNull] ModelGrammarParser.EmptyStatementContext context)
         {
-            Type = ASTNodeType.Identifier;
+            return base.VisitEmptyStatement(context);
         }
-        public string Value { get; set; }
-    }
-    public class FloatNode : ExpressionNode
-    {
-        public FloatNode()
+
+        public override ASTNode VisitExpression([NotNull] ModelGrammarParser.ExpressionContext context)
         {
-            Type = ASTNodeType.Float;
+            return base.VisitExpression(context);
         }
-        public double Value { get; set; }
-    }
-    public class IntNode : ExpressionNode
-    {
-        public IntNode()
+
+        public override ASTNode VisitFieldExpression([NotNull] ModelGrammarParser.FieldExpressionContext context)
         {
-            Type = ASTNodeType.Int;
+            return base.VisitFieldExpression(context);
         }
-        public int Value { get; set; }
+
+        public override ASTNode VisitFunctionArguments([NotNull] ModelGrammarParser.FunctionArgumentsContext context)
+        {
+            return base.VisitFunctionArguments(context);
+        }
+
+        public override ASTNode VisitFunctionExpression([NotNull] ModelGrammarParser.FunctionExpressionContext context)
+        {
+            return base.VisitFunctionExpression(context);
+        }
+
+        public override ASTNode VisitIdentifierExpression([NotNull] ModelGrammarParser.IdentifierExpressionContext context)
+        {
+            return base.VisitIdentifierExpression(context);
+        }
+
+        public override ASTNode VisitKeyValue([NotNull] ModelGrammarParser.KeyValueContext context)
+        {
+            return base.VisitKeyValue(context);
+        }
+
+        public override ASTNode VisitModel([NotNull] ModelGrammarParser.ModelContext context)
+        {
+
+
+        }
+
+        public override ASTNode VisitNumber([NotNull] ModelGrammarParser.NumberContext context)
+        {
+            return base.VisitNumber(context);
+        }
+
+        public override ASTNode VisitNumberConstant([NotNull] ModelGrammarParser.NumberConstantContext context)
+        {
+            return base.VisitNumberConstant(context);
+        }
+
+        public override ASTNode VisitStatement([NotNull] ModelGrammarParser.StatementContext context)
+        {
+            return base.VisitStatement(context);
+        }
+
+        public override ASTNode VisitStatementRule([NotNull] ModelGrammarParser.StatementRuleContext context)
+        {
+            return base.VisitStatementRule(context);
+        }
+
+        public override ASTNode VisitStatements([NotNull] ModelGrammarParser.StatementsContext context)
+        {
+            return base.VisitStatements(context);
+        }
+
+        public override ASTNode VisitStringConstant([NotNull] ModelGrammarParser.StringConstantContext context)
+        {
+            return base.VisitStringConstant(context);
+        }
+
+        public override ASTNode VisitUnaryOperator([NotNull] ModelGrammarParser.UnaryOperatorContext context)
+        {
+            return base.VisitUnaryOperator(context);
+        }
+
+        public override ASTNode VisitUnaryOperatorExpression([NotNull] ModelGrammarParser.UnaryOperatorExpressionContext context)
+        {
+            return base.VisitUnaryOperatorExpression(context);
+        }
     }
+    #endregion
+#endif
+#region OLD
     class ASTVisitor : ModelGrammarBaseVisitor<ASTNode>
     {
         public override ASTNode VisitModel([NotNull] ModelGrammarParser.ModelContext context)
@@ -415,4 +399,5 @@ namespace ElectricalPowerSystems.Interpreter
             };
         }
     }
+#endregion
 }

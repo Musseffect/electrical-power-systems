@@ -64,15 +64,15 @@ namespace ElectricalPowerSystems.PowerGraph
             lineC = -1;
             if (((int)fault.Type & (int)GraphFaultOC.Phases.A) ==0 )
             {
-                lineA = acGraph.createLine(inA, outA);
+                lineA = acGraph.CreateLine(inA, outA);
             }
             if (((int)fault.Type & (int)GraphFaultOC.Phases.B) == 0)
             {
-                lineB = acGraph.createLine(inB, outB);
+                lineB = acGraph.CreateLine(inB, outB);
             }
             if (((int)fault.Type & (int)GraphFaultOC.Phases.C) == 0)
             {
-                lineC = acGraph.createLine(inC, outC);
+                lineC = acGraph.CreateLine(inC, outC);
             }
         }
     }
@@ -128,36 +128,36 @@ namespace ElectricalPowerSystems.PowerGraph
             outA = nodes[1].A;
             outB = nodes[1].B;
             outC = nodes[1].C;
-            commonNode = acGraph.allocateNode();
-            groundNode = acGraph.allocateNode();
+            commonNode = acGraph.AllocateNode();
+            groundNode = acGraph.AllocateNode();
             generate(acGraph, fault);
         }
         private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLLG fault)
         {
-            acGraph.createGround(groundNode);
-            cA = acGraph.allocateNode();
-            cB = acGraph.allocateNode();
-            cC = acGraph.allocateNode();
-            lineInA = acGraph.createLine(cA, inA);
-            lineInB = acGraph.createLine(cB, inB);
-            lineInC = acGraph.createLine(cC, inC);
-            lineOutA = acGraph.createLine(cA, outA);
-            lineOutB = acGraph.createLine(cB, outB);
-            lineOutC = acGraph.createLine(cC, outC);
-            acGraph.createImpedanceWithCurrent(groundNode,commonNode,fault.Zg);
+            acGraph.CreateGround(groundNode);
+            cA = acGraph.AllocateNode();
+            cB = acGraph.AllocateNode();
+            cC = acGraph.AllocateNode();
+            lineInA = acGraph.CreateLine(cA, inA);
+            lineInB = acGraph.CreateLine(cB, inB);
+            lineInC = acGraph.CreateLine(cC, inC);
+            lineOutA = acGraph.CreateLine(cA, outA);
+            lineOutB = acGraph.CreateLine(cB, outB);
+            lineOutC = acGraph.CreateLine(cC, outC);
+            acGraph.CreateImpedanceWithCurrent(groundNode,commonNode,fault.Zg);
             switch (fault.phases)
             {
                 case GraphFaultSCLLG.Phases.AB:
-                    acGraph.createImpedance(commonNode, cA, fault.Zl);
-                    acGraph.createImpedance(commonNode, cB, fault.Zl);
+                    acGraph.CreateImpedance(commonNode, cA, fault.Zl);
+                    acGraph.CreateImpedance(commonNode, cB, fault.Zl);
                     break;
                 case GraphFaultSCLLG.Phases.BC:
-                    acGraph.createImpedance(commonNode, cB, fault.Zl);
-                    acGraph.createImpedance(commonNode, cC, fault.Zl);
+                    acGraph.CreateImpedance(commonNode, cB, fault.Zl);
+                    acGraph.CreateImpedance(commonNode, cC, fault.Zl);
                     break;
                 case GraphFaultSCLLG.Phases.CA:
-                    acGraph.createImpedance(commonNode, cC, fault.Zl);
-                    acGraph.createImpedance(commonNode, cA, fault.Zl);
+                    acGraph.CreateImpedance(commonNode, cC, fault.Zl);
+                    acGraph.CreateImpedance(commonNode, cA, fault.Zl);
                     break;
             }
         }
@@ -208,26 +208,26 @@ namespace ElectricalPowerSystems.PowerGraph
             outA = nodes[1].A;
             outB = nodes[1].B;
             outC = nodes[1].C;
-            commonNode = acGraph.allocateNode();
-            groundNode = acGraph.allocateNode();
+            commonNode = acGraph.AllocateNode();
+            groundNode = acGraph.AllocateNode();
             generate(acGraph, fault);
         }
         private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLLLG fault)
         {
-            acGraph.createGround(groundNode);
-            cA = acGraph.allocateNode();
-            cB = acGraph.allocateNode();
-            cC = acGraph.allocateNode();
-            lineInA = acGraph.createLine(cA, inA);
-            lineInB = acGraph.createLine(cB, inB);
-            lineInC = acGraph.createLine(cC, inC);
-            lineOutA = acGraph.createLine(cA, outA);
-            lineOutB = acGraph.createLine(cB, outB);
-            lineOutC = acGraph.createLine(cC, outC);
-            acGraph.createImpedance(commonNode, cA, fault.Zl);
-            acGraph.createImpedance(commonNode, cB, fault.Zl);
-            acGraph.createImpedance(commonNode, cC, fault.Zl);
-            acGraph.createImpedanceWithCurrent(groundNode, commonNode, fault.Zg);
+            acGraph.CreateGround(groundNode);
+            cA = acGraph.AllocateNode();
+            cB = acGraph.AllocateNode();
+            cC = acGraph.AllocateNode();
+            lineInA = acGraph.CreateLine(cA, inA);
+            lineInB = acGraph.CreateLine(cB, inB);
+            lineInC = acGraph.CreateLine(cC, inC);
+            lineOutA = acGraph.CreateLine(cA, outA);
+            lineOutB = acGraph.CreateLine(cB, outB);
+            lineOutC = acGraph.CreateLine(cC, outC);
+            acGraph.CreateImpedance(commonNode, cA, fault.Zl);
+            acGraph.CreateImpedance(commonNode, cB, fault.Zl);
+            acGraph.CreateImpedance(commonNode, cC, fault.Zl);
+            acGraph.CreateImpedanceWithCurrent(groundNode, commonNode, fault.Zg);
         }
     }
     public class GraphFaultSCLG : GraphElement
@@ -280,31 +280,31 @@ namespace ElectricalPowerSystems.PowerGraph
             outA = nodes[1].A;
             outB = nodes[1].B;
             outC = nodes[1].C;
-            groundNode = acGraph.allocateNode();
+            groundNode = acGraph.AllocateNode();
             generate(acGraph, fault);
         }
         private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLG fault)
         {
-            cA = acGraph.allocateNode();
-            cB = acGraph.allocateNode();
-            cC = acGraph.allocateNode();
-            lineInA = acGraph.createLine(cA, inA);
-            lineInB = acGraph.createLine(cB, inB);
-            lineInC = acGraph.createLine(cC, inC);
-            lineOutA = acGraph.createLine(cA, outA);
-            lineOutB = acGraph.createLine(cB, outB);
-            lineOutC = acGraph.createLine(cC, outC);
-            acGraph.createGround(groundNode);
+            cA = acGraph.AllocateNode();
+            cB = acGraph.AllocateNode();
+            cC = acGraph.AllocateNode();
+            lineInA = acGraph.CreateLine(cA, inA);
+            lineInB = acGraph.CreateLine(cB, inB);
+            lineInC = acGraph.CreateLine(cC, inC);
+            lineOutA = acGraph.CreateLine(cA, outA);
+            lineOutB = acGraph.CreateLine(cB, outB);
+            lineOutC = acGraph.CreateLine(cC, outC);
+            acGraph.CreateGround(groundNode);
             switch (fault.phase)
             {
                 case GraphFaultSCLG.Phase.A:
-                    acGraph.createImpedanceWithCurrent(cA,groundNode,fault.Zg);
+                    acGraph.CreateImpedanceWithCurrent(cA,groundNode,fault.Zg);
                     break;
                 case GraphFaultSCLG.Phase.B:
-                    acGraph.createImpedanceWithCurrent(cB, groundNode, fault.Zg);
+                    acGraph.CreateImpedanceWithCurrent(cB, groundNode, fault.Zg);
                     break;
                 case GraphFaultSCLG.Phase.C:
-                    acGraph.createImpedanceWithCurrent(cC, groundNode, fault.Zg);
+                    acGraph.CreateImpedanceWithCurrent(cC, groundNode, fault.Zg);
                     break;
             }
         }
@@ -361,25 +361,25 @@ namespace ElectricalPowerSystems.PowerGraph
         }
         private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLL fault)
         {
-            cA = acGraph.allocateNode();
-            cB = acGraph.allocateNode();
-            cC = acGraph.allocateNode();
-            lineInA = acGraph.createLine(cA, inA);
-            lineInB = acGraph.createLine(cB, inB);
-            lineInC = acGraph.createLine(cC, inC);
-            lineOutA = acGraph.createLine(cA, outA);
-            lineOutB = acGraph.createLine(cB, outB);
-            lineOutC = acGraph.createLine(cC, outC);
+            cA = acGraph.AllocateNode();
+            cB = acGraph.AllocateNode();
+            cC = acGraph.AllocateNode();
+            lineInA = acGraph.CreateLine(cA, inA);
+            lineInB = acGraph.CreateLine(cB, inB);
+            lineInC = acGraph.CreateLine(cC, inC);
+            lineOutA = acGraph.CreateLine(cA, outA);
+            lineOutB = acGraph.CreateLine(cB, outB);
+            lineOutC = acGraph.CreateLine(cC, outC);
             switch (fault.phases)
             {
                 case GraphFaultSCLL.Phases.AB:
-                    acGraph.createImpedance(cA, cB, fault.Zl);
+                    acGraph.CreateImpedance(cA, cB, fault.Zl);
                     break;
                 case GraphFaultSCLL.Phases.BC:
-                    acGraph.createImpedance(cB, cC, fault.Zl);
+                    acGraph.CreateImpedance(cB, cC, fault.Zl);
                     break;
                 case GraphFaultSCLL.Phases.CA:
-                    acGraph.createImpedance(cC, cA, fault.Zl);
+                    acGraph.CreateImpedance(cC, cA, fault.Zl);
                     break;
             }
         }
@@ -424,24 +424,24 @@ namespace ElectricalPowerSystems.PowerGraph
             outA = nodes[1].A;
             outB = nodes[1].B;
             outC = nodes[1].C;
-            commonNode = acGraph.allocateNode();
+            commonNode = acGraph.AllocateNode();
             generate(acGraph, fault);
         }
         private void generate(ACGraph.ACGraph acGraph, GraphFaultSCLLL fault)
         {
-            cA = acGraph.allocateNode();
-            cB = acGraph.allocateNode();
-            cC = acGraph.allocateNode();
-            lineInA = acGraph.createLine(cA, inA);
-            lineInB = acGraph.createLine(cB, inB);
-            lineInC = acGraph.createLine(cC, inC);
-            lineOutA = acGraph.createLine(cA, outA);
-            lineOutB = acGraph.createLine(cB, outB);
-            lineOutC = acGraph.createLine(cC, outC);
-            acGraph.createGround(commonNode);
-            acGraph.createImpedanceWithCurrent(cA, commonNode, fault.Zl);
-            acGraph.createImpedanceWithCurrent(cB, commonNode, fault.Zl);
-            acGraph.createImpedanceWithCurrent(cC, commonNode, fault.Zl);
+            cA = acGraph.AllocateNode();
+            cB = acGraph.AllocateNode();
+            cC = acGraph.AllocateNode();
+            lineInA = acGraph.CreateLine(cA, inA);
+            lineInB = acGraph.CreateLine(cB, inB);
+            lineInC = acGraph.CreateLine(cC, inC);
+            lineOutA = acGraph.CreateLine(cA, outA);
+            lineOutB = acGraph.CreateLine(cB, outB);
+            lineOutC = acGraph.CreateLine(cC, outC);
+            acGraph.CreateGround(commonNode);
+            acGraph.CreateImpedanceWithCurrent(cA, commonNode, fault.Zl);
+            acGraph.CreateImpedanceWithCurrent(cB, commonNode, fault.Zl);
+            acGraph.CreateImpedanceWithCurrent(cC, commonNode, fault.Zl);
         }
     }
 }

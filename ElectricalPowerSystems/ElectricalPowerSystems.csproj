@@ -66,6 +66,9 @@
     <Reference Include="Antlr4.Runtime, Version=4.6.0.0, Culture=neutral, PublicKeyToken=09abb75b9ed49849, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr4.Runtime.4.6.5\lib\net45\Antlr4.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit, Version=6.0.1.278, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+      <HintPath>..\packages\AvalonEdit.6.0.1\lib\net45\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
     <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
       <HintPath>..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
     </Reference>
@@ -79,6 +82,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -100,6 +104,9 @@
     <Compile Include="ACGraph\ACGraph.cs" />
     <Compile Include="ACGraph\CircuitModelAC.cs" />
     <Compile Include="ACGraph\ElementsAC.cs" />
+    <Compile Include="HelpWindow.xaml.cs">
+      <DependentUpon>HelpWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Interpreter\Equations\DAE\ASTNode.cs" />
     <Compile Include="Interpreter\Equations\DAE\DAECompiler.cs" />
     <Compile Include="Interpreter\Equations\DAE\DAEGrammarVisitor.cs" />
@@ -109,9 +116,11 @@
     <Compile Include="Interpreter\Equations\DAE\DAEValidator.cs" />
     <Compile Include="Interpreter\Equations\Expression\Expression.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\ASTNode.cs" />
+    <Compile Include="Interpreter\PowerModel\ASTNode.cs" />
+    <Compile Include="MvvmTextEditor.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphAutotransformer.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphBreak.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphMeter.cs" />
+    <Compile Include="PowerGraph\GraphElements\GraphWattmeter.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphSwitch.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphTransformer3w.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphRecloser.cs" />
@@ -183,6 +192,10 @@
     <Compile Include="Test\Test.cs" />
     <Compile Include="MathUtils\DAESystem.cs" />
     <Compile Include="MathUtils\DESolver.cs" />
+    <Page Include="HelpWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\ChartWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -262,6 +275,7 @@
       <Generator>MSBuild:Compile</Generator>
       <CustomToolNamespace>ElectricalPowerSystems.Interpreter.Equations.DAE</CustomToolNamespace>
     </Antlr4>
+    <EmbeddedResource Include="SyntaxHighlighting.xshd" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -320,7 +334,11 @@
   <ItemGroup>
     <Resource Include="TestModels\ThreePhaseStaticTest2.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Help\help.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Docs\ThreePhaseLang.txt" />
   </ItemGroup>
