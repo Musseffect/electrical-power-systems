@@ -62,6 +62,15 @@
         </li>
         <li>
             <div>
+                <span class="type">element</span> <span class="element">impedance</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">float</span> R,
+                <span class="type">float</span> X)
+            </div>
+            <div>присоединить комплексное сопротивление к узлам node1 и node2 с имендансом R + jX</div>
+        </li>
+        <li>
+            <div>
                 <span class="type">element</span> <span class="element">transformer</span>(<span class="type">string</span> node1,
                 <span class="type">string</span> node2,
                 <span class="type">string</span> node3,
@@ -98,6 +107,14 @@
                 <span class="type">string</span> node2)
             </div>
             <div>присоединить провод с нулевым сопротивлениям к узлам node1 и node2</div>
+        </li>
+        <li>
+            <div>
+                <span class="type">element</span> <span class="element">switch</span>(<span class="type">string</span> node1,
+                <span class="type">string</span> node2,
+                <span class="type">float</span> state)
+            </div>
+            <div>присоединить коммутатор к узлам node1 и node2 с состоянием state (0 - выключен, не 0 - включен)</div>
         </li>
         <li>
             <div>
