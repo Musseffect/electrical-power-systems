@@ -190,6 +190,16 @@ namespace ElectricalPowerSystems.ACGraph
             }
             return result;
         }
+        public List<string> EquationGenerationTransient()
+        {
+            List<string> result = new List<string>();
+            string equations = acGraph.EquationGenerationTransient();
+            result.AddRange(
+                       equations.Split(new string[] { "\r\n", "\n" },
+                       StringSplitOptions.None)
+                       );
+            return result;
+        }
         public List<string> Solve()
         {
             List<string> output = new List<string>();

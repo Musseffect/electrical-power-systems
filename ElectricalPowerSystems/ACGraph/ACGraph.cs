@@ -181,6 +181,78 @@ namespace ElectricalPowerSystems.ACGraph
             elements.Add(new ElementsAC.Switch(n1, n2, elements.Count, state));
             return elements.Count - 1;
         }
+        public string EquationGenerationTransient()
+        {
+            string equations = "";
+            Dictionary<string, List<ElementsAC.CurrentFlowBlock>> nodeEquationsIn = new Dictionary<string, List<ElementsAC.CurrentFlowBlock>>();
+            Dictionary<string, List<ElementsAC.CurrentFlowBlock>> nodeEquationsOut = new Dictionary<string, List<ElementsAC.CurrentFlowBlock>>();
+            for (int i = 0; i < nodesList.Count; i++)
+            {
+                nodeEquationsIn.Add($"v_{i}", new List<ElementsAC.CurrentFlowBlock>());
+                nodeEquationsOut.Add($"v_{i}", new List<ElementsAC.CurrentFlowBlock>());
+            }
+            foreach (var element in elements)
+            {
+                List<ElementsAC.EquationBlock> blocks = element.GenerateEquationsTransient();
+                foreach (var block in blocks)
+                {
+                    if (block is ElementsAC.CurrentFlowBlock)
+                    {
+                        ElementsAC.CurrentFlowBlock currentFlowBlock = (ElementsAC.CurrentFlowBlock)block;
+                        if (currentFlowBlock.Node1 != null)
+                            nodeEquationsIn[currentFlowBlock.Node1].Add(currentFlowBlock);
+                        if (currentFlowBlock.Node2 != null)
+                            nodeEquationsOut[currentFlowBlock.Node2].Add(currentFlowBlock);
+                    }
+                    else
+                    {
+                        equations += block.Equation + Environment.NewLine;
+                    }
+                }
+            }
+            equations += "//Current equations" + Environment.NewLine;
+            for (int i = 0; i < nodesList.Count; i++)
+            {
+                var node = $"v_{i}";
+                var nodeIn = nodeEquationsIn[node];
+                var nodeOut = nodeEquationsOut[node];
+                string left = "";
+                int k = 0;
+                //left side = right side
+                foreach (var block in nodeOut)
+                {
+                    if (k != 0)
+                        left += " + ";
+                    left += block.Equation;
+                    k++;
+                }
+                if (nodeOut.Count == 0)
+                    left = "0";
+                string right = "";
+                k = 0;
+                foreach (var block in nodeIn)
+                {
+                    if (k != 0)
+                        right += " + ";
+                    right += block.Equation;
+                    k++;
+                }
+                if (nodeIn.Count == 0)
+                    right = "0";
+                string eq = $"{left} = {right}; //node {i}";
+                if (nodeOut.Count + nodeIn.Count > 0)
+                    equations += eq + Environment.NewLine;
+            }
+            foreach (var element in elements)
+            {
+                var blocks = element.GetParametersTransient();
+                foreach (var block in blocks)
+                {
+                    equations += block.Equation + Environment.NewLine;
+                }
+            }
+            return equations;
+        }
         public string EquationGeneration(float frequency)
         {
             string equations = "";

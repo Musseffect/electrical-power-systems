@@ -57,7 +57,7 @@ namespace ElectricalPowerSystems
             }
         }
         private bool uiFlag;
-        private bool UIEnabled {
+        public bool UIEnabled {
             get { return uiFlag; }
             set {
                 uiFlag = value;
@@ -124,96 +124,92 @@ namespace ElectricalPowerSystems
             addNewTab();
             addNewTab();
             DataContext = this;
-            ((FileTabItem)_tabItems[0]).Content += @"   //rlc series scheme";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"v=voltageSource(""g"", ""1_a1"", 220.0, 0.0, 50.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"resistor(""1_a1"",""1_a2"",10.0)";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"inductor(""1_a2"", ""1_a3"", 5.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"capacitor(""1_a3"", ""g"", 0.01);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"ground(""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""1_a1"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""1_a2"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""1_a3"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"current(v);";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"   //rlc series scheme";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"v=voltageSource(""g"", ""1_a1"", 220.0, 0.0, 50.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"resistor(""1_a1"",""1_a2"",10.0)";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"inductor(""1_a2"", ""1_a3"", 5.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"capacitor(""1_a3"", ""g"", 0.01);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"ground(""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""1_a1"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""1_a2"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""1_a3"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"current(v);";
 
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"   //rlc parallel scheme";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"v=voltageSource(""g"", ""2_a1"", 220.0, 0.0, 50.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"r=resistor(""g"",""2_a1"",10.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"i=inductor(""g"", ""2_a1"", 5.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"c=capacitor(""g"", ""2_a1"", 0.01);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"ground(""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""2_a1"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"current(v);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"current(r);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"current(i);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"current(c);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"   //rlc parallel scheme";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"v=voltageSource(""g"", ""2_a1"", 220.0, 0.0, 50.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"r=resistor(""g"",""2_a1"",10.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"i=inductor(""g"", ""2_a1"", 5.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"c=capacitor(""g"", ""2_a1"", 0.01);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""2_a1"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"current(v);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"current(r);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"current(i);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"current(c);";
 
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"   //complex scheme";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"v1=voltageSource(""g"", ""3_a1"", 220.0, 0.0, 50.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"v2=voltageSource(""3_a5"", ""3_a4"", 220.0, 0.0, 50.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"r1=resistor(""3_a2"",""3_a5"",10.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"r2=resistor(""3_a5"",""3_a6"",10.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"i1=inductor(""3_a1"", ""3_a6"", 5.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"i2=inductor(""3_a2"", ""3_a3"", 5.0);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"c1=capacitor(""3_a6"", ""g"", 0.02);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"c2=capacitor(""3_a3"", ""3_a4"", 0.04);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"c3=capacitor(""3_a1"", ""3_a2"", 0.01);";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"ground(""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""3_a1"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""3_a2"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""3_a3"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""3_a4"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""3_a5"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
-            ((FileTabItem)_tabItems[0]).Content += @"voltage(""3_a6"",""g"");";
-            ((FileTabItem)_tabItems[0]).Content += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"   //complex scheme";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"v1=voltageSource(""g"", ""3_a1"", 220.0, 0.0, 50.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"v2=voltageSource(""3_a5"", ""3_a4"", 220.0, 0.0, 50.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"r1=resistor(""3_a2"",""3_a5"",10.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"r2=resistor(""3_a5"",""3_a6"",10.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"i1=inductor(""3_a1"", ""3_a6"", 5.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"i2=inductor(""3_a2"", ""3_a3"", 5.0);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"c1=capacitor(""3_a6"", ""g"", 0.02);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"c2=capacitor(""3_a3"", ""3_a4"", 0.04);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"c3=capacitor(""3_a1"", ""3_a2"", 0.01);";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a1"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a2"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a3"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a4"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a5"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a6"",""g"");";
+             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
             FileTab.SelectedIndex = 0;
 
-            ((FileTabItem)_tabItems[1]).Content = @"set a = 2;";
-            ((FileTabItem)_tabItems[1]).Content += "\r\n";
-            ((FileTabItem)_tabItems[1]).Content += @"x*x+a=e()^x*sin(x);";
-            ((FileTabItem)_tabItems[1]).Content += "\r\n";
-            ((FileTabItem)_tabItems[1]).Content += @"x(0)=0;";
+            ((FileTabItem)_tabItems[1]).Document.Text = @"set a = 2;";
+            ((FileTabItem)_tabItems[1]).Document.Text += "\r\n";
+            ((FileTabItem)_tabItems[1]).Document.Text += @"x*x+a=e()^x*sin(x);";
+            ((FileTabItem)_tabItems[1]).Document.Text += "\r\n";
+            ((FileTabItem)_tabItems[1]).Document.Text += @"x(0)=0;";
 
             DispatcherTimer dt = new DispatcherTimer();
             dt.Interval = TimeSpan.FromSeconds(2);
@@ -272,8 +268,10 @@ namespace ElectricalPowerSystems
             List<string> outputList = new List<string>();
             try
             {
+                string text = "";
+                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
                 Interpreter.Equations.Nonlinear.EquationCompiler compiler = new Interpreter.Equations.Nonlinear.EquationCompiler();
-                Interpreter.Equations.Nonlinear.NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(tab.Content);
+                Interpreter.Equations.Nonlinear.NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(text);
                 MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                 //calc solution
                 MathNet.Numerics.LinearAlgebra.Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(
@@ -283,7 +281,7 @@ namespace ElectricalPowerSystems
                 0.01,
                 1.0
                 );
-                outputList.Add("Solution");
+                outputList.Add("Решение");
                 FormOutput(solution, compiledEquation, ref outputList);
             }
             catch (Interpreter.Equations.Nonlinear.CompilerException exc)
@@ -347,7 +345,9 @@ namespace ElectricalPowerSystems
             List<string> outputList = new List<string>();
             try
             {
-                Interpreter.MainInterpreter.SolveModel(tab.Content, ref errorList, ref outputList);
+                string text = "";
+                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
+                Interpreter.MainInterpreter.SolveModel(text, ref errorList, ref outputList);
             }
             catch (Exception exc)
             {
@@ -531,7 +531,7 @@ namespace ElectricalPowerSystems
                 path = dialog.FileName;
                 filename = dialog.SafeFileName;
             }
-            if (SaveFile(path, item.Content))
+            if (SaveFile(path, item.Document.Text))
             {
                 item.FilePath = path;
                 item.Filename = filename;
@@ -552,7 +552,7 @@ namespace ElectricalPowerSystems
                     path = dialog.FileName;
                     filename = dialog.SafeFileName;
                 }
-                if (SaveFile(path, item.Content))
+                if (SaveFile(path, item.Document.Text))
                 {
                     item.FilePath = path;
                     item.Filename = filename;
@@ -568,7 +568,7 @@ namespace ElectricalPowerSystems
                 return;
             string path = dialog.FileName;
             string filename = dialog.SafeFileName;
-            if (SaveFile(path, item.Content))
+            if (SaveFile(path, item.Document.Text))
             {
                 item.FilePath = path;
                 item.Filename = filename;
@@ -591,7 +591,7 @@ namespace ElectricalPowerSystems
         {
             UIEnabled = false;
             clearOutput();
-            await Task.Run(() => RunEquationGeneration(this));
+            await Task.Run(() => RunEquationGenerationAC(this));
             UIEnabled = true;
             Expander.IsExpanded = true;
         }
@@ -607,7 +607,7 @@ namespace ElectricalPowerSystems
                 outputList.Add($"F{i}(X) = {system.Equations[i].execute(x)}");
             }
         }
-        private void RunEquationGeneration(MainWindow window)
+        private void RunEquationGenerationAC(MainWindow window)
         {
             FileTabItem tab = null;
             Dispatcher.Invoke(() => {
@@ -626,7 +626,9 @@ namespace ElectricalPowerSystems
             List<string> outputList = new List<string>();
             try
             {
-                Interpreter.MainInterpreter.EquationGeneration(tab.Content, ref errorList, ref outputList);
+                string text = "";
+                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
+                Interpreter.MainInterpreter.EquationGeneration(text, ref errorList, ref outputList);
             }
             catch (Exception exc)
             {
@@ -661,7 +663,62 @@ namespace ElectricalPowerSystems
             Expander.IsExpanded = true;*/
             throw new NotImplementedException();
         }
+        private async void RungGenerateDAE_Click(object sender, RoutedEventArgs e)
+        {
+            UIEnabled = false;
+            clearOutput();
+            await Task.Run(() => RunEquationGenerationDAE(this));
+            UIEnabled = true;
+            Expander.IsExpanded = true;
+        }
 
+        private void RunEquationGenerationDAE(MainWindow window)
+        {
+            FileTabItem tab = null;
+            Dispatcher.Invoke(() => {
+                tab = window.FileTab.SelectedItem as FileTabItem;
+            });
+            if (tab == null)
+            {
+                return;
+            }
+            List<ErrorMessage> errorList = new List<ErrorMessage>();
+            Dispatcher.Invoke(() => {
+                window.FileTab.Focus();
+                window.StatusText = "Генерация уравнений";
+            });
+            //Thread.Sleep(4000); //Test of UI
+            List<string> outputList = new List<string>();
+            try
+            {
+                string text = "";
+                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
+                Interpreter.MainInterpreter.EquationGenerationDAE(text, ref errorList, ref outputList);
+            }
+            catch (Exception exc)
+            {
+                Dispatcher.Invoke(() => {
+                    window.OutputText += exc.Message;
+                    window.OutputText += "\n";
+                    window.OutputText += exc.StackTrace;
+                });
+                return;
+            }
+            Dispatcher.Invoke(() => {
+                foreach (ErrorMessage error in errorList)
+                {
+                    window.errors.Add(error);
+                }
+                foreach (var output in outputList)
+                {
+                    window.OutputText += output;
+                    window.OutputText += "\n";
+                }
+                window.StatusText = "Готово";
+            }
+            );
+            return;
+        }
         private void Help_Click(object sender, RoutedEventArgs e)
         {
             bool isWindowOpen = false;

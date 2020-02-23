@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using ICSharpCode.AvalonEdit.Document;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace ElectricalPowerSystems
@@ -19,6 +20,20 @@ namespace ElectricalPowerSystems
             get { return filepath==null?filename:filepath; }
         }
         public string Header { get { return Filename + (Changed ? "*":""); }  }
+        private TextDocument document = null;
+        public TextDocument Document
+        {
+            get { return this.document; }
+            set {
+                if (this.document != value)
+                {
+                    this.document = value;
+                    OnPropertyChanged();
+                    Changed = true;
+                }
+            }
+
+        }/*
         private string content;
         public string Content {
             get {
@@ -30,7 +45,7 @@ namespace ElectricalPowerSystems
                 Changed = true;
                 OnPropertyChanged();
             }
-        }
+        }*/
         private bool changed;
         public bool Changed {
             get
@@ -69,14 +84,16 @@ namespace ElectricalPowerSystems
         {
             changed = false;
             Filename = "Новый проект";
-            content = "";
+            this.document = new TextDocument();
+            //content = "";
             FilePath = null;
         }
         public FileTabItem(string filename,string filepath,string content)
         {
             Changed = false;
             Filename = filename;
-            this.content = content;
+            //this.content = content;
+            this.document = new TextDocument(content);
             FilePath = filepath;
         }
     }

@@ -64,24 +64,24 @@
                 </DataTemplate.Triggers>
             </DataTemplate>
             <DataTemplate x:Key="itemContent">
-                <local:MvvmTextEditor Text="{Binding Content}"
+                <!--="{Binding Content, Mode=TwoWay}"-->
+                <local:MvvmTextEditor
+                         Document = "{Binding Document, UpdateSourceTrigger=PropertyChanged}"
                          ShowLineNumbers="True" 
                          HorizontalScrollBarVisibility="Auto"
                          VerticalScrollBarVisibility="Auto"
 				         FontFamily="Consolas"
 				         FontSize="10pt"
                          ScrollViewer.CanContentScroll="True" 
-				         SyntaxHighlighting="Model language"
-                                       >
+				         SyntaxHighlighting="Model language">
                     <local:MvvmTextEditor.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Command="Cut" Header="Cut" />
-                        <MenuItem Command="Copy" Header="Copy" />
-                        <MenuItem Command="Paste" Header="Paste" />
-                        <MenuItem Command="Delete" Header="Delete" />
-                        <MenuItem Command="Undo" Header="Undo" />
-                        <MenuItem Command="Redo" Header="Redo" />
-                    </ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Command="Cut" Header="{DynamicResource m_menu_Cut}" />
+                            <MenuItem Command="Copy" Header="{DynamicResource m_menu_Copy}" />
+                            <MenuItem Command="Paste" Header="{DynamicResource m_menu_Paste}" />
+                            <MenuItem Command="Undo" Header="{DynamicResource m_menu_Undo}" />
+                            <MenuItem Command="Redo" Header="{DynamicResource m_menu_Redo}" />
+                        </ContextMenu>
                     </local:MvvmTextEditor.ContextMenu>
                 </local:MvvmTextEditor>
                 <!--<TextBox Text="{Binding Content}"
@@ -143,16 +143,17 @@
             </MenuItem>
             <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" >
                 <MenuItem IsEnabled="True" Header="Установившийся режим">
-                    <MenuItem x:Name="RunNonlinearTest" Header="Тестирование решения нелинейной системы" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIDisabled}"/>
-                    <MenuItem x:Name="RunElectricalSchemeStatic" Header="Расчёт эл. схемы" Click="RunMenuButton_Click" IsEnabled="{Binding Path = UIDisabled}"/>
-                    <MenuItem x:Name="GenerateEquations" Header="Генерация уравнений" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIDisabled}"/>
+                    <MenuItem x:Name="RunNonlinearTest" Header="Тестирование решения нелинейной системы" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="RunElectricalSchemeStatic" Header="Расчёт эл. схемы" Click="RunMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="GenerateEquationsAC" Header="Генерация уравнений установившегося режима" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
                     <MenuItem x:Name="RunPowerSystemStatic" Header="Расчёт трёхфазной схемы" IsEnabled="False"/>
                     <MenuItem x:Name="RunVariationStatic" Header="Варьирование параметров трёхфазной схемы" IsEnabled="False"/>
                 </MenuItem>
-                <MenuItem IsEnabled="False" Header="Переходные процессы">
+                <MenuItem IsEnabled="True" Header="Переходные процессы">
                     <MenuItem x:Name="RunDAETest" Header="Тестирование решения ДАУ системы" Click="RunDAETest_Click"  IsEnabled="False"/>
-                    <MenuItem x:Name="RunElectricalSchemeTransient" Header="Расчёт эл. схемы"/>
-                    <MenuItem x:Name="RunPowerSystemTransient" Header="Расчёт трёхфазной схемы"/>
+                    <MenuItem x:Name="RunElectricalSchemeTransient" Header="Расчёт эл. схемы" IsEnabled="False"/>
+                    <MenuItem x:Name="GenerateDAE" Header="Генерация ДАУ уравнений" Click="RungGenerateDAE_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="RunPowerSystemTransient" Header="Расчёт трёхфазной схемы" IsEnabled="False"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="Тестовые примеры" IsEnabled="False">

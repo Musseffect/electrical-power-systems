@@ -13,8 +13,8 @@ namespace ElectricalPowerSystems
     {
         public new string Text
         {
-            get { return (string)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            get { return base.Text; }
+            set { base.Text = value; }
         }
         public static DependencyProperty TextProperty =
             DependencyProperty.Register("Text",
@@ -23,7 +23,7 @@ namespace ElectricalPowerSystems
             {
                 MvvmTextEditor target = (MvvmTextEditor)obj;
                 if (target.baseText != (string)args.NewValue) 
-                    target.baseText = (string)args.NewValue;
+                    target.Text = (string)args.NewValue;
             })
         );
 
@@ -32,7 +32,6 @@ namespace ElectricalPowerSystems
         protected override void OnTextChanged(EventArgs e)
         {
             SetCurrentValue(TextProperty, base.Text);
-            RaisePropertyChanged("Text");
             base.OnTextChanged(e);
         }
 

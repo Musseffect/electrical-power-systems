@@ -1128,7 +1128,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public override List<EquationBlock> GetParametersTransient()
             {
-                return this.GetParametersTransient();
+                return this.GetParametersAC();
             }
         }
         public class Line : Element2N
