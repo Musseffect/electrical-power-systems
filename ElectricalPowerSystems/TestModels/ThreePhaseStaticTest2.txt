@@ -1,8 +1,0 @@
-﻿
-
-
-source("1");
-transformer2w("1","2");
-line("2","3");
-transformer2w("4","3");
-load("4");

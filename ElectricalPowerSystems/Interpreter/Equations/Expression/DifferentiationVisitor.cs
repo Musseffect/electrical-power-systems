@@ -10,29 +10,29 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
 
     partial class DifferentiationVisitor
     {
-        Expression differentiateAddition(Addition node)
+        Expression DifferentiateAddition(Addition node)
         {
             return new Addition
             {
-                Left = differentiate(node.Left) ,
-                Right = differentiate(node.Right)
+                Left = Differentiate(node.Left) ,
+                Right = Differentiate(node.Right)
             };
         }
-        Expression differentiateSubtraction(Subtraction node)
+        Expression DifferentiateSubtraction(Subtraction node)
         {
             return new Subtraction
             {
-                Left = differentiate(node.Left),
-                Right = differentiate(node.Right)
+                Left = Differentiate(node.Left),
+                Right = Differentiate(node.Right)
             };
         }
-        Expression differentiateNegation(Negation node)
+        Expression DifferentiateNegation(Negation node)
         {
             return new Negation {
-                InnerNode = differentiate(node.InnerNode)
+                InnerNode = Differentiate(node.InnerNode)
             };
         }
-        Expression differentiatePower(Power node)
+        Expression DifferentiatePower(Power node)
         {
             return new Addition
             {
@@ -41,7 +41,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                     Left = node,
                     Right = new Multiplication
                     {
-                        Left = differentiate(node.Right),
+                        Left = Differentiate(node.Right),
                         Right = new Function(FunctionTable.getFunctionEntry("ln"), new List<Expression> { node.Left })
                     }
                 },
@@ -59,12 +59,12 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                     Right = new Multiplication
                     {
                         Left = node.Right,
-                        Right = differentiate(node.Left)
+                        Right = Differentiate(node.Left)
                     }
                 }
             };
         }
-        Expression differentiateFunction(Function node)
+        Expression DifferentiateFunction(Function node)
         {
             if (node.Arguments.Count == 0)
                 return new Float { Value = 0.0 };
@@ -72,7 +72,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
             {
                 return new Multiplication
                     {
-                        Left = differentiate(node.Arguments[0]),
+                        Left = Differentiate(node.Arguments[0]),
                         Right = node.Entry.Der[0](node.Arguments)
                     };
             }
@@ -82,7 +82,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
             {
                 current.Left = new Multiplication
                 {
-                    Left = differentiate(node.Arguments[i]),
+                    Left = Differentiate(node.Arguments[i]),
                     Right = node.Entry.Der[i](node.Arguments)
                 };
                 current.Right = new Addition();
@@ -91,15 +91,15 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
             current.Right = node.Entry.Der[node.Arguments.Count - 1](node.Arguments);
             return root;
         }
-        Expression differentiateMultiplication(Multiplication node)
+        Expression DifferentiateMultiplication(Multiplication node)
         {
             return new Addition
             {
-                Left = new Multiplication { Left = differentiate(node.Left), Right = node.Right },
-                Right = new Multiplication { Left = node.Left, Right = differentiate(node.Right) }
+                Left = new Multiplication { Left = Differentiate(node.Left), Right = node.Right },
+                Right = new Multiplication { Left = node.Left, Right = Differentiate(node.Right) }
             };
         }
-        Expression differentiateDivision(Division node)
+        Expression DifferentiateDivision(Division node)
         {
             return new Division
             {
@@ -107,13 +107,13 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                 {
                     Left = new Multiplication
                     {
-                        Left = differentiate(node.Left),
+                        Left = Differentiate(node.Left),
                         Right = node.Right
                     },
                     Right = new Multiplication
                     {
                         Left = node.Left,
-                        Right = differentiate(node.Right)
+                        Right = Differentiate(node.Right)
 
                     }
                 },
@@ -124,7 +124,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                 },
             };
         }
-        Expression differentiateVariable(Variable node)
+        Expression DifferentiateVariable(Variable node)
         {
             if (node.Name == variable)
             {
@@ -134,39 +134,39 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                 return new Float { Value = 0.0 };
         }
 
-        Expression differentiateFloat(Float node)
+        Expression DifferentiateFloat(Float node)
         {
             return new Float { Value = 0.0 };
         }
-        Expression differentiate(Expression node)
+        Expression Differentiate(Expression node)
         {
             switch (node.Type)
             {
                 case ExpressionType.Negation:
-                    return differentiateNegation((Negation)node);
+                    return DifferentiateNegation((Negation)node);
                 case ExpressionType.Addition:
-                    return differentiateAddition((Addition)node);
+                    return DifferentiateAddition((Addition)node);
                 case ExpressionType.Subtraction:
-                    return differentiateSubtraction((Subtraction)node);
+                    return DifferentiateSubtraction((Subtraction)node);
                 case ExpressionType.Division:
-                    return differentiateDivision((Division)node);
+                    return DifferentiateDivision((Division)node);
                 case ExpressionType.Multiplication:
-                    return differentiateMultiplication((Multiplication)node);
+                    return DifferentiateMultiplication((Multiplication)node);
                 case ExpressionType.Float:
-                    return differentiateFloat((Float)node);
+                    return DifferentiateFloat((Float)node);
                 case ExpressionType.Variable:
-                    return differentiateVariable((Variable)node);
+                    return DifferentiateVariable((Variable)node);
                 case ExpressionType.Function:
-                    return differentiateFunction((Function)node);
+                    return DifferentiateFunction((Function)node);
                 case ExpressionType.Power:
-                    return differentiatePower((Power)node);
+                    return DifferentiatePower((Power)node);
             }
             throw new Exception();
         }
-        public Expression differentiate(Expression root, string variable)
+        public Expression Differentiate(Expression root, string variable)
         {
             this.variable = variable;
-            return differentiate(root);
+            return Differentiate(root);
         }
         string variable;
     }

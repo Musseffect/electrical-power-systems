@@ -13,6 +13,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
         Negation,
         Addition,
         Subtraction,
+        Inverse,
         Function,
         Float,
         Variable,
@@ -109,6 +110,18 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
         }
         public Expression InnerNode { get; set; }
     }
+    public class Inverse : Expression
+    {
+        public Inverse()
+        {
+            Type = ExpressionType.Inverse;
+        }
+        public override Expression Copy()
+        {
+            return new Inverse { InnerNode = this.InnerNode.Copy() };
+        }
+        public Expression InnerNode { get; set; }
+    }
     public class Function : Expression
     {
         public Function(FunctionEntry entry, List<Expression> arguments)
@@ -181,9 +194,28 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
 
     public partial class ExpressionSimplifier
     {
+        private static Expression simplifyInverse(Inverse node)
+        {
+            Expression innerNode = simplify(node.InnerNode);
+            if (innerNode.Type == ExpressionType.Float)
+                return new Float { Value = 1.0 / (innerNode as Float).Value };
+            else if (innerNode.Type == ExpressionType.Inverse)
+            {
+                return ((Inverse)innerNode).InnerNode;
+            }
+            else if (innerNode.Type == ExpressionType.Division)
+            {
+                return new Division { Left=(innerNode as Division).Right,Right = (innerNode as Division).Left};
+            }
+            /*else if(innerNode.Type == ExpressionType.Multiplication)
+            {
+                return new Multiplication { Left = (innerNode as Division).Left, Right = (innerNode as Division).Right };
+            }*/
+            return new Inverse { InnerNode = innerNode };
+        }
         private static Expression simplifyAddition(Addition node)
         {
-            Expression left = simplify(node.Left);
+            /*Expression left = simplify(node.Left);
             Expression right = simplify(node.Right);
 
             if (left.Type == ExpressionType.Float)
@@ -206,12 +238,73 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                 {
                     return left;
                 }
+            }*/
+            Stack<Expression> stack = new Stack<Expression>();
+            stack.Push(node);
+            List<Expression> operands = new List<Expression>();
+            List<Float> floats = new List<Float>();
+            while (stack.Count != 0)
+            {
+                Expression current = stack.Pop();
+                if (current.Type == ExpressionType.Addition)
+                {
+                    stack.Push(simplify((current as Addition).Right));
+                    stack.Push(simplify((current as Addition).Left));
+                }
+                else if (current.Type == ExpressionType.Subtraction)
+                {
+                    stack.Push(simplify(new Negation { InnerNode = (current as Subtraction).Right }));
+                    stack.Push(simplify((current as Subtraction).Left));
+                }
+                else if (current.Type == ExpressionType.Float)
+                {
+                    floats.Add(current as Float);
+                }
+                else
+                {
+                    operands.Add(current);
+                }
             }
-            return new Addition { Left = left, Right = right };
+            Expression root;
+            if (floats.Count > 0)
+            {
+                Float result = new Float { Value = 0.0f };
+                foreach (var fNode in floats)
+                {
+                    result += fNode;
+                }
+                root = result;
+                if (result.isZero())
+                {
+                    if (operands.Count > 0)
+                    {
+                        root = operands[0];
+                        operands.RemoveAt(0);
+                    }
+                }
+            }
+            else
+            {
+                root = operands[0];
+                operands.RemoveAt(0);
+            }
+            foreach (var value in operands)
+            {
+                if (value is Negation)
+                {
+                    root = new Subtraction { Left = root, Right = (value as Negation).InnerNode };
+                }
+                else
+                {
+                    root = new Addition { Left = root, Right = value };
+                }
+            }
+            return root;
+            //return new Addition { Left = left, Right = right };
         }
         private static Expression simplifySubtraction(Subtraction node)
         {
-            Expression left = simplify(node.Left);
+            /*Expression left = simplify(node.Left);
             Expression right = simplify(node.Right);
 
             if (left.Type == ExpressionType.Float)
@@ -236,11 +329,143 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                     return left;
                 }
             }
-            return new Subtraction { Left = left, Right = right };
+            return new Subtraction { Left = left, Right = right };*/
+            Stack<Expression> stack = new Stack<Expression>();
+            stack.Push(node);
+            List<Expression> operands = new List<Expression>();
+            List<Float> floats = new List<Float>();
+            while (stack.Count != 0)
+            {
+                Expression current = stack.Pop();
+                if (current.Type == ExpressionType.Addition)
+                {
+                    stack.Push(simplify((current as Addition).Right));
+                    stack.Push(simplify((current as Addition).Left));
+                }
+                else if (current.Type == ExpressionType.Subtraction)
+                {
+                    stack.Push(simplify(new Negation { InnerNode = (current as Subtraction).Right }));
+                    stack.Push(simplify((current as Subtraction).Left));
+                }
+                else if (current.Type == ExpressionType.Float)
+                {
+                    floats.Add(current as Float);
+                }
+                else
+                {
+                    operands.Add(current);
+                }
+            }
+            Expression root;
+            if (floats.Count > 0)
+            {
+                Float result = new Float { Value = 0.0f };
+                foreach (var fNode in floats)
+                {
+                    result += fNode;
+                }
+                root = result;
+                if (result.isZero())
+                {
+                    if (operands.Count > 0)
+                    {
+                        root = operands[0];
+                        operands.RemoveAt(0);
+                    }
+                }
+            }
+            else
+            {
+                root = operands[0];
+                operands.RemoveAt(0);
+            }
+            foreach (var value in operands)
+            {
+                if (value is Negation)
+                {
+                    root = new Subtraction { Left = root, Right = (value as Negation).InnerNode };
+                }
+                else
+                {
+                    root = new Addition { Left = root, Right = value };
+                }
+            }
+            return root;
         }
         private static Expression simplifyDivision(Division node)
         {
-            Expression left = simplify(node.Left);
+            Stack<Expression> stack = new Stack<Expression>();
+            stack.Push(node);
+            List<Expression> operands = new List<Expression>();
+            List<Float> floats = new List<Float>();
+            while (stack.Count != 0)
+            {
+                Expression current = stack.Pop();
+                if (current.Type == ExpressionType.Multiplication)
+                {
+                    stack.Push(simplify((current as Multiplication).Right));
+                    stack.Push(simplify((current as Multiplication).Left));
+                }
+                else if (current.Type == ExpressionType.Division)
+                {
+                    stack.Push(simplify(new Inverse { InnerNode = (current as Division).Right }));
+                    stack.Push(simplify((current as Division).Left));
+                }
+                else if (current.Type == ExpressionType.Float)
+                {
+                    floats.Add(current as Float);
+                }
+                else
+                {
+                    operands.Add(current);
+                }
+            }
+            Expression root;
+            if (floats.Count > 0)
+            {
+                Float result = new Float { Value = 1.0f };
+                foreach (var fNode in floats)
+                {
+                    result *= fNode;
+                }
+                root = result;
+                if (result.isOne())
+                {
+                    if (operands.Count > 0)
+                    {
+                        root = operands[0];
+                        if (root is Inverse)
+                        {
+                            root = new Division { Left = result, Right = (root as Inverse).InnerNode };
+                        }
+                        operands.RemoveAt(0);
+                    }
+                    else
+                        return result;
+                }
+                else if (result.isZero())
+                {
+                    return result;
+                }
+            }
+            else
+            {
+                root = operands[0];
+                operands.RemoveAt(0);
+            }
+            foreach (var value in operands)
+            {
+                if (value is Inverse)
+                {
+                    root = new Division { Left = root, Right = (value as Inverse).InnerNode };
+                }
+                else
+                {
+                    root = new Multiplication { Left = root, Right = value };
+                }
+            }
+            return root;
+            /*Expression left = simplify(node.Left);
             Expression right = simplify(node.Right);
             if (left.Type == ExpressionType.Float)
             {
@@ -263,11 +488,11 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                     return left;
                 }
             }
-            return new Division { Left = left, Right = right };
+            return new Division { Left = left, Right = right };*/
         }
         private static Expression simplifyMultiplication(Multiplication node)
         {
-            Expression left = simplify(node.Left);
+            /*Expression left = simplify(node.Left);
             Expression right = simplify(node.Right);
             if (left.Type == ExpressionType.Float)
             {
@@ -298,7 +523,78 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
                     return right;
                 }
             }
-            return new Multiplication { Left = left, Right = right };
+            return new Multiplication { Left = left, Right = right };*/
+            Stack<Expression> stack = new Stack<Expression>();
+            stack.Push(node);
+            List<Expression> operands = new List<Expression>();
+            List<Float> floats = new List<Float>();
+            while (stack.Count != 0)
+            {
+                Expression current = stack.Pop();
+                if (current.Type == ExpressionType.Multiplication)
+                {
+                    stack.Push(simplify((current as Multiplication).Right));
+                    stack.Push(simplify((current as Multiplication).Left));
+                }
+                else if (current.Type == ExpressionType.Division)
+                {
+                    stack.Push(simplify(new Inverse { InnerNode = (current as Division).Right }));
+                    stack.Push(simplify((current as Division).Left));
+                }
+                else if (current.Type == ExpressionType.Float)
+                {
+                    floats.Add(current as Float);
+                }
+                else
+                {
+                    operands.Add(current);
+                }
+            }
+            Expression root;
+            if (floats.Count > 0)
+            {
+                Float result = new Float { Value = 1.0f };
+                foreach (var fNode in floats)
+                {
+                    result *= fNode;
+                }
+                root = result;
+                if (result.isOne())
+                {
+                    if (operands.Count > 0)
+                    {
+                        root = operands[0];
+                        if (root is Inverse)
+                        {
+                            root = new Division { Left = result, Right = (root as Inverse).InnerNode };
+                        }
+                        operands.RemoveAt(0);
+                    }
+                    else
+                        return result;
+                }
+                else if (result.isZero())
+                {
+                    return result;
+                }
+            }
+            else
+            {
+                root = operands[0];
+                operands.RemoveAt(0);
+            }
+            foreach (var value in operands)
+            {
+                if (value is Inverse)
+                {
+                    root = new Division { Left = root, Right = (value as Inverse).InnerNode };
+                }
+                else
+                {
+                    root = new Multiplication { Left = root, Right = value };
+                }
+            }
+            return root;
         }
         private static Expression simplifyFunction(Function node)
         {
@@ -361,7 +657,17 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
             {
                 return ((Negation)innerNode).InnerNode;
             }
-            return node;
+            else if (innerNode.Type == ExpressionType.Subtraction)
+            {
+                return new Subtraction { Left = (innerNode as Subtraction).Right, Right = (innerNode as Subtraction).Left };
+            }
+            else if (innerNode.Type == ExpressionType.Addition)
+            {
+                return new Addition { Left = new Negation { InnerNode = (innerNode as Addition).Right },
+                    Right = new Negation { InnerNode = (innerNode as Addition).Left }
+                };
+            }
+            return new Negation { InnerNode = innerNode};
         }
         public static Expression simplify(Expression node)
         {
@@ -369,6 +675,8 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Expression
             {
                 case ExpressionType.Negation:
                     return simplifyNegation((Negation)node);
+                case ExpressionType.Inverse:
+                    return simplifyInverse((Inverse)node);
                 case ExpressionType.Addition:
                     return simplifyAddition((Addition)node);
                 case ExpressionType.Subtraction:

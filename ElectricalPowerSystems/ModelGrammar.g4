@@ -3,63 +3,80 @@ grammar ModelGrammar;
 /*
  * Parser Rules
  */
-
  
- //New Grammar
+ //New Grammar start
  /*
-number		: value=(FLOAT|INT);
-complexExp	: left=number type=(IM| ANGLE) right=number;
-complex		: IM im=number;
-constant	: value=number  #NumberConstant
-	| value=complex #ComplexConstant
-	| value=complexExp #ComplexExprConstant
-	| value=STRING #StringConstant
+boolean	  :value=(TRUE|FALSE);
+float		: value = FLOAT;
+integer     : value = INT;
+string: value = STRING;
+complexExp	: left=(FLOAT|INT) type=(IM| ANGLE) right=(FLOAT|INT);
+complex		: IM im=(FLOAT|INT);
+constant	: value=float
+	| integer
+	| complex
+	| complexExp
+	| string
+	| boolean
 ;
 
- model:statements ELEMENTS COLON elements CONNECTIONS COLON connections EOF
- ;
+model:statements MODEL type=ID LCRLPAREN arguments RCRLPAREN COLON ELEMENTS COLON elements CONNECTIONS COLON connections EOF;
 
- statements: (statement)* 
- ;
+statements: (statement)* ;
 
- elements: (elementStatement)*
-;
+elements: (elementStatement)*;
 
-elementStatement: element = ID ASSIGN elementID = ID LCRLPAREN arguments RCRLPAREN SEMICOLON
- | SEMICOLON;
+elementStatement: element = ID ASSIGN object;
 
-arguments: keyValue (COMMA keyValue)* | ;
-keyValue: key=ID ASSIGN value=expression;
+connections: (connectionStatement)*;
 
-connections: (connectionStatement)*
-;
-
-connectionStatement: CONNECT LPAREN elementID=ID DOT nodeID=ID RPAREN SEMICOLON
- | SEMICOLON;
+connectionStatement: CONNECT LPAREN elementID1=ID DOT nodeID2=ID COMMA elmeentID2=ID DOT nodeID2=ID RPAREN SEMICOLON;
 
 statement: expression SEMICOLON #StatementRule
  | SEMICOLON #emptyStatement;
 
-unaryOperator: op=(PLUS | MINUS);
+array: LSQRPAREN values=arrayValues RSQRPAREN;
 
-expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
-	| LPAREN expression RPAREN #BracketExpression
+arrayValues: expression (COMMA expression)* | ;
+
+expression: LPAREN expression RPAREN #BracketExpression
 	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
 	| left=expression DOT id=ID #FieldExpression
-	| op=unaryOperator expression	#UnaryOperatorExpression
-	| LPAREN id=ID RPAREN right=expression #CastExpression
+	| op=(PLUS | MINUS) expression	#UnaryOperatorExpression
+	| op=NOT expression	#UnaryOperatorExpression
 	| left=expression op=(DIVISION|ASTERISK) right=expression	#BinaryOperatorExpression
 	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
 	|<assoc=right> lvalue=expression ASSIGN rvalue=expression #AssignmentExpression
-	| id=ID		#IdentifierExpression
-	| value=constant	#ConstantExpression
+	| left=expression op=(OR|AND) right=expression	#BinaryOperatorExpression
+	| id=ID	#IdentifierExpression
+	| value = constant	#ConstantExpression
+	| obj = object #ObjectExpression
+	| arr = array #ArrayExpression
 	;
 	
-functionArguments: expression (COMMA expression)* | ;*/
+functionArguments: expression (COMMA expression)* | ;
+object: name=ID LCRLPAREN arguments RCRLPAREN SEMICOLON;
+arguments: keyValue (COMMA keyValue)* | ;
+keyValue: key=ID ASSIGN value=expression;
 
+*/
+//end
 
  //example
 /*
+
+
+model:
+transient{
+	t0 = 0,
+	time = 1,
+	solver = RADAUIIA5{
+		newtonIterations = ,
+		tolerance = ,
+		newtonTolerance = ,
+	},
+	step = 0.01
+}
 elements:
 generator=Generator
 {
@@ -91,7 +108,6 @@ res = Resistance
 ground = Ground{};
 meter1 = Wattmeter{Label = "generator"};
 meter2 = Wattmeter{Label = "load"};
-
 connections:
 connect(generator.abc_out,meter1.abc_in);
 connect(generator.n,res.in);
@@ -102,7 +118,7 @@ connect(meter2.abc_out,load.abc_in);
 connect(load.n,ground.in);
 */
  
- 
+ //old grammar start
 
  
 number		: value=(FLOAT|INT);
@@ -139,6 +155,8 @@ expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOper
 
 functionArguments: expression (COMMA expression)* | ;
 
+//end
+
 
 /*
  * Lexer Rules
@@ -160,6 +178,12 @@ ID		: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;
 CONNECTIONS: 'connections';
 CONNECT: 'connect';
 ELEMENTS: 'elements';
+MODEL: 'model';
+TRUE: 'true';
+FALSE: 'false';
+NOT: 'not';
+OR: 'or';
+AND: 'and';
 
 PLUS               : '+' ;
 MINUS              : '-' ;

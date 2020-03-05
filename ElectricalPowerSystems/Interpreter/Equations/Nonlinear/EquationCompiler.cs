@@ -25,24 +25,12 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
         }
 
     }
-    public class CompilerException : Exception
-    {
-        public List<ErrorMessage> Errors { get; private set; }
-        public CompilerException(List<ErrorMessage> errors)
-        {
-            Errors = errors;
-        }
-        public CompilerException(List<ErrorMessage> errors, string message) : base(message)
-        {
-            Errors = errors;
-        }
-    }
     public class NonlinearEquationDefinition
     {
-        double[] initialValues;
-        string[] variableNames;
-        List<RPNExpression> equations;
-        RPNExpression[,] jacobiMatrix;
+        private double[] initialValues;
+        private string[] variableNames;
+        private List<RPNExpression> equations;
+        private RPNExpression[,] jacobiMatrix;
         Dictionary<string, int> variableMap;
         public double[] InitialValues { get { return initialValues; } }
         public string[] VariableNames { get { return variableNames; } }
@@ -74,7 +62,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             string result = "";
             for (int i = 0; i < equations.Count; i++)
             {
-                result += i + ". " + variableNames[i] + " = " + initialValues[i].ToString() + Environment.NewLine;
+                result += (i + 1) + ". " + variableNames[i] + " = " + initialValues[i].ToString() + Environment.NewLine;
             }
             return result;
         }
@@ -83,7 +71,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             string result = "";
             for (int i = 0; i < equations.Count; i++)
             {
-                result += $"f[{i}] = " + RPNExpression.print(equations[i], variableNames) + Environment.NewLine;
+                result += $"f[{i+1}] = " + RPNExpression.print(equations[i], variableNames) + " = 0" + Environment.NewLine;
             }
             return result;
         }
@@ -105,7 +93,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
                 {
                     for (int j = 0; j < equations.Count; j++)
                     {
-                        result += $"df[{i}]/d{variableNames[j]} = " + RPNExpression.print(jacobiMatrix[j, i], variableNames) + Environment.NewLine;
+                        result += $"df[{i+1}]/d{variableNames[j]} = " + RPNExpression.print(jacobiMatrix[j, i], variableNames) + Environment.NewLine;
                     }
                     result += Environment.NewLine;
                 }
@@ -147,12 +135,12 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             eqParser.RemoveErrorListeners();
             eqParser.AddErrorListener(parserListener);
             EquationGrammarParser.CompileUnitContext eqContext = eqParser.compileUnit();
-            compilerErrors = lexerListener.getErrors();
+            compilerErrors = lexerListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
                 throw new Exception("Lexer Error");
             }
-            compilerErrors = parserListener.getErrors();
+            compilerErrors = parserListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
                 throw new Exception("Parser error");
@@ -164,16 +152,16 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             var rootSimple = Compiler.ASTCompiler.validate(root);
             rootSimple = Compiler.ASTCompiler.simplify(rootSimple);
             return compileASTExpression(rootSimple);*/
-            return compileEquations((RootNode)root);
+            return CompileEquations((RootNode)root);
         }
-        private NonlinearEquationDefinition compileEquations(RootNode root)
+        private NonlinearEquationDefinition CompileEquations(RootNode root)
         {
             List<RPNExpression> rpnEquations = new List<RPNExpression>();
             List<Expression.Expression> equations = new List<Expression.Expression>();
 
             foreach (var parameter in root.parameters)
             {
-                Expression.Expression right = ExpressionSimplifier.simplify(convertToExpression(parameter.Right));
+                Expression.Expression right = ExpressionSimplifier.simplify(ConvertToExpression(parameter.Right));
                 //ExpressionNode right = simplify(parameter.Right);
                 if (right is Float)
                 {
@@ -195,7 +183,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
                     Line = equation.Line,
                     Position = equation.Position
                 };
-                Expression.Expression expression = ExpressionSimplifier.simplify(convertToExpression(subtraction));
+                Expression.Expression expression = ExpressionSimplifier.simplify(ConvertToExpression(subtraction));
                 equations.Add(expression);
             }
 
@@ -204,8 +192,8 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             {
                 if (variables.ContainsKey(initialValue.Identifier))
                 {
-                    Expression.Expression right = ExpressionSimplifier.simplify(convertToExpression(initialValue.Right));
-                    //Expression expression = convertToExpression(right)
+                    Expression.Expression right = ExpressionSimplifier.simplify(ConvertToExpression(initialValue.Right));
+                    //Expression expression = ConvertToExpression(right)
                     if (right is Float)
                     {
                         initialValues[variables[initialValue.Identifier]] = ((Float)right).Value;
@@ -251,7 +239,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
                 foreach (var variable in variableNames)
                 {
                     //find derivative for variable 
-                    Expression.Expression derivative = ExpressionSimplifier.simplify(difVisitor.differentiate(equation, variable));
+                    Expression.Expression derivative = ExpressionSimplifier.simplify(difVisitor.Differentiate(equation, variable));
                     //simplify derivative expression
                     RPNExpression exp = expCompiler.compile(derivative);
                     jacobiMatrix[i, j] = exp;
@@ -263,7 +251,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
                 rpnEquations,jacobiMatrix);
             return ned;
         }
-        private Expression.Expression convertIdentifier(IdentifierNode node)
+        private Expression.Expression ConvertIdentifier(IdentifierNode node)
         {
             if (!variables.ContainsKey(node.Value))
             {
@@ -281,43 +269,43 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
             }
             return new Variable { Name = node.Value}; ;
         }
-        private Expression.Expression convertNegation(NegationNode node)
+        private Expression.Expression ConvertNegation(NegationNode node)
         {
-            return new Negation { InnerNode = convertToExpression(node.InnerNode) };
+            return new Negation { InnerNode = ConvertToExpression(node.InnerNode) };
         }
-        private Expression.Expression convertAddition(AdditionNode node)
+        private Expression.Expression ConvertAddition(AdditionNode node)
         {
             return new Addition
             {
-                Left = convertToExpression(node.Left),
-                Right = convertToExpression(node.Right)
+                Left = ConvertToExpression(node.Left),
+                Right = ConvertToExpression(node.Right)
             };
         }
-        private Expression.Expression convertSubtraction(SubtractionNode node)
+        private Expression.Expression ConvertSubtraction(SubtractionNode node)
         {
             return new Subtraction
             {
-                Left = convertToExpression(node.Left),
-                Right = convertToExpression(node.Right)
+                Left = ConvertToExpression(node.Left),
+                Right = ConvertToExpression(node.Right)
             };
         }
-        private Expression.Expression convertDivision(DivisionNode node)
+        private Expression.Expression ConvertDivision(DivisionNode node)
         {
             return new Division
             {
-                Left = convertToExpression(node.Left),
-                Right = convertToExpression(node.Right)
+                Left = ConvertToExpression(node.Left),
+                Right = ConvertToExpression(node.Right)
             };
         }
-        private Expression.Expression convertMultiplication(MultiplicationNode node)
+        private Expression.Expression ConvertMultiplication(MultiplicationNode node)
         {
             return new Multiplication
             {
-                Left = convertToExpression(node.Left),
-                Right = convertToExpression(node.Right)
+                Left = ConvertToExpression(node.Left),
+                Right = ConvertToExpression(node.Right)
             };
         }
-        private Expression.Expression convertFunction(FunctionNode node)
+        private Expression.Expression ConvertFunction(FunctionNode node)
         {
             if (FunctionTable.isValidFunction(node.FunctionName))
             {
@@ -331,7 +319,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
                 List<Expression.Expression> arguments = new List<Expression.Expression>();
                 foreach (var argument in node.Arguments)
                 {
-                    arguments.Add(convertToExpression(argument));
+                    arguments.Add(ConvertToExpression(argument));
                 }
                 return new Function(entry,arguments);
             }
@@ -341,38 +329,38 @@ namespace ElectricalPowerSystems.Interpreter.Equations.Nonlinear
                 return null;
             }
         }
-        private Expression.Expression convertPower(PowerNode node)
+        private Expression.Expression ConvertPower(PowerNode node)
         {
             return new Power
             {
-                Left = convertToExpression(node.Left),
-                Right = convertToExpression(node.Right)
+                Left = ConvertToExpression(node.Left),
+                Right = ConvertToExpression(node.Right)
             };
         }
-        private Expression.Expression convertToExpression(ExpressionNode node)
+        private Expression.Expression ConvertToExpression(ExpressionNode node)
         {
             switch (node.Type)
             {
                 case ASTNodeType.Negation:
-                    return convertNegation((NegationNode)node);
+                    return ConvertNegation((NegationNode)node);
                 case ASTNodeType.Addition:
-                    return convertAddition((AdditionNode)node);
+                    return ConvertAddition((AdditionNode)node);
                 case ASTNodeType.Subtraction:
-                    return convertSubtraction((SubtractionNode)node);
+                    return ConvertSubtraction((SubtractionNode)node);
                 case ASTNodeType.Division:
-                    return convertDivision((DivisionNode)node);
+                    return ConvertDivision((DivisionNode)node);
                 case ASTNodeType.Multiplication:
-                    return convertMultiplication((MultiplicationNode)node);
+                    return ConvertMultiplication((MultiplicationNode)node);
                 case ASTNodeType.Float:
                     return new Float() {
                         Value = ((FloatNode)node).Value
                     };
                 case ASTNodeType.Identifier:
-                    return convertIdentifier((IdentifierNode)node);
+                    return ConvertIdentifier((IdentifierNode)node);
                 case ASTNodeType.Function:
-                    return convertFunction((FunctionNode)node);
+                    return ConvertFunction((FunctionNode)node);
                 case ASTNodeType.Power:
-                    return convertPower((PowerNode)node);
+                    return ConvertPower((PowerNode)node);
             }
             throw new Exception("Unknown type in convertToExpression function");
         }

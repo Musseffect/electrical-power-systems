@@ -100,9 +100,9 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             Value val=evaluate(node.InnerNode);
             Object obj = val.getRValue();
             Type type = obj.getType();
-            if (type is BaseType)
+            if (type is BaseType btype)
             {
-                BaseType btype = (BaseType)type;
+                //BaseType btype = (BaseType)type;
                 switch (btype.TypeEnum)
                 {
                     case BasicType.Complex:
@@ -429,7 +429,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             {
                 try
                 {
-                    return FunctionDefinition.compute(fd,args);
+                    return FunctionDefinition.Compute(fd,args);
                 }
                 catch (Exception exc)
                 {
@@ -601,7 +601,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
                         }
                         break;
                     case BasicType.String:
-                        return obj.castToString();
+                        return obj.CastToString();
                     case BasicType.Int:
                         break;
                 }
@@ -645,7 +645,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
         {
             public FunctionExec Exec { get; set; }
             public FunctionSignature Signature { get; set; }
-            static public Object compute(FunctionDefinition f, List<Object> variables)
+            static public Object Compute(FunctionDefinition f, List<Object> variables)
             {
                 List<Object> args = new List<Object>();
                 if (variables.Count < f.Signature.Arguments.Count)
@@ -1015,7 +1015,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
                 Float arg3 = (Float)args[2];
                 Float arg4 = (Float)args[3];
                 Float arg5 = (Float)args[4];
-                int index = model.AddVoltageSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.radians(arg4.Value), (float)arg5.Value);
+                int index = model.AddVoltageSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.Radians(arg4.Value), (float)arg5.Value);
                 return new Element(index);
             }
             static public Object currentSource1(List<Object> args)
@@ -1034,7 +1034,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
                 Float arg3 = (Float)args[2];
                 Float arg4 = (Float)args[3];
                 Float arg5 = (Float)args[4];
-                int index = model.AddCurrentSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.radians(arg4.Value), (float)arg5.Value);
+                int index = model.AddCurrentSource(arg1.Value, arg2.Value, (float)arg3.Value, (float)Utils.Radians(arg4.Value), (float)arg5.Value);
                 return new Element(index);
             }
             static public Object current(List<Object> args)
@@ -1104,13 +1104,13 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             static public Object radians(List<Object> args)
             {
                 Float arg1 = (Float)args[0];
-                arg1.Value = Utils.radians(arg1.Value);
+                arg1.Value = Utils.Radians(arg1.Value);
                 return arg1;
             }
             static public Object degrees(List<Object> args)
             {
                 Float arg1 = (Float)args[0];
-                arg1.Value = Utils.degrees(arg1.Value);
+                arg1.Value = Utils.Degrees(arg1.Value);
                 return arg1;
             }
             static public Object conj(List<Object> args)
@@ -1210,7 +1210,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             {
                 return this;
             }
-            public abstract String castToString();
+            public abstract String CastToString();
         }
         public class Void : Object
         {
@@ -1218,7 +1218,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             {
                 this.type = basicTypes["Void"];
             }
-            public override String castToString()
+            public override String CastToString()
             {
                 throw new Exception("Can't convert to string.");
             }
@@ -1259,7 +1259,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             {
                 return new Float(-a.Value);
             }
-            public override String castToString()
+            public override String CastToString()
             {
                 return new String(Value.ToString());
             }
@@ -1296,7 +1296,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             {
                 return new Int(-a.Value);
             }
-            public override String castToString()
+            public override String CastToString()
             {
                 return new String(Value.ToString());
             }
@@ -1339,9 +1339,9 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             {
                 return new Complex(-a.Re, -a.Im);
             }
-            public override String castToString()
+            public override String CastToString()
             {
-                return new String(Magn.ToString()+"@"+ Utils.degrees(Phase).ToString());
+                return new String(Magn.ToString()+"@"+ Utils.Degrees(Phase).ToString());
             }
         }
         public class String : Object
@@ -1360,7 +1360,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             {
                 return new String(a.Value + b.Value);
             }
-            public override String castToString()
+            public override String CastToString()
             {
                 return this;
             }
@@ -1377,7 +1377,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             {
                 this.index = index;
             }
-            public override String castToString()
+            public override String CastToString()
             {
                 throw new Exception("Cannot convert element to string.");
                 //return new String("Element[id="+Index.ToString()+"]");

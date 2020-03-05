@@ -15,7 +15,7 @@ namespace ElectricalPowerSystems.Interpreter
         {
             this.errors = new List<ErrorMessage>();
         }
-        public List<ErrorMessage> getErrors()
+        public List<ErrorMessage> GetErrors()
         {
             return this.errors;
         }

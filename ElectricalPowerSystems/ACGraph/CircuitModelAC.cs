@@ -230,7 +230,7 @@ namespace ElectricalPowerSystems.ACGraph
                 foreach (var element in outputCurrent)
                 {
                     Complex32 current = solution.currents[element];
-                    output[outputIndex++]+=($" [{hz} Hz]({current.Magnitude}@{Utils.degrees(current.Phase)})");
+                    output[outputIndex++]+=($" [{hz} Hz]({current.Magnitude}@{Utils.Degrees(current.Phase)})");
                 }
                 foreach (var element in outputNodeVoltage)
                 {
@@ -238,13 +238,13 @@ namespace ElectricalPowerSystems.ACGraph
                     if (el is ElementsAC.Element2N)
                     {
                         Complex32 voltageDrop = solution.voltageDrops[element];
-                        output[outputIndex++] += ($" [{hz} Hz]({voltageDrop.Magnitude}@{Utils.degrees(voltageDrop.Phase)})");
+                        output[outputIndex++] += ($" [{hz} Hz]({voltageDrop.Magnitude}@{Utils.Degrees(voltageDrop.Phase)})");
                     }
                 }
                 foreach (var nodePair in outputVoltageDifference)
                 {
                     Complex32 diff = solution.voltages[nodePair.node2] - solution.voltages[nodePair.node1];
-                    output[outputIndex++] += ($" [{hz} Hz]({diff.Magnitude}@{Utils.degrees(diff.Phase)})");
+                    output[outputIndex++] += ($" [{hz} Hz]({diff.Magnitude}@{Utils.Degrees(diff.Phase)})");
                 }
             }
             return output;

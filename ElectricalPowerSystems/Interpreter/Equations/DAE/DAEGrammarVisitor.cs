@@ -29,19 +29,19 @@ namespace ElectricalPowerSystems.Interpreter.Equations.DAE
             int type = context.op.Type;
             switch (type)
             {
-                case EquationGrammarLexer.CARET:
+                case DAEImplicitGrammarLexer.CARET:
                     node = new PowerNode();
                     break;
-                case EquationGrammarLexer.PLUS:
+                case DAEImplicitGrammarLexer.PLUS:
                     node = new AdditionNode();
                     break;
-                case EquationGrammarLexer.MINUS:
+                case DAEImplicitGrammarLexer.MINUS:
                     node = new SubtractionNode();
                     break;
-                case EquationGrammarLexer.ASTERISK:
+                case DAEImplicitGrammarLexer.ASTERISK:
                     node = new MultiplicationNode();
                     break;
-                case EquationGrammarLexer.DIVISION:
+                case DAEImplicitGrammarLexer.DIVISION:
                     node = new DivisionNode();
                     break;
                 default:
@@ -52,6 +52,15 @@ namespace ElectricalPowerSystems.Interpreter.Equations.DAE
             node.Line = context.start.Line;
             node.Position = context.start.Column;
             return node;
+        }
+        public override ASTNode VisitFunctionDerivative([NotNull] DAEImplicitGrammarParser.FunctionDerivativeContext context)
+        {
+            return new DerivativeNode
+            {
+                Identifier = context.id.Text,
+                Line = context.start.Line,
+                Position = context.start.Column
+            };
         }
         public override ASTNode VisitFunctionExpression([NotNull] DAEImplicitGrammarParser.FunctionExpressionContext context)
         {
@@ -142,7 +151,7 @@ namespace ElectricalPowerSystems.Interpreter.Equations.DAE
         }
         public override ASTNode VisitNumber([NotNull] DAEImplicitGrammarParser.NumberContext context)
         {
-            if (context.value.Type == EquationGrammarLexer.FLOAT)
+            if (context.value.Type == DAEImplicitGrammarLexer.FLOAT)
                 return new FloatNode
                 {
                     Value = double.Parse(context.value.Text, CultureInfo.InvariantCulture),

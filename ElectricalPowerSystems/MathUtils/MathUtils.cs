@@ -9,15 +9,15 @@ namespace ElectricalPowerSystems
 {
     class Utils
     {
-        static public double degrees(double value)
+        static public double Degrees(double value)
         {
             return 180.0 * value/ Math.PI ;
         }
-        static public double radians(double value)
+        static public double Radians(double value)
         {
             return Math.PI*value/180.0;
         }
-        static public string complex32ToAmpPhaseString(Complex32 z)
+        static public string Complex32ToAmpPhaseString(Complex32 z)
         {
             return z.Magnitude.ToString() + "@" + z.Phase.ToString();
         }

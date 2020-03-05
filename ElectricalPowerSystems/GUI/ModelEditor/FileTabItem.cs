@@ -90,7 +90,7 @@ namespace ElectricalPowerSystems
         }
         public FileTabItem(string filename,string filepath,string content)
         {
-            Changed = false;
+            changed = false;
             Filename = filename;
             //this.content = content;
             this.document = new TextDocument(content);

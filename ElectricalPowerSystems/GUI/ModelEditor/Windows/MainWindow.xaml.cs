@@ -101,9 +101,8 @@ namespace ElectricalPowerSystems
         {
             UIEnabled = true;
 
-
             ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition customHighlighting;
-            using (Stream s = typeof(MainWindow).Assembly.GetManifestResourceStream("ElectricalPowerSystems.SyntaxHighlighting.xshd"))
+            using (Stream s = typeof(MainWindow).Assembly.GetManifestResourceStream("ElectricalPowerSystems.GUI.ModelEditor.SyntaxHighlighting.xshd"))
             {
                 if (s == null)
                     throw new InvalidOperationException("Could not find embedded resource");
@@ -116,100 +115,72 @@ namespace ElectricalPowerSystems
             // and register it in the HighlightingManager
             ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.RegisterHighlighting("Model language", new string[] { ".*" }, customHighlighting);
 
-
             StatusText = "Готово";
             errors = new ObservableCollection<ErrorMessage>();
             _tabItems = new ObservableCollection<FileTabItem>();
             InitializeComponent();
             addNewTab();
             addNewTab();
+            addNewTab();
             DataContext = this;
-             ((FileTabItem)_tabItems[0]).Document.Text += @"   //rlc series scheme";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"v=voltageSource(""g"", ""1_a1"", 220.0, 0.0, 50.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"resistor(""1_a1"",""1_a2"",10.0)";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"inductor(""1_a2"", ""1_a3"", 5.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"capacitor(""1_a3"", ""g"", 0.01);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"ground(""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""1_a1"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""1_a2"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""1_a3"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"current(v);";
+             ((FileTabItem)_tabItems[0]).Document.Text = 
+@"   //rlc series scheme
 
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"   //rlc parallel scheme";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"v=voltageSource(""g"", ""2_a1"", 220.0, 0.0, 50.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"r=resistor(""g"",""2_a1"",10.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"i=inductor(""g"", ""2_a1"", 5.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"c=capacitor(""g"", ""2_a1"", 0.01);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""2_a1"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"current(v);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"current(r);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"current(i);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"current(c);";
+v=voltageSource(""g"", ""1_a1"", 220.0, 0.0, 50.0);
+resistor(""1_a1"",""1_a2"",10.0);
+inductor(""1_a2"", ""1_a3"", 5.0);
+capacitor(""1_a3"", ""g"", 0.01);
+ground(""g"");
+voltage(""1_a1"",""g"");
+voltage(""1_a2"",""g"");
+voltage(""1_a3"",""g"");
+current(v);
 
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"   //complex scheme";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"v1=voltageSource(""g"", ""3_a1"", 220.0, 0.0, 50.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"v2=voltageSource(""3_a5"", ""3_a4"", 220.0, 0.0, 50.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"r1=resistor(""3_a2"",""3_a5"",10.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"r2=resistor(""3_a5"",""3_a6"",10.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"i1=inductor(""3_a1"", ""3_a6"", 5.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"i2=inductor(""3_a2"", ""3_a3"", 5.0);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"c1=capacitor(""3_a6"", ""g"", 0.02);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"c2=capacitor(""3_a3"", ""3_a4"", 0.04);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"c3=capacitor(""3_a1"", ""3_a2"", 0.01);";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a1"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a2"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a3"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a4"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a5"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
-             ((FileTabItem)_tabItems[0]).Document.Text += @"voltage(""3_a6"",""g"");";
-             ((FileTabItem)_tabItems[0]).Document.Text += "\r\n";
+
+//rlc parallel scheme
+
+v=voltageSource(""g"", ""2_a1"", 220.0, 0.0, 50.0);
+r=resistor(""g"",""2_a1"",10.0);
+i=inductor(""g"", ""2_a1"", 5.0);
+c=capacitor(""g"", ""2_a1"", 0.01);
+voltage(""2_a1"",""g"");
+current(v);
+current(r);
+current(i);
+current(c);
+
+
+//complex scheme
+
+v1=voltageSource(""g"", ""3_a1"", 220.0, 0.0, 50.0);
+v2=voltageSource(""3_a5"", ""3_a4"", 220.0, 0.0, 50.0);
+r1=resistor(""3_a2"",""3_a5"",10.0);
+r2=resistor(""3_a5"",""3_a6"",10.0);
+i1=inductor(""3_a1"", ""3_a6"", 5.0);
+i2=inductor(""3_a2"", ""3_a3"", 5.0);
+c1=capacitor(""3_a6"", ""g"", 0.02);
+c2=capacitor(""3_a3"", ""3_a4"", 0.04);
+c3=capacitor(""3_a1"", ""3_a2"", 0.01);
+voltage(""3_a1"",""g"");
+voltage(""3_a2"",""g"");
+voltage(""3_a3"",""g"");
+voltage(""3_a4"",""g"");
+voltage(""3_a5"",""g"");
+voltage(""3_a6"",""g"");";
             FileTab.SelectedIndex = 0;
 
-            ((FileTabItem)_tabItems[1]).Document.Text = @"set a = 2;";
-            ((FileTabItem)_tabItems[1]).Document.Text += "\r\n";
-            ((FileTabItem)_tabItems[1]).Document.Text += @"x*x+a=e()^x*sin(x);";
-            ((FileTabItem)_tabItems[1]).Document.Text += "\r\n";
-            ((FileTabItem)_tabItems[1]).Document.Text += @"x(0)=0;";
+            ((FileTabItem)_tabItems[1]).Document.Text = 
+@"set a = 2;
+x * x + a = e()^x * sin(x);
+x(0) = 0;";
+
+            ((FileTabItem)_tabItems[2]).Document.Text =
+@"set a = 2;
+set t0 = 0;
+set time = 1;
+
+der(x) = a * x;
+x(t0) = 1;";
 
             DispatcherTimer dt = new DispatcherTimer();
             dt.Interval = TimeSpan.FromSeconds(2);
@@ -237,7 +208,7 @@ namespace ElectricalPowerSystems
         private async void RunNonlinearTest_Click(object sender, RoutedEventArgs e)
         {
             UIEnabled = false;
-            clearOutput();
+            ClearOutput();
             try {
                 await Task.Run(() => RunNonlinearEquationsTest(this));
             }catch(Exception exc)
@@ -281,10 +252,12 @@ namespace ElectricalPowerSystems
                 0.01,
                 1.0
                 );
+                outputList.Add("Упрощённое представление");
+                outputList.Add(compiledEquation.PrintEquations());
                 outputList.Add("Решение");
                 FormOutput(solution, compiledEquation, ref outputList);
             }
-            catch (Interpreter.Equations.Nonlinear.CompilerException exc)
+            catch (Interpreter.Equations.CompilerException exc)
             {
                 outputList.Add(exc.Message);
                 var errors = exc.Errors;
@@ -376,17 +349,39 @@ namespace ElectricalPowerSystems
         private async void RunMenuButton_Click(object sender, RoutedEventArgs e)
         {
             UIEnabled = false;
-            clearOutput();
+            ClearOutput();
             await Task.Run(()=>Run(this));
             UIEnabled = true;
             Expander.IsExpanded = true;
         }
-        private void clearOutput()
+        private void ClearOutput()
         {
             OutputText = "";
             errors.Clear();
         }
         //Commands
+        private void HelpCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void HelpCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            bool isWindowOpen = false;
+
+            foreach (Window w in Application.Current.Windows)
+            {
+                if (w is HelpWindow)
+                {
+                    isWindowOpen = true;
+                    w.Activate();
+                }
+            }
+            if (!isWindowOpen)
+            {
+                HelpWindow window = new HelpWindow();
+                window.Show();
+            }
+        }
         private void SaveCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             if (FileTab == null)
@@ -395,7 +390,8 @@ namespace ElectricalPowerSystems
                 return;
             }
             FileTabItem item = FileTab.SelectedItem as FileTabItem;
-            e.CanExecute = item.Changed;
+            //e.CanExecute = item.Changed;
+            e.CanExecute = true;
         }
         private void SaveCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
@@ -590,7 +586,7 @@ namespace ElectricalPowerSystems
         private async void RunGenerateEquationsButton_Click(object sender, RoutedEventArgs e)
         {
             UIEnabled = false;
-            clearOutput();
+            ClearOutput();
             await Task.Run(() => RunEquationGenerationAC(this));
             UIEnabled = true;
             Expander.IsExpanded = true;
@@ -654,19 +650,10 @@ namespace ElectricalPowerSystems
             );
             return;
         }
-        private void RunDAETest_Click(object sender, RoutedEventArgs e)
-        {
-            /*UIEnabled = false;
-            clearOutput();
-            //await Task.Run(() => RunDAEEquationsTest(this));
-            UIEnabled = true;
-            Expander.IsExpanded = true;*/
-            throw new NotImplementedException();
-        }
         private async void RungGenerateDAE_Click(object sender, RoutedEventArgs e)
         {
             UIEnabled = false;
-            clearOutput();
+            ClearOutput();
             await Task.Run(() => RunEquationGenerationDAE(this));
             UIEnabled = true;
             Expander.IsExpanded = true;
@@ -719,23 +706,325 @@ namespace ElectricalPowerSystems
             );
             return;
         }
-        private void Help_Click(object sender, RoutedEventArgs e)
+        private void Expander_Collapsed(object sender, RoutedEventArgs e)
         {
-            bool isWindowOpen = false;
+            expanderRow.Height = new GridLength(1, GridUnitType.Auto);
+            tabRow.Height = new GridLength(1, GridUnitType.Star);
+        }
+        private void Expander_Expanded(object sender, RoutedEventArgs e)
+        {
+            expanderRow.Height = new GridLength(1, GridUnitType.Star);
+        }
 
-            foreach (Window w in Application.Current.Windows)
+        private void RLCParallelCircuit_Click(object sender, RoutedEventArgs e)
+        {
+            string content =
+@"   //rlc series scheme
+
+v=voltageSource(""g"", ""1_a1"", 220.0, 0.0, 50.0);
+resistor(""1_a1"",""1_a2"",10.0);
+inductor(""1_a2"", ""1_a3"", 5.0);
+capacitor(""1_a3"", ""g"", 0.01);
+ground(""g"");
+voltage(""1_a1"",""g"");
+voltage(""1_a2"",""g"");
+voltage(""1_a3"",""g"");
+current(v);";
+            FileTabItem tab = new FileTabItem("RLC series circuit",null,content);
+            _tabItems.Add(tab);
+            FileTab.SelectedIndex = _tabItems.Count - 1;
+        }
+
+        private void RLCSeriesCircuit_Click(object sender, RoutedEventArgs e)
+        {
+            string content =
+@"   //rlc parallel scheme
+            
+v=voltageSource(""g"", ""2_a1"", 220.0, 0.0, 50.0);
+r=resistor(""g"",""2_a1"",10.0);
+i=inductor(""g"", ""2_a1"", 5.0);
+c=capacitor(""g"", ""2_a1"", 0.01);
+voltage(""2_a1"",""g"");
+current(v);
+current(r);
+current(i);
+current(c);";
+            FileTabItem tab = new FileTabItem("RLC parallel circuit", null, content);
+            _tabItems.Add(tab);
+            FileTab.SelectedIndex = _tabItems.Count - 1;
+        }
+
+        private async void RunNonlinearExpressionTest_Click(object sender, RoutedEventArgs e)
+        {
+            //Тестирование парсинга и упрощения алгебраических уравнений
+            UIEnabled = false;
+            ClearOutput();
+            try
             {
-                if (w is HelpWindow)
+                await Task.Run(() => RunNonlinearExpressionTest(this));
+            }
+            catch (Exception exc)
+            {
+                Console.Write(exc.Message);
+            }
+            UIEnabled = true;
+            Expander.IsExpanded = true;
+        }
+        internal void RunNonlinearExpressionTest(MainWindow window)
+        {
+            FileTabItem tab = null;
+            window.Dispatcher.Invoke(() =>
+            {
+                tab = window.FileTab.SelectedItem as FileTabItem;
+            });
+            if (tab == null)
+            {
+                return;
+            }
+            List<ErrorMessage> errorList = new List<ErrorMessage>();
+            window.Dispatcher.Invoke(() =>
+            {
+                window.FileTab.Focus();
+                window.StatusText = "Расчёт";
+            });
+            //Thread.Sleep(4000); //Test of UI
+            List<string> outputList = new List<string>();
+            try
+            {
+                string text = "";
+                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
+                Interpreter.Equations.Nonlinear.EquationCompiler compiler = new Interpreter.Equations.Nonlinear.EquationCompiler();
+                Interpreter.Equations.Nonlinear.NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(text);
+                outputList.Add("Variables:");
+                outputList.Add(compiledEquation.PrintVariables());
+                outputList.Add(compiledEquation.PrintEquations());
+                outputList.Add(compiledEquation.PrintJacobiMatrix(false));
+            }
+            catch (Interpreter.Equations.CompilerException exc)
+            {
+                outputList.Add(exc.Message);
+                var errors = exc.Errors;
+                foreach (var error in errors)
                 {
-                    isWindowOpen = true;
-                    w.Activate();
+                    errorList.Add(error);
                 }
             }
-            if (!isWindowOpen)
+            catch (Exception exc)
             {
-                HelpWindow window = new HelpWindow();
-                window.Show();
+                window.Dispatcher.Invoke(() =>
+                {
+                    window.OutputText += exc.Message;
+                    window.OutputText += "\n";
+                    window.OutputText += exc.StackTrace;
+                });
+                return;
             }
+            try
+            {
+                window.Dispatcher.Invoke(() =>
+                {
+                    foreach (ErrorMessage error in errorList)
+                    {
+                        window.errors.Add(error);
+                    }
+                    foreach (var output in outputList)
+                    {
+                        window.OutputText += output;
+                        window.OutputText += "\n";
+                    }
+                    window.StatusText = "Готово";
+                }
+                );
+            }
+            catch (Exception exc)
+            {
+                Console.Write(exc.Message);
+            }
+            return;
+        }
+
+        private async void RunDAEExpressionTest_Click(object sender, RoutedEventArgs e)
+        {
+            //Тестирование парсинга и упрощения ДАУ
+            UIEnabled = false;
+            ClearOutput();
+            try
+            {
+                await Task.Run(() => RunDAEExpressionTest(this));
+            }
+            catch (Exception exc)
+            {
+                Console.Write(exc.Message);
+            }
+            UIEnabled = true;
+            Expander.IsExpanded = true;
+        }
+        internal void RunDAEExpressionTest(MainWindow window)
+        {
+            FileTabItem tab = null;
+            window.Dispatcher.Invoke(() =>
+            {
+                tab = window.FileTab.SelectedItem as FileTabItem;
+            });
+            if (tab == null)
+            {
+                return;
+            }
+            List<ErrorMessage> errorList = new List<ErrorMessage>();
+            window.Dispatcher.Invoke(() =>
+            {
+                window.FileTab.Focus();
+                window.StatusText = "Расчёт";
+            });
+            //Thread.Sleep(4000); //Test of UI
+            List<string> outputList = new List<string>();
+            try
+            {
+                string text = "";
+                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
+                Interpreter.Equations.DAE.DAECompiler compiler = new Interpreter.Equations.DAE.DAECompiler();
+                Interpreter.Equations.DAE.DAEImplicitDefinition compiledEquation = compiler.CompileDAEImplicit(text);
+                outputList.Add("Variables:");
+                outputList.Add(compiledEquation.PrintVariables());
+                outputList.Add("Equations:");
+                outputList.Add(compiledEquation.PrintEquations());
+            }
+            catch (Interpreter.Equations.CompilerException exc)
+            {
+                outputList.Add(exc.Message);
+                var errors = exc.Errors;
+                foreach (var error in errors)
+                {
+                    errorList.Add(error);
+                }
+            }
+            catch (Exception exc)
+            {
+                window.Dispatcher.Invoke(() =>
+                {
+                    window.OutputText += exc.Message;
+                    window.OutputText += "\n";
+                    window.OutputText += exc.StackTrace;
+                });
+                return;
+            }
+            try
+            {
+                window.Dispatcher.Invoke(() =>
+                {
+                    foreach (ErrorMessage error in errorList)
+                    {
+                        window.errors.Add(error);
+                    }
+                    foreach (var output in outputList)
+                    {
+                        window.OutputText += output;
+                        window.OutputText += "\n";
+                    }
+                    window.StatusText = "Готово";
+                }
+                );
+            }
+            catch (Exception exc)
+            {
+                Console.Write(exc.Message);
+            }
+            return;
+        }
+        private async void RunDAETest_Click(object sender, RoutedEventArgs e)
+        {
+            //Тестирование решения ДАУ системы
+            UIEnabled = false;
+            ClearOutput();
+            try
+            {
+                await Task.Run(() => RunDAETest(this));
+            }
+            catch (Exception exc)
+            {
+                Console.Write(exc.Message);
+            }
+            UIEnabled = true;
+            Expander.IsExpanded = true;
+        }
+        internal void RunDAETest(MainWindow window)
+        {
+            FileTabItem tab = null;
+            window.Dispatcher.Invoke(() =>
+            {
+                tab = window.FileTab.SelectedItem as FileTabItem;
+            });
+            if (tab == null)
+            {
+                return;
+            }
+            List<ErrorMessage> errorList = new List<ErrorMessage>();
+            window.Dispatcher.Invoke(() =>
+            {
+                window.FileTab.Focus();
+                window.StatusText = "Расчёт";
+            });
+            //Thread.Sleep(4000); //Test of UI
+            List<string> outputList = new List<string>();
+            try
+            {
+                string text = "";
+                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
+                Interpreter.Equations.DAE.DAECompiler compiler = new Interpreter.Equations.DAE.DAECompiler();
+                Interpreter.Equations.DAE.DAEImplicitDefinition compiledEquation = compiler.CompileDAEImplicit(text);
+                
+                MathUtils.RADAUIIA3 solver = new MathUtils.RADAUIIA3();
+                float step = 0.1f;
+                solver.SetStep(step);
+                solver.SetNewtonIterations(20);
+                solver.SetNewtonFAbsTol(0.1f);
+                Interpreter.Equations.DAE.DAESolution solution = MathUtils.DAEImplicitSolver.Solve(compiledEquation,solver);
+                window.Dispatcher.Invoke(() =>
+                {
+                    solution.ShowResults();
+                });
+            }
+            catch (Interpreter.Equations.CompilerException exc)
+            {
+                outputList.Add(exc.Message);
+                var errors = exc.Errors;
+                foreach (var error in errors)
+                {
+                    errorList.Add(error);
+                }
+            }
+            catch (Exception exc)
+            {
+                window.Dispatcher.Invoke(() =>
+                {
+                    window.OutputText += exc.Message;
+                    window.OutputText += "\n";
+                    window.OutputText += exc.StackTrace;
+                });
+                return;
+            }
+            try
+            {
+                window.Dispatcher.Invoke(() =>
+                {
+                    foreach (ErrorMessage error in errorList)
+                    {
+                        window.errors.Add(error);
+                    }
+                    foreach (var output in outputList)
+                    {
+                        window.OutputText += output;
+                        window.OutputText += "\n";
+                    }
+                    window.StatusText = "Готово";
+                }
+                );
+            }
+            catch (Exception exc)
+            {
+                Console.Write(exc.Message);
+            }
+            return;
         }
     }
 }

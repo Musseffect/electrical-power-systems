@@ -22,6 +22,7 @@ unaryOperator: op=(PLUS | MINUS);
 
  expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
 	| LPAREN expression RPAREN #BracketExpression
+	| DER LPAREN id=ID RPAREN #FunctionDerivative
 	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
 	| op=unaryOperator expression	#UnaryOperatorExpression
 	| left=expression op=(DIVISION|ASTERISK) right=expression	#BinaryOperatorExpression
@@ -40,6 +41,9 @@ fragment LOWERCASE  : [a-z] ;
 fragment UPPERCASE  : [A-Z] ;
 fragment DIGIT: [0-9] ;
 
+T0 : '(t0)';
+DER : 'der';
+
 FLOAT: (DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
 	   |DOT DIGIT+ ([Ee][+-]? DIGIT+)?
 		|DIGIT+ ([Ee] [+-]? DIGIT+)?
@@ -47,7 +51,6 @@ FLOAT: (DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
 INT: DIGIT+ ; 
 ID: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;
 
-T0 : '(t0)';
 
 PLUS               : '+' ;
 MINUS              : '-' ;

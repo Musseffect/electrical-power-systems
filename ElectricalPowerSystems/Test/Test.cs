@@ -1,5 +1,6 @@
 ﻿using ElectricalPowerSystems.ACGraph;
 using ElectricalPowerSystems.Interpreter;
+using ElectricalPowerSystems.Interpreter.Equations;
 using ElectricalPowerSystems.Interpreter.Equations.DAE;
 using ElectricalPowerSystems.Interpreter.Equations.Nonlinear;
 using ElectricalPowerSystems.MathUtils;

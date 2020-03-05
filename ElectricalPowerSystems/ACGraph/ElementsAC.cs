@@ -50,19 +50,19 @@ namespace ElectricalPowerSystems.ACGraph
             {
                 nodes = null;
             }
-            protected string currentRe()
+            protected string CurrentRe()
             {
                 return $"I_{elementIndex}_re";
             }
-            protected string currentIm()
+            protected string CurrentIm()
             {
                 return $"I_{elementIndex}_im";
             }
-            protected string nodeVoltageRe(int i)
+            protected string NodeVoltageRe(int i)
             {
                 return $"v_{nodes[i]}_re";
             }
-            protected string nodeVoltageIm(int i)
+            protected string NodeVoltageIm(int i)
             {
                 return $"v_{nodes[i]}_im";
             }
@@ -85,8 +85,8 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public override Complex32 GetVoltageDrop(NonlinearSystemSolution acSolution)
             {
-                var re = acSolution.getValue(nodeVoltageRe(0)) - acSolution.getValue(nodeVoltageRe(1));
-                var im = acSolution.getValue(nodeVoltageIm(0)) - acSolution.getValue(nodeVoltageIm(1));
+                var re = acSolution.getValue(NodeVoltageRe(0)) - acSolution.getValue(NodeVoltageRe(1));
+                var im = acSolution.getValue(NodeVoltageIm(0)) - acSolution.getValue(NodeVoltageIm(1));
                 return new Complex32((float)re,(float)im);
             }
         }
@@ -1211,7 +1211,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public override string ToString()
             {
-                return $"Voltage Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, voltage = {voltage}@{Utils.degrees(phase)}, frequency = {frequency} Hz}}";
+                return $"Voltage Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, voltage = {voltage}@{Utils.Degrees(phase)}, frequency = {frequency} Hz}}";
             }
             public override List<EquationBlock> GenerateEquationsAC()
             {
@@ -1370,7 +1370,7 @@ namespace ElectricalPowerSystems.ACGraph
             }
             public override string ToString()
             {
-                return $"Current Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, current = {current}@{Utils.degrees(phase)}, frequency = {frequency} Hz}}";
+                return $"Current Source{{n1 = {nodes[0]}, n2 = {nodes[1]}, current = {current}@{Utils.Degrees(phase)}, frequency = {frequency} Hz}}";
             }
             public override List<EquationBlock> GenerateEquationsAC()
             {
@@ -1420,19 +1420,21 @@ namespace ElectricalPowerSystems.ACGraph
 
             public override List<EquationBlock> GetParametersTransient()
             {
-                List<EquationBlock> equations = new List<EquationBlock>();
-                equations.Add(new EquationBlock
+                List<EquationBlock> equations = new List<EquationBlock>
+                {
+                new EquationBlock
                 {
                     Equation = $"set J_{elementIndex} = {current.ToString(new CultureInfo("en-US"))};"
-                });
-                equations.Add(new EquationBlock
+                },
+                new EquationBlock
                 {
                     Equation = $"set w_{elementIndex} = {frequency.ToString(new CultureInfo("en-US"))};"
-                });
-                equations.Add(new EquationBlock
+                },
+                new EquationBlock
                 {
                     Equation = $"set ph_{elementIndex} = {phase.ToString(new CultureInfo("en-US"))};"
-                });
+                }
+                };
                 return equations;
             }
         }

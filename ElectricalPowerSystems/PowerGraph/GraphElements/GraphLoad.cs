@@ -92,9 +92,9 @@ namespace ElectricalPowerSystems.PowerGraph
     }
     public class LoadSchemeDelta : PowerElementScheme
     {
-        int inA;
-        int inB;
-        int inC;
+        private int inA;
+        private int inB;
+        private int inC;
         public LoadSchemeDelta(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphLoadDelta load)
         {
             inA = nodes[0].A;
@@ -129,7 +129,7 @@ namespace ElectricalPowerSystems.PowerGraph
             AddElement(acGraph.CreateImpedanceWithCurrent(inN, inA, load.resistanceA));
             AddElement(acGraph.CreateImpedanceWithCurrent(inN, inB, load.resistanceB));
             AddElement(acGraph.CreateImpedanceWithCurrent(inN, inC, load.resistanceC));
-            load.grounding.createScheme(acGraph, inN);
+            load.grounding.CreateScheme(acGraph, inN);
         }
     }
 

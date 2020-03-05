@@ -6,13 +6,6 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems
 {
-    class ModelException: Exception
-    {
-        public virtual string getMessage()
-        {
-            return this.Message;
-        }
-    }
     class ModelInterpreterException:Exception
     {
         public ModelInterpreterException(string message) : base(message)

@@ -129,7 +129,7 @@ namespace ElectricalPowerSystems.PowerGraph
             AddElement(acGraph.CreateVoltageSource(outN, wA, generator.voltage, 0.0f, PowerGraphManager.powerFrequency));
             AddElement(acGraph.CreateVoltageSource(outN, wB, generator.voltage, (float)(Math.PI) * 2.0f / 3.0f, PowerGraphManager.powerFrequency));
             AddElement(acGraph.CreateVoltageSource(outN, wC, generator.voltage, (float)(Math.PI) * 4.0f / 3.0f, PowerGraphManager.powerFrequency));
-            generator.grounding.createScheme(acGraph,outN);
+            generator.grounding.CreateScheme(acGraph,outN);
         }
     }
     public class GeneratorSchemeVDelta : PowerElementScheme

@@ -17,7 +17,7 @@ namespace ElectricalPowerSystems.PowerGraph
             ReactanceGrounding
         };
         public Type type;
-        public abstract void createScheme(ACGraph.ACGraph graph, int neutralNode);
+        public abstract void CreateScheme(ACGraph.ACGraph graph, int neutralNode);
     }
     public class Ungrounded : GroundingType
     {
@@ -25,7 +25,7 @@ namespace ElectricalPowerSystems.PowerGraph
         {
             this.type = Type.Ungrounded;
         }
-        public override void createScheme(ACGraph.ACGraph graph, int neutralNode)
+        public override void CreateScheme(ACGraph.ACGraph graph, int neutralNode)
         {
         }
     }
@@ -37,7 +37,7 @@ namespace ElectricalPowerSystems.PowerGraph
             this.type = Type.ResistanceGrounding;
             this.Resistance = resistance;
         }
-        public override void createScheme(ACGraph.ACGraph graph, int neutralNode)
+        public override void CreateScheme(ACGraph.ACGraph graph, int neutralNode)
         {
             int groundNode = graph.AllocateNode();
             graph.CreateResistorWithCurrent(neutralNode, groundNode, Resistance);
@@ -50,7 +50,7 @@ namespace ElectricalPowerSystems.PowerGraph
         {
             this.type = Type.SolidGrounding;
         }
-        public override void createScheme(ACGraph.ACGraph graph, int neutralNode)
+        public override void CreateScheme(ACGraph.ACGraph graph, int neutralNode)
         {
             graph.CreateGround(neutralNode);
         }
@@ -63,7 +63,7 @@ namespace ElectricalPowerSystems.PowerGraph
             this.type = Type.ReactanceGrounding;
             this.Reactance = reactance;
         }
-        public override void createScheme(ACGraph.ACGraph graph, int neutralNode)
+        public override void CreateScheme(ACGraph.ACGraph graph, int neutralNode)
         {
             int groundNode = graph.AllocateNode();
             graph.CreateInductor(neutralNode, groundNode, Reactance);

@@ -15,7 +15,5 @@ namespace ElectricalPowerSystems
                 "Exit",
                 typeof(Commands)
             );
-
-
     }
 }

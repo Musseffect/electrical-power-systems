@@ -94,7 +94,7 @@ namespace ElectricalPowerSystems.PowerGraph
         public override int[] generateWinding(int wA, int wB, int wC, ACGraph.ACGraph acGraph)
         {
             int n = acGraph.AllocateNode();
-            grounding.createScheme(acGraph, n);
+            grounding.CreateScheme(acGraph, n);
             return generateWindingConnection(wA, wB, wC,n);
         }
         private int[] generateWindingConnection(int a, int b, int c, int n)
@@ -148,7 +148,7 @@ namespace ElectricalPowerSystems.PowerGraph
         public override int[] generateWinding(int wA, int wB, int wC, ACGraph.ACGraph acGraph)
         {
             int n = acGraph.AllocateNode();
-            grounding.createScheme(acGraph, n);
+            grounding.CreateScheme(acGraph, n);
             return generateWindingConnection(wA, wB, wC, n);
         }
         private int[] generateWindingConnection(int a, int b, int c, int n)

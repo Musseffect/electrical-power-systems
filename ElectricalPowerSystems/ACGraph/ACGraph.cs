@@ -196,9 +196,8 @@ namespace ElectricalPowerSystems.ACGraph
                 List<ElementsAC.EquationBlock> blocks = element.GenerateEquationsTransient();
                 foreach (var block in blocks)
                 {
-                    if (block is ElementsAC.CurrentFlowBlock)
+                    if (block is ElementsAC.CurrentFlowBlock currentFlowBlock)
                     {
-                        ElementsAC.CurrentFlowBlock currentFlowBlock = (ElementsAC.CurrentFlowBlock)block;
                         if (currentFlowBlock.Node1 != null)
                             nodeEquationsIn[currentFlowBlock.Node1].Add(currentFlowBlock);
                         if (currentFlowBlock.Node2 != null)
@@ -270,9 +269,8 @@ namespace ElectricalPowerSystems.ACGraph
                 List<ElementsAC.EquationBlock> blocks = element.GenerateEquationsAC();
                 foreach (var block in blocks)
                 {
-                    if (block is ElementsAC.CurrentFlowBlock)
+                    if (block is ElementsAC.CurrentFlowBlock currentFlowBlock)
                     {
-                        ElementsAC.CurrentFlowBlock currentFlowBlock = (ElementsAC.CurrentFlowBlock)block;
                         if (currentFlowBlock.Node1 != null)
                             nodeEquationsIn[currentFlowBlock.Node1].Add(currentFlowBlock);
                         if (currentFlowBlock.Node2 != null)
@@ -280,7 +278,7 @@ namespace ElectricalPowerSystems.ACGraph
                     }
                     else
                     {
-                        equations += block.Equation+Environment.NewLine;
+                        equations += block.Equation + Environment.NewLine;
                     }
                 }
             }

@@ -7,10 +7,13 @@
         xmlns:local="clr-namespace:ElectricalPowerSystems"
         mc:Ignorable="d"
         Name="windowElement"
-        Title="Power System Simulator v. 1.0 - 0.(8)" Height="360" Width="531.916" MinWidth="600" MinHeight="600">
+        Title="Power System Simulator" Height="360" Width="531.916" MinWidth="600" MinHeight="600">
     <Window.InputBindings>
         <!--<KeyBinding Key="F4" Command="local:Commands.Exit" Modifiers="Alt"></KeyBinding>-->
     </Window.InputBindings>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+    </Window.Resources>
     <Window.CommandBindings>
         <CommandBinding Command="local:Commands.Exit" Executed="ExitCommandExecuted"
                         CanExecute="ExitCommandCanExecute"/>
@@ -20,6 +23,8 @@
                     CanExecute="OpenCommandCanExecute"/>
         <CommandBinding Command="ApplicationCommands.New" Executed="NewCommandExecuted"
                     CanExecute="NewCommandCanExecute"/>
+        <CommandBinding Command="ApplicationCommands.Help" Executed="HelpCommandExecuted"
+                    CanExecute="HelpCommandCanExecute"/>
     </Window.CommandBindings>
     <Grid>
         <Grid.Resources>
@@ -43,7 +48,7 @@
                         Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.DeleteCommand}"
                         CommandParameter="{Binding}" BorderThickness="0" BorderBrush="{x:Null}"
                         HorizontalAlignment="Right">
-                        <Image Source="Resources/Icons/016-cross.png" Width="10" Height="10"/>
+                        <Image Source="../../../Resources/Icons/016-cross.png" Width="10" Height="10"/>
                     </Button>
                 </Grid>
                 <DataTemplate.Triggers>
@@ -65,16 +70,17 @@
             </DataTemplate>
             <DataTemplate x:Key="itemContent">
                 <!--="{Binding Content, Mode=TwoWay}"-->
-                <local:MvvmTextEditor
+                <avalonEdit:TextEditor
                          Document = "{Binding Document, UpdateSourceTrigger=PropertyChanged}"
                          ShowLineNumbers="True" 
                          HorizontalScrollBarVisibility="Auto"
                          VerticalScrollBarVisibility="Auto"
 				         FontFamily="Consolas"
 				         FontSize="10pt"
-                         ScrollViewer.CanContentScroll="True" 
+                         ScrollViewer.CanContentScroll="True"
+                         IsModified = "{Binding Path=Changed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 				         SyntaxHighlighting="Model language">
-                    <local:MvvmTextEditor.ContextMenu>
+                    <avalonEdit:TextEditor.ContextMenu>
                         <ContextMenu>
                             <MenuItem Command="Cut" Header="{DynamicResource m_menu_Cut}" />
                             <MenuItem Command="Copy" Header="{DynamicResource m_menu_Copy}" />
@@ -82,8 +88,8 @@
                             <MenuItem Command="Undo" Header="{DynamicResource m_menu_Undo}" />
                             <MenuItem Command="Redo" Header="{DynamicResource m_menu_Redo}" />
                         </ContextMenu>
-                    </local:MvvmTextEditor.ContextMenu>
-                </local:MvvmTextEditor>
+                    </avalonEdit:TextEditor.ContextMenu>
+                </avalonEdit:TextEditor>
                 <!--<TextBox Text="{Binding Content}"
                          HorizontalScrollBarVisibility="Auto"
                          VerticalScrollBarVisibility="Auto"
@@ -117,8 +123,34 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="*" x:Name="tabRow">
+                <!--<RowDefinition.Style>
+                    <Style TargetType="{x:Type RowDefinition}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=Expander, Path=IsExpanded}" Value="False">
+                                <Setter Property="Height" Value="*"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RowDefinition.Style>-->
+            </RowDefinition>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" x:Name="expanderRow">
+                <!--
+                <RowDefinition.Style>
+                    <Style TargetType="{x:Type RowDefinition}">
+                        <Setter Property="Height" Value="200"></Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=Expander, Path=IsExpanded}" Value="False">
+                                <Setter Property="Height" Value="Auto"></Setter>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ElementName=Expander, Path=IsExpanded}" Value="True">
+                                <Setter Property="Height" Value="*"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RowDefinition.Style>-->
+            </RowDefinition>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Menu Grid.Row="0" Height="25" VerticalAlignment="Top">
@@ -143,36 +175,32 @@
             </MenuItem>
             <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" >
                 <MenuItem IsEnabled="True" Header="Установившийся режим">
-                    <MenuItem x:Name="RunNonlinearTest" Header="Тестирование решения нелинейной системы" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIEnabled}"/>
                     <MenuItem x:Name="RunElectricalSchemeStatic" Header="Расчёт эл. схемы" Click="RunMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
-                    <MenuItem x:Name="GenerateEquationsAC" Header="Генерация уравнений установившегося режима" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
                     <MenuItem x:Name="RunPowerSystemStatic" Header="Расчёт трёхфазной схемы" IsEnabled="False"/>
                     <MenuItem x:Name="RunVariationStatic" Header="Варьирование параметров трёхфазной схемы" IsEnabled="False"/>
                 </MenuItem>
                 <MenuItem IsEnabled="True" Header="Переходные процессы">
-                    <MenuItem x:Name="RunDAETest" Header="Тестирование решения ДАУ системы" Click="RunDAETest_Click"  IsEnabled="False"/>
                     <MenuItem x:Name="RunElectricalSchemeTransient" Header="Расчёт эл. схемы" IsEnabled="False"/>
-                    <MenuItem x:Name="GenerateDAE" Header="Генерация ДАУ уравнений" Click="RungGenerateDAE_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
                     <MenuItem x:Name="RunPowerSystemTransient" Header="Расчёт трёхфазной схемы" IsEnabled="False"/>
                 </MenuItem>
             </MenuItem>
-            <MenuItem Header="Тестовые примеры" IsEnabled="False">
-                <MenuItem Header="Установившийся режим">
-                    <MenuItem Header="Расчёт эл. схемы"/>
-                    <MenuItem Header="Расчёт трёхфазной схемы"/>
-                    <MenuItem Header="Варьирование параметров трёхфазной схемы"/>
+            <MenuItem Header="Тесты" IsEnabled="True">
+                <MenuItem Header="Схемы">
+                    <MenuItem x:Name="RLCSeriesCircuit" Header="Схема Series RLC" IsEnabled="True" Click="RLCSeriesCircuit_Click"/>
+                    <MenuItem x:Name="RLCParallelCircuit" Header="Схема Parallel RLC" IsEnabled="True" Click="RLCParallelCircuit_Click"/>
                 </MenuItem>
-                <MenuItem Header="Переходные процессы">
-                    <MenuItem Header="Расчёт эл. схемы"/>
-                    <MenuItem Header="Расчёт трёхфазной схемы"/>
-                </MenuItem>
-                <MenuItem Header="Замыкания">
-                    <MenuItem Header="Статический расчёт"/>
-                    <MenuItem Header="Динамический расчёт"/>
+                <MenuItem Header="Уравнения">
+                    <MenuItem x:Name="RunNonlinearTestButton" Header="Тестирование решения алгебраической системы" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="RunNonlinearExpressionTestButton" Header="Тестирование парсинга и упрощения алгебраических уравнений" IsEnabled="{Binding Path = UIEnabled}" Click="RunNonlinearExpressionTest_Click"/>
+                    <MenuItem x:Name="GenerateEquationsACButton" Header="Генерация уравнений установившегося режима" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
+                    <Separator />
+                    <MenuItem x:Name="GenerateDAEButton" Header="Генерация ДАУ уравнений" Click="RungGenerateDAE_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="RunDAEExpressionTestButton" Header="Тестирование парсинга и упрощения ДАУ" IsEnabled="{Binding Path = UIEnabled}" Click="RunDAEExpressionTest_Click"/>
+                    <MenuItem x:Name="RunDAETestButton" Header="Тестирование решения ДАУ системы" Click="RunDAETest_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
                 </MenuItem>
             </MenuItem>
             <!--<MenuItem x:Name="RunPowerTestButton" Header="{DynamicResource m_menu_Run_Test}" Click="RunPowerTestButton_Click"></MenuItem>-->
-            <MenuItem Header="{DynamicResource m_menu_Help}" IsEnabled="True" Click="Help_Click"></MenuItem>
+            <MenuItem Header="{DynamicResource m_menu_Help}" IsEnabled="True" Command="ApplicationCommands.Help"></MenuItem>
         </Menu>
         <ToolBar Grid.Row="1" Height="36" VerticalAlignment="Top" Width="Auto">
             <ToolBar.Resources>
@@ -185,41 +213,41 @@
                 </Style>
             </ToolBar.Resources>
             <Button x:Name="CreateFileButton" Command="New" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/002-file.png"/>
+                <Image Source="../../../Resources/Icons/002-file.png"/>
             </Button>
             <Button x:Name="OpenFileButton" Command="Open" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/003-open-folder.png"/>
+                <Image Source="../../../Resources/Icons/003-open-folder.png"/>
             </Button>
             <Button x:Name="SaveFileButton" Command="Save" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/005-save.png"/>
+                <Image Source="../../../Resources/Icons/005-save.png"/>
             </Button>
             <Button x:Name="SaveAllButton" Click="SaveAll_Click" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/floppy-disk.png"/>
+                <Image Source="../../../Resources/Icons/floppy-disk.png"/>
             </Button>
             <Separator />
             <Button x:Name="UndoButton" Command="Undo" IsEnabled="False" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/010-undo.png" />
+                <Image Source="../../../Resources/Icons/010-undo.png" />
             </Button>
             <Button x:Name="RedoButton" Command="Redo" IsEnabled="False" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/015-redo.png" />
+                <Image Source="../../../Resources/Icons/015-redo.png" />
             </Button>
             <Separator />
             <Button x:Name="Cut" Command="Cut" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/007-scissors.png" />
+                <Image Source="../../../Resources/Icons/007-scissors.png" />
             </Button>
             <Button x:Name="Copy" Command="Copy" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/008-copy.png" />
+                <Image Source="../../../Resources/Icons/008-copy.png" />
             </Button>
             <Button x:Name="Paste" Command="Paste" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/009-paste.png" />
+                <Image Source="../../../Resources/Icons/009-paste.png" />
             </Button>
             <Separator />
             <Button x:Name="Start" Style="{StaticResource ToolBarButtonStyle}" IsEnabled="False">
-                <Image Source="Resources/Icons/play-button.png" />
+                <Image Source="../../../Resources/Icons/play-button.png" />
             </Button>
             <Separator />
-            <Button x:Name="Help" IsEnabled="False" Style="{StaticResource ToolBarButtonStyle}">
-                <Image Source="Resources/Icons/017-information.png" />
+            <Button x:Name="Help" IsEnabled="True" Style="{StaticResource ToolBarButtonStyle}" Command="ApplicationCommands.Help">
+                <Image Source="../../../Resources/Icons/017-information.png" />
             </Button>
             <Separator />
         </ToolBar>
@@ -273,15 +301,15 @@
 
                                                     <RepeatButton Grid.Column="1" Command="ScrollBar.LineLeftCommand"
                                                                   Style="{DynamicResource TabScrollRepeatButtonStyle}" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" BorderThickness="0" Margin="0">
-                                                        <Image Source="Resources/Icons/011-left-chevron.png"></Image>
+                                                        <Image Source="../../../Resources/Icons/011-left-chevron.png"></Image>
                                                     </RepeatButton>
                                                     <RepeatButton Grid.Column="2" Command="ScrollBar.LineRightCommand"
                                                                   Style="{DynamicResource TabScrollRepeatButtonStyle}" Margin="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}">
-                                                        <Image Source="Resources/Icons/012-right-chevron.png"></Image>
+                                                        <Image Source="../../../Resources/Icons/012-right-chevron.png"></Image>
                                                     </RepeatButton>
                                                     <RepeatButton Grid.Column="3" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch"
                                                                   Style="{DynamicResource TabScrollRepeatButtonStyle}" Foreground="{x:Null}" BorderBrush="{x:Null}" Background="{x:Null}" Margin="0">
-                                                        <Image Source="Resources/Icons/013-down-chevron.png"></Image>
+                                                        <Image Source="../../../Resources/Icons/013-down-chevron.png"></Image>
                                                     </RepeatButton>
                                                 </Grid>
                                             </ControlTemplate>
@@ -298,7 +326,7 @@
                                     Background="{x:Null}"
                                     BorderBrush="{x:Null}" Foreground="{x:Null}" BorderThickness="0" Margin="0"
                                     Padding="5,0,5,0">
-                                    <Image Source="Resources/Icons/006-add.png"></Image>
+                                    <Image Source="../../../Resources/Icons/006-add.png"></Image>
                                 </Button>
                             </StackPanel>
                         </ScrollViewer>
@@ -313,10 +341,14 @@
                 </Style>
             </TabControl.Resources>
         </TabControl>
-        <Expander x:Name="Expander" Grid.Row="3" IsExpanded="True">
+        <Expander x:Name="Expander" Grid.Row="4" 
+                  IsExpanded="False"
+                  Collapsed="Expander_Collapsed"
+                  Expanded="Expander_Expanded"
+                  >
             <Expander.Content>
                 <Grid>
-                    <TabControl Height="150" Grid.ColumnSpan="2">
+                    <TabControl Height="Auto" Grid.ColumnSpan="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
                         <TabItem Header="{DynamicResource m_Output_Header}" >
                             <TextBox Text="{Binding Path=OutputText, Mode=OneWay}"  Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
                             </TextBox>
@@ -365,7 +397,13 @@
                     </Grid>
             </Expander.Content>
         </Expander>
-        <StatusBar Grid.Row="4" Height="25" Width="Auto">
+        <GridSplitter Grid.Row="3" ShowsPreview="False" Height="3"
+                      ResizeBehavior="PreviousAndNext"
+                      ResizeDirection="Rows"
+                      Visibility="{Binding ElementName=Expander,Path=IsExpanded,
+            Converter={StaticResource BoolToVisConverter}}"
+        HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+        <StatusBar Grid.Row="5" Height="25" Width="Auto">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid>

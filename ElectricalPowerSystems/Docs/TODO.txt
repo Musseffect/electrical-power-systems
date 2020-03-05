@@ -1,14 +1,20 @@
 ﻿Icons: done
-UI commands: more or less done
+UI commands: done
 Do something with tabs: done
-Improve expander placement: not important
+Improve expander placement: done
 Check functionality
 Read about DAE : done
 Transient MNA : in progress
 Nonlinear equations : more or less done
 Add nonlinear models for elements :
 DAE index reduction : not important
-variable step dae solver: 
+Variable step dae solver: 
 Fault analysis:
-Some basic inapp help:
+Check DAE: 
+New language: in progress
+Transiet:
+Transiet with reclosers:
+Transiet with faults:
+Recloser dynamic algorithm:
+Some basic inapp help: done
 Make UML:

@@ -36,16 +36,16 @@ namespace ElectricalPowerSystems.PowerGraph
     }
     public class FaultOCScheme : PowerElementScheme
     {
-        int inA;
-        int inB;
-        int inC;
-        int outA;
-        int outB;
-        int outC;
+        private int inA;
+        private int inB;
+        private int inC;
+        private int outA;
+        private int outB;
+        private int outC;
 
-        int lineA;
-        int lineB;
-        int lineC;
+        private int lineA;
+        private int lineB;
+        private int lineC;
 
         public FaultOCScheme(List<ABCNode> nodes, ACGraph.ACGraph acGraph, GraphFaultOC fault) : base()
         {

@@ -104,20 +104,27 @@
     <Compile Include="ACGraph\ACGraph.cs" />
     <Compile Include="ACGraph\CircuitModelAC.cs" />
     <Compile Include="ACGraph\ElementsAC.cs" />
-    <Compile Include="HelpWindow.xaml.cs">
+    <Compile Include="GUI\ModelEditor\Windows\HelpWindow.xaml.cs">
       <DependentUpon>HelpWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Interpreter\Equations\DAE\ASTNode.cs" />
     <Compile Include="Interpreter\Equations\DAE\DAECompiler.cs" />
+    <Compile Include="Interpreter\Equations\DAE\DAEDefinition.cs" />
     <Compile Include="Interpreter\Equations\DAE\DAEGrammarVisitor.cs" />
     <Compile Include="Interpreter\Equations\DAE\DAEImplicitGrammar.g4.lexer.cs" />
     <Compile Include="Interpreter\Equations\DAE\DAEImplicitGrammar.g4.parser.cs" />
-    <Compile Include="Interpreter\Equations\DAE\DAESimplifier.cs" />
-    <Compile Include="Interpreter\Equations\DAE\DAEValidator.cs" />
+    <Compile Include="Interpreter\Equations\DAE\OLD\DAESimplifier.cs" />
+    <Compile Include="Interpreter\Equations\DAE\DAESolution.cs" />
+    <Compile Include="Interpreter\Equations\DAE\OLD\DAEValidator.cs" />
     <Compile Include="Interpreter\Equations\Expression\Expression.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\ASTNode.cs" />
+    <Compile Include="Interpreter\Equations\CompilerException.cs" />
     <Compile Include="Interpreter\PowerModel\ASTNode.cs" />
-    <Compile Include="MvvmTextEditor.cs" />
+    <Compile Include="GUI\ModelEditor\MvvmTextEditor.cs" />
+    <Compile Include="Interpreter\PowerModel\Element.cs" />
+    <Compile Include="Interpreter\PowerModel\ModelExpressions.cs" />
+    <Compile Include="Interpreter\PowerModel\ModelInterpreter.cs" />
+    <Compile Include="MathUtils\SparseMatrix.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphAutotransformer.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphBreak.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphWattmeter.cs" />
@@ -126,11 +133,11 @@
     <Compile Include="PowerGraph\GraphElements\GraphRecloser.cs" />
     <Compile Include="PowerGraph\GraphElements\GroundingType.cs" />
     <Compile Include="PowerGraph\GraphElements\TransformerMode.cs" />
-    <Compile Include="Windows\ChartWindow.xaml.cs">
+    <Compile Include="GUI\ModelEditor\Windows\ChartWindow.xaml.cs">
       <DependentUpon>ChartWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Commands.cs" />
-    <Compile Include="DelegateCommand.cs" />
+    <Compile Include="GUI\ModelEditor\Commands.cs" />
+    <Compile Include="GUI\ModelEditor\DelegateCommand.cs" />
     <Compile Include="EquationGrammar.g4.lexer.cs">
       <DependentUpon>EquationGrammar.g4</DependentUpon>
     </Compile>
@@ -145,21 +152,21 @@
     <Compile Include="Interpreter\Equations\Expression\RPNExpression.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\Simplifier.cs" />
     <Compile Include="Interpreter\Equations\Nonlinear\Validator.cs" />
-    <Compile Include="GUI\GraphViewer.xaml.cs">
+    <Compile Include="GUI\Graph\GraphViewer.xaml.cs">
       <DependentUpon>GraphViewer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GUI\GraphViewModel.cs" />
-    <Compile Include="GUI\MoveThumb.cs" />
-    <Compile Include="GUI\NetworkView.cs" />
-    <Compile Include="GUI\Node.cs" />
-    <Compile Include="GUI\NodeItem.cs" />
-    <Compile Include="GUI\NodesSource.cs" />
-    <Compile Include="GUI\RotateThumb.cs" />
-    <Compile Include="GUI\Toolbox.cs" />
-    <Compile Include="GUI\ToolboxControl.xaml.cs">
+    <Compile Include="GUI\Graph\GraphViewModel.cs" />
+    <Compile Include="GUI\Graph\MoveThumb.cs" />
+    <Compile Include="GUI\Graph\NetworkView.cs" />
+    <Compile Include="GUI\Graph\Node.cs" />
+    <Compile Include="GUI\Graph\NodeItem.cs" />
+    <Compile Include="GUI\Graph\NodesSource.cs" />
+    <Compile Include="GUI\Graph\RotateThumb.cs" />
+    <Compile Include="GUI\Graph\Toolbox.cs" />
+    <Compile Include="GUI\Graph\ToolboxControl.xaml.cs">
       <DependentUpon>ToolboxControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FileTabItem.cs" />
+    <Compile Include="GUI\ModelEditor\FileTabItem.cs" />
     <Compile Include="Interpreter\ErrorListener.cs" />
     <Compile Include="MathUtils\NewtonRaphsonSolver.cs" />
     <Compile Include="MathUtils\NonlinearEquation.cs" />
@@ -170,7 +177,7 @@
     <Compile Include="ModelGrammar.g4.parser.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="GUI\NodeCanvas.xaml.cs">
+    <Compile Include="GUI\Graph\NodeCanvas.xaml.cs">
       <DependentUpon>NodeCanvas.xaml</DependentUpon>
     </Compile>
     <Compile Include="PowerGraph\ABCElement.cs" />
@@ -187,28 +194,28 @@
     <Compile Include="Interpreter\PowerModel\ASTVisitor.cs" />
     <Compile Include="Interpreter\PowerModel\ObjectSystem.cs" />
     <Compile Include="Interpreter\PowerModel\Interpreter.cs" />
-    <Compile Include="TabStyleSelector.cs" />
-    <Compile Include="TabTemplateSelector.cs" />
+    <Compile Include="GUI\ModelEditor\TabStyleSelector.cs" />
+    <Compile Include="GUI\ModelEditor\TabTemplateSelector.cs" />
     <Compile Include="Test\Test.cs" />
     <Compile Include="MathUtils\DAESystem.cs" />
-    <Compile Include="MathUtils\DESolver.cs" />
-    <Page Include="HelpWindow.xaml">
+    <Compile Include="MathUtils\DAESolver.cs" />
+    <Page Include="GUI\ModelEditor\Windows\HelpWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Windows\ChartWindow.xaml">
+    <Page Include="GUI\ModelEditor\Windows\ChartWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="GUI\GraphViewer.xaml">
+    <Page Include="GUI\Graph\GraphViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="GUI\ToolboxControl.xaml">
+    <Page Include="GUI\Graph\ToolboxControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="GUI\ModelEditor\Windows\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -216,11 +223,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="GUI\ModelEditor\Windows\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="GUI\NodeCanvas.xaml">
+    <Page Include="GUI\Graph\NodeCanvas.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -234,7 +241,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MathUtils.cs" />
+    <Compile Include="MathUtils\MathUtils.cs" />
     <Compile Include="ModelException.cs" />
     <Compile Include="ErrorMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -275,7 +282,7 @@
       <Generator>MSBuild:Compile</Generator>
       <CustomToolNamespace>ElectricalPowerSystems.Interpreter.Equations.DAE</CustomToolNamespace>
     </Antlr4>
-    <EmbeddedResource Include="SyntaxHighlighting.xshd" />
+    <EmbeddedResource Include="GUI\ModelEditor\SyntaxHighlighting.xshd" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -293,14 +300,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Grammar.txt" />
+    <Resource Include="Docs\Grammar.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Docs\ModelLanguageDescription.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Docs\TODO.txt" />
-    <Resource Include="TestModels\model1.txt" />
     <Resource Include="Docs\RecloserModelingAlgorithm.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -326,15 +332,6 @@
     <Resource Include="Resources\Icons\play-button.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="TestModels\TransientTest.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="TestModels\ThreePhaseStaticTest1.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="TestModels\ThreePhaseStaticTest2.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Help\help.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -342,6 +339,7 @@
   <ItemGroup>
     <Resource Include="Docs\ThreePhaseLang.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
