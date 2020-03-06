@@ -3,7 +3,9 @@ using LiveCharts.Defaults;
 using LiveCharts.Wpf;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,8 +22,14 @@ namespace ElectricalPowerSystems
     /// <summary>
     /// Логика взаимодействия для ChartWindow.xaml
     /// </summary>
-    public partial class ChartWindow : Window
+    public partial class ChartWindow : Window, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged([CallerMemberName]string prop = "")
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(prop));
+        }
         public SeriesCollection SeriesCollection { get; set; }
         public ChartWindow()
         {

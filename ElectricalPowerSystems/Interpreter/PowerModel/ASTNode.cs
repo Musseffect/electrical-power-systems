@@ -37,7 +37,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             ComplexPhase,
             And,
             Or,
-            Not
+            Not,
         }
         public NodeType Type { get; protected set; }
         public int Line { get; set; }
@@ -83,6 +83,15 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
         {
             Type = NodeType.Object;
         }
+    }
+    public class AssignmentNode : ExpressionNode
+    {
+        public AssignmentNode()
+        {
+            Type = NodeType.Assignment;
+        }
+        public ExpressionNode Left { get; set; }
+        public ExpressionNode Right { get; set; }
     }
     public class ArrayNode : ExpressionNode
     {

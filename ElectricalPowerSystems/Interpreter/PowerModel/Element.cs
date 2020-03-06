@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MathNet.Numerics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,31 +7,37 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.Interpreter.PowerModel
 {
-    public partial class ModelInterpretator
+#if MODELINTERPRETER
+    public partial class ModelInterpreter
     {
-
         /*
-         Elements:
-         Resistor
-         Inductor
-         1pTransformer
-         1pAutotransformer
-         GeneratorWye
-         GeneratorDelta
-         LoadWye
-         LoadDelta
-         TransformerDeltaDelta
-         TransformerDeltaWye
-         TransformerWyeWye
-         TransmissionLine
-         Ground
-         Capacitor
-         Switch
-         Wattmeter
-         Fault
-         Line
-         3Phase1PhaseAdapter
-             */
+            Elements:
+            Resistor
+            Inductor
+            1pTransformer
+            1pAutotransformer
+            GeneratorWye
+            GeneratorDelta
+            LoadWye
+            LoadDelta
+            TransformerDeltaDelta
+            TransformerDeltaWye
+            TransformerWyeWye
+            TransmissionLine
+            Ground
+            Capacitor
+            Switch
+            Wattmeter
+            Fault
+            Line
+            3Phase1PhaseAdapter
+                */
+        public class ABCNode
+        {
+            public int A;
+            public int B;
+            public int C;
+        }
         public class EquationBlock
         {
             public string Equation;
@@ -44,28 +51,24 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             public string Node1;
             public string Node2;
         }
-        private abstract class Element
+        public abstract class Element
         {
             int elementIndex;
-            protected int[] nodes;
             public Element(int elementIndex)
             {
                 this.elementIndex = elementIndex;
             }
         }
-        private interface ITransientElement
+        public interface ITransientElement
         {
             List<EquationBlock> GenerateEquations();
             List<EquationBlock> GenerateParameters();
         }
-        private interface ISteadyStateElement
+        public interface ISteadyStateElement
         {
             List<EquationBlock> GenerateEquations();
             List<EquationBlock> GenerateParameters();
-            /*Complex32f GetPower(SteadyStateSolution solution)
-            {
-
-            }*/
+            Complex32 GetPower(SteadyStateSolution solution);
         }
         /*
         private abstract class Inductor : Element, ITransientElement, ISteadyStateElement
@@ -90,13 +93,16 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
         {
         }
         */
-        private abstract class Resistor : Element,ITransientElement, ISteadyStateElement
+        public abstract class Resistor : Element, ITransientElement, ISteadyStateElement
         {
             float resistance;
-            public Resistor(float resistance,int in_node,int out_node,int elementIndex):base(elementIndex)
+            int in_node;
+            int out_node;
+            public Resistor(float resistance, int in_node, int out_node, int elementIndex) : base(elementIndex)
             {
                 this.resistance = resistance;
-                this.nodes = new int[] { in_node, out_node };
+                this.in_node = in_node;
+                this.out_node = out_node;
             }
             List<EquationBlock> ITransientElement.GenerateEquations()
             {
@@ -114,10 +120,61 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
             {
                 throw new NotImplementedException();
             }
+            public Complex32 ISteadyStateElement.GetPower(SteadyStateSolution solution)
+            {
+                throw new NotImplementedException();
+            }
         }
-        /*
-         
-         
-         */
+        public class SteadyStateResistorModel : ISteadyStateElementModel
+        {
+            public ISteadyStateElement ISteadyStateElementModel.CreateElement(Object elementObject)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        public abstract class VoltageSource : Element, ITransientElement, ISteadyStateElement
+        {
+            float amp;
+            float phase;
+            float frequency;
+            int in_node;
+            int out_node;
+            public VoltageSource(float amp, float phase, float frequency, int in_node, int out_node, int elementIndex) : base(elementIndex)
+            {
+                this.amp = amp;
+                this.phase = phase;
+                this.frequency = frequency;
+                this.in_node = in_node;
+                this.out_node = out_node;
+            }
+            List<EquationBlock> ITransientElement.GenerateEquations()
+            {
+                throw new NotImplementedException();
+            }
+            List<EquationBlock> ITransientElement.GenerateParameters()
+            {
+                throw new NotImplementedException();
+            }
+            List<EquationBlock> ISteadyStateElement.GenerateEquations()
+            {
+                throw new NotImplementedException();
+            }
+            List<EquationBlock> ISteadyStateElement.GenerateParameters()
+            {
+                throw new NotImplementedException();
+            }
+            public Complex32 ISteadyStateElement.GetPower(SteadyStateSolution solution)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        public class SteadyStateVoltageSourceModel : ISteadyStateElementModel
+        {
+            public ISteadyStateElement CreateElement(Object elementObject)
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
+#endif
 }

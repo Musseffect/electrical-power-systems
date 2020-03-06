@@ -122,8 +122,11 @@
     <Compile Include="Interpreter\PowerModel\ASTNode.cs" />
     <Compile Include="GUI\ModelEditor\MvvmTextEditor.cs" />
     <Compile Include="Interpreter\PowerModel\Element.cs" />
+    <Compile Include="Interpreter\PowerModel\FunctionDictionary.cs" />
     <Compile Include="Interpreter\PowerModel\ModelExpressions.cs" />
     <Compile Include="Interpreter\PowerModel\ModelInterpreter.cs" />
+    <Compile Include="Interpreter\PowerModel\SteadyStateModel.cs" />
+    <Compile Include="Interpreter\PowerModel\TransientModel.cs" />
     <Compile Include="MathUtils\SparseMatrix.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphAutotransformer.cs" />
     <Compile Include="PowerGraph\GraphElements\GraphBreak.cs" />
@@ -335,6 +338,7 @@
     <Content Include="Help\help.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Interpreter\PowerModel\Recloser\TextFile1.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Docs\ThreePhaseLang.txt" />

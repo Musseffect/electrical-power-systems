@@ -10,6 +10,7 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
 #if MODELINTERPRETER
     public partial class ModelInterpreter
     {
+        static ModelInterpreter instance;
         public class ValueException : Exception
         {
         }
@@ -54,85 +55,58 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
              
              
          */
-        private class Value
+        public interface ITransientElementModel
         {
-            public enum Type
+            ITransientElement CreateElement(Object elementObject);
+        }
+        public interface ISteadyStateElementModel
+        {
+            ISteadyStateElement CreateElement(Object elementObject);
+        }
+        public abstract class Node
+        {
+            private int index;
+            public int Index { get; }
+            public Node(int index)
             {
-                Float,
-                Int,
-                Complex,
-                Bool,
-                Object,
-                Array,
-                Void
-            };
-            Type type;
-            public Value(Type type)
+                this.index = index;
+            }
+            public abstract string[] GetNodeVariables();
+        }
+        public class Node1Phase : Node
+        {
+            public Node1Phase(int index) : base(index)
             {
-                this.type = type;
+            }
+            public override string[] GetNodeVariables()
+            {
+                return new string[] { $"v_{Index}" };
             }
         }
-        private class VoidValue:Value
+        public class Node3Phase : Node
         {
-            public VoidValue():base(Type.Void)
+            public Node3Phase(int index) : base(index)
             {
+            }
+            public override string[] GetNodeVariables()
+            {
+                return new string[] { $"v_{Index}a", $"v_{Index}b", $"v_{Index}c" };
             }
         }
-        private class FloatValue:Value
+        public struct Connection
         {
-            public float Value { get; set; }
-            public FloatValue():base(Type.Float)
-            {
-            }
+            public int node1;
+            public int node2;
         }
-        private class IntValue : Value
+        public class ElementDescription
         {
-            public int Value { get; set; }
-            public IntValue() : base(Type.Int)
-            {
-            }
-        }
-        private class BoolValue : Value
-        {
-            public bool Value { get; set; }
-            public BoolValue() : base(Type.Bool)
-            {
-            }
-        }
-
-        private class Object : Value
-        {
-            public string Name;
-            public Dictionary<string, Value> Values;
-            public Object():base(Type.Object)
-            {
-            }
-        }
-        private class Array : Value
-        {
-            public Value[] values;
-            public Array() : base(Type.Array)
-            {
-
-            }
-        }
-        private class ElementDescription
-        {
-            public abstract class TransientElementModel
-            {
-                public abstract ITransientElement CreateElement(Object elementObject);
-            }
-            public abstract class SteadyStateElementModel
-            {
-                public abstract ISteadyStateElement CreateElement(Object elementObject);
-            }
             public class ParameterDescription
             {
-                Value.Type type;
-                Value defaultValue;
-                Value minValue;
-                Value maxValue;
-                public ParameterDescription(Value.Type type,Value defaultValue = null,Value minValue = null,Value maxValue = null)
+                Constant.Type type;
+                Constant defaultValue;
+                Constant minValue;
+                Constant maxValue;
+                public ParameterDescription(Constant.Type type, Constant defaultValue = null, Constant minValue = null, Constant maxValue = null)
                 {
                     this.type = type;
                     this.defaultValue = defaultValue;
@@ -145,25 +119,38 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
                 OnePhase,
                 ThreePhase
             }
-            Dictionary<string, NodeType> nodes;
+            readonly Dictionary<string, NodeType> nodes;
             Dictionary<string, ParameterDescription> parameters;
-            TransientElementModel transientModel;
-            SteadyStateElementModel steadyStateModel;
+            ITransientElementModel transientModel;
+            ISteadyStateElementModel steadyStateModel;
             public ElementDescription(Dictionary<string, NodeType> nodes, Dictionary<string, ParameterDescription> parameters,
-                TransientElementModel transientModel, SteadyStateElementModel steadyStateModel)
+                ITransientElementModel transientModel, ISteadyStateElementModel steadyStateModel)
             {
                 this.nodes = nodes;
                 this.parameters = parameters;
                 this.transientModel = transientModel;
                 this.steadyStateModel = steadyStateModel;
             }
-            public TransientElement CreateTransientElement(Object elementObject)
+            public ITransientElement CreateTransientElement(Object elementObject)
             {
                 return transientModel!=null?transientModel.CreateElement(elementObject):null;
             }
-            public SteadyStateElement CreateSteadyStateElement(Object elementObject)
+            public ISteadyStateElement CreateSteadyStateElement(Object elementObject,
+                Dictionary<string, int> elementNodes)
             {
-                return steadyStateModel != null ? steadyStateModel.CreateElement(elementObject) : null;
+                return steadyStateModel != null ? steadyStateModel.CreateElement(elementObject, elementNodes) : null;
+            }
+            public NodeType GetNodeType(string name)
+            {
+                return nodes[name];
+            }
+            public Dictionary<string,NodeType>.KeyCollection GetNodes()
+            {
+                return nodes.Keys;
+            }
+            public int GetNodeCount()
+            {
+                return nodes.Count;
             }
         }
         Dictionary<string, ElementDescription> elementsMap;
@@ -177,13 +164,35 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
                 },
                 new Dictionary<string, ElementDescription.ParameterDescription>{
                         { "R",new ElementDescription.ParameterDescription(
-                            Value.Type.Float,
+                            Constant.Type.Float,
                             new FloatValue{Value=1.0f },
                             new FloatValue{Value=0.0f },
                             null
                         )
                     }
-                })
+                },null, new SteadyStateResistorModel())
+            );
+            elementsMap.Add("voltageSource", new ElementDescription(
+                new Dictionary<string, ElementDescription.NodeType>{
+                    { "in",ElementDescription.NodeType.OnePhase },
+                    { "out",ElementDescription.NodeType.OnePhase}
+                },
+                new Dictionary<string, ElementDescription.ParameterDescription>{
+                        { "V",new ElementDescription.ParameterDescription(
+                            Constant.Type.Float,
+                            new FloatValue{Value=1.0f },
+                            null,
+                            null
+                        )
+                        },
+                        { "phase",new ElementDescription.ParameterDescription(
+                            Constant.Type.Float,
+                            new FloatValue{Value=0.0f },
+                            null,
+                            null
+                        )
+                    }
+                },null,new SteadyStateVoltageSourceModel())
             );
             elementsMap.Add("loadWye",new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>{
@@ -192,175 +201,145 @@ namespace ElectricalPowerSystems.Interpreter.PowerModel
                 },
                 new Dictionary<string, ElementDescription.ParameterDescription>{
                         { "RA",new ElementDescription.ParameterDescription(
-                            Value.Type.Float,
+                            Constant.Type.Float,
                             new FloatValue{Value=1.0f },
                             new FloatValue{Value=0.0f },
                             null
                         )
                         },
                         { "RB",new ElementDescription.ParameterDescription(
-                            Value.Type.Float,
+                            Constant.Type.Float,
                             new FloatValue{Value=1.0f },
                             new FloatValue{Value=0.0f },
                             null
                         )
                         },
                         { "RC",new ElementDescription.ParameterDescription(
-                            Value.Type.Float,
+                            Constant.Type.Float,
                             new FloatValue{Value=1.0f },
                             new FloatValue{Value=0.0f },
                             null
                         )
                         }
-                })
+                },null,null)
             );
         }
-        /*private class ObjectDescription:Type
-        {
-            public class ObjectField
-            {
-                Type type;
-                Value defaultValue;
-                Value minValue;
-                Value maxValue;
-            }
-            Dictionary<string, ObjectField> keyValue;
-        }*/
         public interface IModel
         {
             string Solve();
         }
-        private Object BuildObject(ObjectNode node)
+        private TransientModel GetTransientModel(ModelNode root, ref List<ErrorMessage> errorList, ref List<string> output)
         {
-            Object result = new Object();
-            result.Name = node.Name;
-            result.Values = new Dictionary<string, Value>();
-            foreach (var argument in node.Arguments)
+            throw new NotImplementedException();
+        }
+        struct ElementEntry
+        {
+            ElementDescription description;
+            Object obj;
+            Dictionary<string, int> elementNodes;
+
+            public int GetNodeIndex(string name)
+            {
+                return elementNodes[name];
+            }
+        }
+        private SteadyStateModel GetSteadyStateModel(ModelNode root, ref List<ErrorMessage> errorList, ref List<string> output)
+        {
+            //SteadyStateModel model = new SteadyStateModel();
+            //Dictionary<string, ElementDescription> elementIdentifiers = new Dictionary<string, ElementDescription>();
+            //Dictionary<string, Object> elementDefinitions = new Dictionary<string, Object>();
+            Dictionary<string, ElementEntry> elementEntries = new Dictionary<string, ElementEntry>();
+            int nodeIndicies = 0;
+            foreach (var element in root.Elements)
+            {
+                //get Object from element.Definition
+                Object obj = BuildObject(elementNode.Definition);
+                ElementDescription description = elementsMap[obj.Name];
+                //elementDefinitions.Add(element.Id, obj);
+                //elementIdentifiers.Add(element.Id,elementsMap[obj.Name]);
+                Dictionary<string,int> elementNodes = new Dictionary<string, int>();
+                var keys = description.GetNodes();
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    elementNodes.Add(keys.ElementAt(i), nodeIndicies);
+                    nodeIndicies++;
+                }
+                elementEntries.Add(new ElementEntry(description,obj, elementNodes));
+                ISteadyStateElement modelElement = description.CreateSteadyStateElement(obj,elementNodes);
+                if (element is null)
+                {
+                    errors.Add(new ErrorMessage($"Element {obj.Name} cannot be used in steady state model",element.Line,element.Position));
+                }
+            }
+            List<Connection> connections = new List<Connection>();
+            foreach (var connection in root.Connections)
             {
                 try
                 {
-                    ExpressionNode value = ComputeExpression(argument.Value);
-                    result.Values.Add(argument.Key, ToValue(value));
-                }
-                catch (ArgumentException exc)
+                    ElementEntry entry1 = elementEntries[connection.Element1];
+                    ElementEntry entry2 = elementEntries[connection.Element1];
+                    ElementDescription element1 = entry1.GetDescription();
+                    ElementDescription element2 = entry2.GetDescription();
+                    ElementDescription.NodeType node1 = element1.GetNodeType(connection.Node1);
+                    ElementDescription.NodeType node2 = element2.GetNodeType(connection.Node2);
+                    if (node1 != node2)
+                    {
+                        //add error
+
+                        continue;
+                    }
+                    connections.Add(new Connection(entry1.GetNodeIndex(connection.Node1), entry2.GetNodeIndex(connection.Node2)));
+                    /*switch (node1)
+                    {
+                        case ElementDescription.NodeType.OnePhase:
+                            break;
+                        case ElementDescription.NodeType.ThreePhase:
+                            break;
+                    }*/
+                } catch (Exception exc)
                 {
-                    errors.Add(new ErrorMessage($"Нельзя использовать два параметра с одинаковыми именами:{argument.Key} в {node.Name}", argument.Line, argument.Position));
-                }
-                catch (ValueException exc)
-                {
-                    errors.Add(new ErrorMessage($"Не возможно преобразовать выражение в константное значение", argument.Value.Line, argument.Value.Position));
+                    throw new NotImplementedException();
                 }
             }
-            return result;
-        }
-
-        public class TransientModel: IModel
-        {
-            List<TransientElement> elements;
-            TransientSolver solver;
-            private string GenerateEquations()
-            {
-
-            }
-            public string Solve()
-            {
-
-            }
-        }
-        public class SteadyStateSolver
-        {
-        }
-        public class SteadyStateModel: IModel
-        {
-            List<SteadyStateElement> elements;
-            SteadyStateSolver solver;
-            double frequency;
-            private string GenerateEquations()
-            {
-
-            }
-            public string Solve()
-            {
-                
-            }
-        }
-        /*public class OptimizationModel : IModel
-        {
-            List<SteadyStateElement> elements;
-            List<OptimizationVariable> variables;
-            int iterations;
-            private string GenerateEquations()
-            {
-
-            }
-            public string Solve()
-            {
-                throw new NotImplementedException();
-            }
-        }*/
-        private void ResolveStatements(List<ExpressionNode> statements)
-        {
-
-        }
-        private ExpressionNode ComputeExpression(ExpressionNode expression)
-        {
-
-        }
-        private Value ToValue(ExpressionNode node)
-        {
-
-        }
-        private TransientModel GetTransientModel(ModelNode root, ref List<ErrorMessage> errorList, ref List<string> output);
-        private SteadyStateModel GetSteadyStateModel(ModelNode root, ref List<ErrorMessage> errorList, ref List<string> output)
-        {
             //parameters:
             //solver
-            foreach connection
-                assign int index to each node
-            //for each element in element definitions
-            foreach (var elementDefinition in elementDefinitions)
-            {
-                ISteadyStateElement element = CreateSteadyStateElement(elementDefinition);
-            }
             //create SteadyStateElement
             SteadyStateModel model = new SteadyStateModel();
         }
-        private void ResolveConnection()
-        {
-            //for each connection
-            //find object in element defintions
-            //get element nodes description
-            //create connection
-        }
-        Dictionary<string, Object> elementDefinitions;
         List<ErrorMessage> errors;
+        private void ResolveStatements(List<ExpressionNode> statements)
+        {
+            foreach (var expression in statements)
+            {
+                Eval(expression);
+            }
+        }
         public IModel Generate(ModelNode root, ref List<ErrorMessage> errorList, ref List<string> output)
         {
             this.errors = errorList;
             ResolveStatements(root.Statements);
-            //set model type
-            List<Object> objects;
-            List<string> ids;
-            foreach (var element in root.Elements)
-            {
-                //get Object from element.Definition
-                Object obj = BuildObject(element.Definition);
-                elementDefinitions.Add(element.Id,obj);
-            }
-            ResolveConnection(root.Connections);
             switch (root.ModelType)
             {
                 case "steadystate":
-                    GetSteadyStateModel(root, ref errorList, ref output);
-                    break;
+                    return GetSteadyStateModel(root, ref errorList, ref output);
                 case "transient":
-                    GetTransientModel(root, ref errorList, ref output);
-                    break;
+                    return GetTransientModel(root, ref errorList, ref output);
                 default:
                     errorList.Add(new ErrorMessage("Incorrect model type", root.Line, root.Position));
                     return null;
             }
-            //resolve connections
+        }
+
+        private ModelInterpreter()
+        {
+            InitElements();
+            InitFunctionDictionary();
+        }
+        static public ModelInterpreter GetInstanse()
+        {
+            if (instance == null)
+                instance = new ModelInterpreter();
+            return instance;
         }
     }
 #endif

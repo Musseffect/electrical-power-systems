@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define MODELINTERPRETER
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,14 +33,13 @@ namespace ElectricalPowerSystems.Interpreter
                 return;
             Interpreter.PowerModel.ModelGrammarVisitor visitor = new Interpreter.PowerModel.ModelGrammarVisitor();
             Interpreter.PowerModel.ASTNode root = visitor.VisitModel(modelContext);
-            Interpreter.PowerModel.ModelInterpretator interpreter = new Interpreter.PowerModel.ModelInterpretator();
-            var model = interpreter.Generate((Interpreter.PowerModel.ModelNode)root, ref errorList, ref output);
+            var model = Interpreter.PowerModel.ModelInterpreter.GetInstanse().Generate((Interpreter.PowerModel.ModelNode)root, ref errorList, ref output);
             if (errorList.Count > 0)
                 return;
             string solverOutput = model.Solve();
             output.Add(solverOutput);
         }
-#endif
+#else
         static public void SolveModel(string inputText,ref List<ErrorMessage> errorList,ref List<string> output)
         {
             AntlrInputStream inputStream = new AntlrInputStream(inputText);
@@ -65,7 +65,6 @@ namespace ElectricalPowerSystems.Interpreter
             List<string> solverOutput = model.Solve();
             output.AddRange(solverOutput);
         }
-
         static public void EquationGeneration(string inputText, ref List<ErrorMessage> errorList, ref List<string> output)
         {
             AntlrInputStream inputStream = new AntlrInputStream(inputText);
@@ -117,6 +116,7 @@ namespace ElectricalPowerSystems.Interpreter
             List<string> equations = model.EquationGenerationTransient();
             output.AddRange(equations);
         }
-        
+#endif
     }
+
 }
