@@ -1,4 +1,4 @@
-﻿using ElectricalPowerSystems.Interpreter.Equations.DAE;
+﻿using ElectricalPowerSystems.Equations.DAE;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace ElectricalPowerSystems.MathUtils
         protected double step;
         public double Step { get; }
         public abstract Vector<double> IntegrateStep(DAEImplicitSystem system, Vector<double> x, double t);
-        static public DAESolution Solve(Interpreter.Equations.DAE.DAEImplicitDefinition equations, DAEImplicitSolver solver)
+        static public DAESolution Solve(Equations.DAE.DAEImplicitDefinition equations, DAEImplicitSolver solver)
         {
             List<double[]> values = new List<double[]>();
             List<double> time = new List<double>();
@@ -70,8 +70,8 @@ namespace ElectricalPowerSystems.MathUtils
                 Vector<double> dx = (xNew-x)/step;
                 Vector<double> f = Vector<double>.Build.Dense(system.Size);
                 double time = t + step;
-                Matrix<double> dFdX = system.dFdX(xNew, dx, time); //use k as dx
-                Matrix<double> dFddX = system.dFddX(xNew, dx, time);
+                Matrix<double> dFdX = system.DFdX(xNew, dx, time); //use k as dx
+                Matrix<double> dFddX = system.DFddX(xNew, dx, time);
                 double[] F = system.F(xNew, dx, time);
                 Matrix<double> jacobiMatrix;// = Matrix<double>.Build.Sparse(system.Size, system.Size);
                 jacobiMatrix = dFdX.Add(dFddX.Divide(step));
@@ -240,8 +240,8 @@ namespace ElectricalPowerSystems.MathUtils
                         t_x += step * a[j, m] * k[m];
                     }
                     double time = t + step * c[j];
-                    Matrix<double> dFdX = system.dFdX(t_x, k[j], time); //use k as dx
-                    Matrix<double> dFddX = system.dFddX(t_x, k[j], time);
+                    Matrix<double> dFdX = system.DFdX(t_x, k[j], time); //use k as dx
+                    Matrix<double> dFddX = system.DFddX(t_x, k[j], time);
                     double[] F = system.F(t_x, k[j], time);
                         //subMatrix Size*Size
                     for (int m = 0; m < system.Size; m++)

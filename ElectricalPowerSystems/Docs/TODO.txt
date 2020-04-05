@@ -2,7 +2,6 @@
 UI commands: done
 Do something with tabs: done
 Improve expander placement: done
-Check functionality
 Read about DAE : done
 Transient MNA : in progress
 Nonlinear equations : more or less done
@@ -10,8 +9,8 @@ Add nonlinear models for elements :
 DAE index reduction : not important
 Variable step dae solver: 
 Fault analysis:
-Check DAE: 
-New language: in progress
+Check DAE: done
+New language: done
 Transiet:
 Transiet with reclosers:
 Transiet with faults:

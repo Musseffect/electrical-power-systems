@@ -21,217 +21,940 @@
             color: DarkTurquoise;
             font-weight: bold;
         }
+        .header {
+            background-color: gray;
+            color: black;
+            border-bottom: 2px solid black;
+            cursor: pointer;
+            width:100%;
+            padding:10px;
+        }
+        .tab {
+            display: block;
+            width: 100%;
+            padding: 10px;
+        }
+        .sign {
+            color:blue;
+            font-weight:bold;
+        }
+        table {
+            margin:10px 0px;
+        }
+        table, th, td {
+            font-weight:normal;
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 5px 15px;
+        }
+        th {
+            text-align: left;
+        }
     </style>
 </head>
 <body>
-    <div>
-        Элементы
+    <div class="header">
+        New
     </div>
-    <ul>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">resistor</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">float</span> R)
-            </div>
-            <div>присоединить резистор к узлам node1 и node2 с сопротивлением R Ом</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">capacitor</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">float</span> C)
-            </div>
-            <div>присоединить конденсатор к узлам node1 и node2 с ёмкостью C Фарад</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">inductor</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">float</span> L)
-            </div>
-            <div>присоединить катушку индуктивности к узлам node1 и node2 с индуктивностью L Генри</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">impedance</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">complex</span> Z)
-            </div>
-            <div>присоединить комплексное сопротивление к узлам node1 и node2 с импендансом Z</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">impedance</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">float</span> R,
-                <span class="type">float</span> X)
-            </div>
-            <div>присоединить комплексное сопротивление к узлам node1 и node2 с импендансом R + jX</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">transformer</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">string</span> node3,
-                <span class="type">string</span> node4,
-                <span class="type">float</span> k)
-            </div>
-            <div>присоединить идеальный двухобмоточный трансформатор к узлам node1, node2, node3, node4 с коэффициентом трансформации k</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">autotransformer</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">string</span> node3,
-                <span class="type">float</span> k)
-            </div>
-            <div>присоединить идеальный автотрансформатор к узлам node1, node2, node3 с коэффициентом трансформации k</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">transformer3w</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">string</span> node3,
-                <span class="type">string</span> node4,
-                <span class="type">string</span> node5,
-                <span class="type">string</span> node6,
-                <span class="type">float</span> k1,
-                <span class="type">float</span> k2)
-            </div>
-            <div>присоединить идеальный трёхобмоточный трансформатор к узлам node1, node2, node3, node4, node5, node6 с коэффициентами трансформации k1 и k2</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">line</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2)
-            </div>
-            <div>присоединить провод с нулевым сопротивлениям к узлам node1 и node2</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">switch</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">float</span> state)
-            </div>
-            <div>присоединить коммутатор к узлам node1 и node2 с состоянием state (0 - выключен, не 0 - включен)</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">voltageSource</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">complex</span> voltage,
-                <span class="type">float</span> frequency = 0)
-            </div>
-            <div>присоединить идеальный источник напряжения к узлам node1 и node2 с комплексным напряжением voltage и частотой frequency Герц</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">voltageSource</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">float</span> amp,
-                <span class="type">float</span> phase,
-                <span class="type">float</span> frequency = 0)
-            </div>
-            <div>присоединить идеальный источник напряжения к узлам node1 и node2 с комплексным напряжением amp&middot;e<sup>phase</sup> и частотой frequency Герц</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">currentSource</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">complex</span> current,
-                <span class="type">float</span> frequency = 0)
-            </div>
-            <div>присоединить идеальный источник тока к узлам node1 и node2 с комплексным током current и частотой frequency Герц</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">currentSource</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2,
-                <span class="type">float</span> amp,
-                <span class="type">float</span> phase,
-                <span class="type">float</span> frequency = 0)
-            </div>
-            <div>присоединить идеальный источник тока к узлам node1 и node2 с комплексным током amp&middot;e<sup>phase</sup> и частотой frequency Герц</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">void</span> <span class="element">ground</span>(<span class="type">string</span> node)
-            </div>
-            <div>присоединить заземление к узлу node</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">voltage</span>(<span class="type">string</span> node1,
-                <span class="type">string</span> node2)
-            </div>
-            <div>добавить в список вывода разницу потенциалов на узлах node2 и node1 &#8594; V = &phi;(node2) - &phi;(node1)</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">voltage</span>(<span class="type">element</span> element)
-            </div>
-            <div>добавить в список вывода падения напряжения на элементе element</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">element</span> <span class="element">current</span>(<span class="type">element</span> element)
-            </div>
-            <div>добавить в список вывода ток на элементе element (положительное направление от node1 к node2)</div>
-        </li>
-    </ul>
+    <div class="tab">
+        <div>
+            <div>Структура:</div>
+            <p>
+                expression;
+            </p>
+            <p>
+                &emsp;<label class="sign">...</label>
+            </p>
+            <p>
+                model:
+            </p>
+            <p>
+                &emsp;<label class="sign">(</label>steadystate<label class="sign">|</label>transient<label class="sign"> )</label> {
+            </p>
+            <p>
+                &emsp;&emsp;key = value,
+            </p>
+            <p>
+                &emsp;&emsp;<label class="sign">...</label>
+            </p>
+            <p>
+                &emsp;};
+            </p>
+            <p>
+                elements:
+            </p>
+            <p>
+                &emsp;elementId = Element{
+            </p>
+            <p>
+                &emsp;&emsp;key = value,
+            </p>
+            <p>
+                &emsp;&emsp;<label class="sign">...</label>
+            </p>
+            <p>
+                &emsp;};
+            </p>
+            <p>
+                &emsp;<label class="sign">...</label>
+            </p>
+            <p>
+                connections:
+            </p>
+            <p>
+                &emsp;connect(elementId1.nodeId,elementId2.nodeId);
+            </p>
+            <p>
+                &emsp;<label class="sign">...</label>
+            </p>
+        </div>
+        <div>
+            steadystate
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>baseFrequency</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Object</span></th>
+                    <th>solver</th>
+                </tr>
+            </table>
+        </div>
+        <div>Элементы</div>
+        <div>
+            <div><span class="element">VoltageSource</span> - источник напряжения</div>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Peak</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Phase</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Frequency</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">Capacitor</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>C</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">Inductor</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>L</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">Resistor</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>R</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">Ground</span>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">Transformer</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>K</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in_p</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out_p</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>in_s</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out_s</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">Scope1P</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">String</span></th>
+                    <th>Label</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">GeneratorY</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Peak</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Phase</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Frequency</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>Z</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>n</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">LoadD</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>ZAB</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>ZBC</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>ZCA</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">LoadY</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>ZA</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>ZB</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>ZC</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>n</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">Connection3P1P</span>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>abc</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>a</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>b</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+                <tr>
+                    <th>c</th>
+                    <th><span class="type">1Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">Switch3P</span>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">TransformerDd</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>K</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Rc</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Int</span></th>
+                    <th>Group</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Xm</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>Zp</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>Zs</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">TransformerYd</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>K</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Rc</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Int</span></th>
+                    <th>Group</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Xm</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>Zp</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>Zs</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>in_n</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">TransformerDy</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>K</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Rc</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Int</span></th>
+                    <th>Group</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Xm</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>Zp</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>Zs</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out_n</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">TransformerYy</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>K</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Rc</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Int</span></th>
+                    <th>Group</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Float</span></th>
+                    <th>Xm</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>Zp</th>
+                </tr>
+                <tr>
+                    <th><span class="type">Complex</span></th>
+                    <th>Zs</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>in_n</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out_n</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="element">Scope3P</span>
+            <table>
+                <tr>
+                    <th>Тип</th>
+                    <th>Параметр</th>
+                </tr>
+                <tr>
+                    <th><span class="type">String</span></th>
+                    <th>Label</th>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th>Узел</th>
+                    <th>Тип</th>
+                </tr>
+                <tr>
+                    <th>in</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+                <tr>
+                    <th>out</th>
+                    <th><span class="type">3Phase</span></th>
+                </tr>
+            </table>
+        </div>
+    <div>
+        <div>Функции</div>
+        <ul>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">re</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить действительную часть комплексного аргумента value</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">im</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить мнимую часть комплексного аргумента value</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">magn</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить амплитуду комплексного аргумента value</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">phase</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить угол комплексного аргумента value</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">radians</span>(<span class="type">float</span> value)
+                </div>
+                <div>перевести значения аргументов из градусов в радианы</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">degrees</span>(<span class="type">float</span> value)
+                </div>
+                <div>перевести значения аргументов из радиан в градусы</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">complex</span> <span class="function">conj</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить комплексно-сопряжённое значение</div>
+            </li>
+        </ul>
+    </div>
+    <div class="header">
+        Old
+    </div>
+    <div class="tab">
+        Элементы
+        <ul>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">resistor</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">float</span> R)
+                </div>
+                <div>присоединить резистор к узлам node1 и node2 с сопротивлением R Ом</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">capacitor</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">float</span> C)
+                </div>
+                <div>присоединить конденсатор к узлам node1 и node2 с ёмкостью C Фарад</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">inductor</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">float</span> L)
+                </div>
+                <div>присоединить катушку индуктивности к узлам node1 и node2 с индуктивностью L Генри</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">impedance</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">complex</span> Z)
+                </div>
+                <div>присоединить комплексное сопротивление к узлам node1 и node2 с импендансом Z</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">impedance</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">float</span> R,
+                    <span class="type">float</span> X)
+                </div>
+                <div>присоединить комплексное сопротивление к узлам node1 и node2 с импендансом R + jX</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">transformer</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">string</span> node3,
+                    <span class="type">string</span> node4,
+                    <span class="type">float</span> k)
+                </div>
+                <div>присоединить идеальный двухобмоточный трансформатор к узлам node1, node2, node3, node4 с коэффициентом трансформации k</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">autotransformer</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">string</span> node3,
+                    <span class="type">float</span> k)
+                </div>
+                <div>присоединить идеальный автотрансформатор к узлам node1, node2, node3 с коэффициентом трансформации k</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">transformer3w</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">string</span> node3,
+                    <span class="type">string</span> node4,
+                    <span class="type">string</span> node5,
+                    <span class="type">string</span> node6,
+                    <span class="type">float</span> k1,
+                    <span class="type">float</span> k2)
+                </div>
+                <div>присоединить идеальный трёхобмоточный трансформатор к узлам node1, node2, node3, node4, node5, node6 с коэффициентами трансформации k1 и k2</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">line</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2)
+                </div>
+                <div>присоединить провод с нулевым сопротивлениям к узлам node1 и node2</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">switch</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">float</span> state)
+                </div>
+                <div>присоединить коммутатор к узлам node1 и node2 с состоянием state (0 - выключен, не 0 - включен)</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">voltageSource</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">complex</span> voltage,
+                    <span class="type">float</span> frequency = 0)
+                </div>
+                <div>присоединить идеальный источник напряжения к узлам node1 и node2 с комплексным напряжением voltage и частотой frequency Герц</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">voltageSource</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">float</span> amp,
+                    <span class="type">float</span> phase,
+                    <span class="type">float</span> frequency = 0)
+                </div>
+                <div>присоединить идеальный источник напряжения к узлам node1 и node2 с комплексным напряжением amp&middot;e<sup>phase</sup> и частотой frequency Герц</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">currentSource</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">complex</span> current,
+                    <span class="type">float</span> frequency = 0)
+                </div>
+                <div>присоединить идеальный источник тока к узлам node1 и node2 с комплексным током current и частотой frequency Герц</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">currentSource</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2,
+                    <span class="type">float</span> amp,
+                    <span class="type">float</span> phase,
+                    <span class="type">float</span> frequency = 0)
+                </div>
+                <div>присоединить идеальный источник тока к узлам node1 и node2 с комплексным током amp&middot;e<sup>phase</sup> и частотой frequency Герц</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">void</span> <span class="element">ground</span>(<span class="type">string</span> node)
+                </div>
+                <div>присоединить заземление к узлу node</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">voltage</span>(<span class="type">string</span> node1,
+                    <span class="type">string</span> node2)
+                </div>
+                <div>добавить в список вывода разницу потенциалов на узлах node2 и node1 &#8594; V = &phi;(node2) - &phi;(node1)</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">voltage</span>(<span class="type">element</span> element)
+                </div>
+                <div>добавить в список вывода падения напряжения на элементе element</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">element</span> <span class="element">current</span>(<span class="type">element</span> element)
+                </div>
+                <div>добавить в список вывода ток на элементе element (положительное направление от node1 к node2)</div>
+            </li>
+        </ul>
 
-    <div>Вспомогательные функции</div>
-    <ul>
+        <div>Вспомогательные функции</div>
+        <ul>
 
-        <li>
-            <div>
-                <span class="type">void</span> <span class="function">print</span>(<span class="type">any</span> arg)
-            </div>
-            <div>вывести значение аргумента в текстбоксе вывода</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">float</span> <span class="function">re</span>(<span class="type">complex</span> value)
-            </div>
-            <div>получить действительную часть комплексного аргумента value</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">float</span> <span class="function">im</span>(<span class="type">complex</span> value)
-            </div>
-            <div>получить мнимую часть комплексного аргумента value</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">float</span> <span class="function">magn</span>(<span class="type">complex</span> value)
-            </div>
-            <div>получить амплитуду комплексного аргумента value</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">float</span> <span class="function">phase</span>(<span class="type">complex</span> value)
-            </div>
-            <div>получить угол комплексного аргумента value</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">float</span> <span class="function">radians</span>(<span class="type">float</span> value)
-            </div>
-            <div>перевести значения аргументов из градусов в радианы</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">float</span> <span class="function">degrees</span>(<span class="type">float</span> value)
-            </div>
-            <div>перевести значения аргументов из радиан в градусы</div>
-        </li>
-        <li>
-            <div>
-                <span class="type">complex</span> <span class="function">conj</span>(<span class="type">complex</span> value)
-            </div>
-            <div>получить комплексно-сопряжённое значение</div>
-        </li>
-    </ul>
+            <li>
+                <div>
+                    <span class="type">void</span> <span class="function">print</span>(<span class="type">any</span> arg)
+                </div>
+                <div>вывести значение аргумента в текстбоксе вывода</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">re</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить действительную часть комплексного аргумента value</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">im</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить мнимую часть комплексного аргумента value</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">magn</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить амплитуду комплексного аргумента value</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">phase</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить угол комплексного аргумента value</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">radians</span>(<span class="type">float</span> value)
+                </div>
+                <div>перевести значения аргументов из градусов в радианы</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">float</span> <span class="function">degrees</span>(<span class="type">float</span> value)
+                </div>
+                <div>перевести значения аргументов из радиан в градусы</div>
+            </li>
+            <li>
+                <div>
+                    <span class="type">complex</span> <span class="function">conj</span>(<span class="type">complex</span> value)
+                </div>
+                <div>получить комплексно-сопряжённое значение</div>
+            </li>
+        </ul>
+    </div>
 </body>
 </html>

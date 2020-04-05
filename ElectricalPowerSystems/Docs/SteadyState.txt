@@ -1,0 +1,56 @@
+﻿
+model:
+	steadystate{
+		solver = newton{
+			iterations = 20,
+			fAbsTol = 0.01,
+			alpha = 1.0
+		}
+	};
+elements:
+	generator1 = generatorY{
+		Peak = 100.0,
+		Phase = 0.0,
+		Z = 0.01+j0.001
+	};
+	scope1 = scope3p
+	{
+		Label = "Generator"
+	};
+	scope2 = scope3p
+	{
+		Label = "Load"
+	};
+	resistorGen1 = resistor{
+		R = 1000
+	};
+	line1 = airLinePiSection{
+		
+	};
+	transformer1 = transformerDY{
+		K = 10,
+		ZY = 0.1+j0.5,
+		ZD = 0.01+j0.1,
+	};
+	transformer2 = transformerDD{
+		K = 10,
+		ZD1 = 0.1+j0.5,
+		ZD2 = 0.01+j0.1,
+	};
+	load1 = loadY{
+		ZA = 1,
+		ZB = 1,
+		ZC = 1
+	};
+	ground = ground{
+	};
+connections:
+	connect(generator1.n,resistorGen1.in);
+	connect(resistorGen1.out,ground.in);
+	connect(generator1.out,scope1.in);
+	connect(scope1.out,transformer1.in);
+	connect(transformer1.out,line1.in);
+	connect(line1.out,transformer2.out);
+	connect(transformer2.in,scope2.in);
+	connect(scope2.out,load1.in);
+	connect(load1.n,ground.in);

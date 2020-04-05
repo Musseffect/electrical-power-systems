@@ -1,6 +1,6 @@
-﻿using ElectricalPowerSystems.Interpreter.Equations;
-using ElectricalPowerSystems.Interpreter.Equations.DAE;
-using ElectricalPowerSystems.Interpreter.Equations.Expression;
+﻿using ElectricalPowerSystems.Equations;
+using ElectricalPowerSystems.Equations.DAE;
+using ElectricalPowerSystems.Equations.Expression;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -18,8 +18,8 @@ namespace ElectricalPowerSystems.MathUtils
         public float Time;
         public int Size { get; protected set; }
         public abstract double[] F(Vector<double> x, Vector<double> dx, double t);
-        public abstract Matrix<double> dFdX(Vector<double> x, Vector<double> dx, double t);
-        public abstract Matrix<double> dFddX(Vector<double> x, Vector<double> dx, double t);
+        public abstract Matrix<double> DFdX(Vector<double> x, Vector<double> dx, double t);
+        public abstract Matrix<double> DFddX(Vector<double> x, Vector<double> dx, double t);
     }
     //SemiImplicit
     //0=f(x',x,z,t)
@@ -31,11 +31,11 @@ namespace ElectricalPowerSystems.MathUtils
         public int Size { get { return SizeX + SizeZ; } }
         public abstract double[] F(Vector<double> x, Vector<double> z, double t);
         public abstract double[] G(Vector<double> x, Vector<double> z, double t);
-        public abstract Matrix<double> dFdX(Vector<double> x, Vector<double> z, double t);
-        public abstract Matrix<double> dFddX(Vector<double> x, Vector<double> z, double t);
-        public abstract Matrix<double> dFdZ(Vector<double> x, Vector<double> z, double t);
-        public abstract Matrix<double> dGdX(Vector<double> x, Vector<double> z, double t);
-        public abstract Matrix<double> dGdZ(Vector<double> x, Vector<double> z, double t);
+        public abstract Matrix<double> DFdX(Vector<double> x, Vector<double> z, double t);
+        public abstract Matrix<double> DFddX(Vector<double> x, Vector<double> z, double t);
+        public abstract Matrix<double> DFdZ(Vector<double> x, Vector<double> z, double t);
+        public abstract Matrix<double> DGdX(Vector<double> x, Vector<double> z, double t);
+        public abstract Matrix<double> DGdZ(Vector<double> x, Vector<double> z, double t);
     }
     //linear DAE
     // A(t)x'+B(t)x=f(t) , A(t) - matrix NxN , B(t) - matrix NxN , f(t) - N-size vector
@@ -71,27 +71,27 @@ namespace ElectricalPowerSystems.MathUtils
         }
 
 
-        public override Matrix<double> dFddX(Vector<double> x, Vector<double> z, double t)
+        public override Matrix<double> DFddX(Vector<double> x, Vector<double> z, double t)
         {
             throw new NotImplementedException();
         }
 
-        public override Matrix<double> dFdX(Vector<double> x, Vector<double> z, double t)
+        public override Matrix<double> DFdX(Vector<double> x, Vector<double> z, double t)
         {
             throw new NotImplementedException();
         }
 
-        public override Matrix<double> dFdZ(Vector<double> x, Vector<double> z, double t)
+        public override Matrix<double> DFdZ(Vector<double> x, Vector<double> z, double t)
         {
             throw new NotImplementedException();
         }
 
-        public override Matrix<double> dGdX(Vector<double> x, Vector<double> z, double t)
+        public override Matrix<double> DGdX(Vector<double> x, Vector<double> z, double t)
         {
             throw new NotImplementedException();
         }
 
-        public override Matrix<double> dGdZ(Vector<double> x, Vector<double> z, double t)
+        public override Matrix<double> DGdZ(Vector<double> x, Vector<double> z, double t)
         {
             throw new NotImplementedException();
         }
@@ -108,7 +108,7 @@ namespace ElectricalPowerSystems.MathUtils
             dFdXequations = definition.DfdX;
             dFddXequations = definition.DfddX;
         }
-        public override Matrix<double> dFddX(Vector<double> x, Vector<double> dx, double t)
+        public override Matrix<double> DFddX(Vector<double> x, Vector<double> dx, double t)
         {
             //double[,] result = new double[Size, Size];
             List<double> lx = new List<double>();
@@ -119,7 +119,7 @@ namespace ElectricalPowerSystems.MathUtils
             Matrix<double> result = Matrix<double>.Build.Sparse(Size,Size);
             foreach (var entry in dFddXequations.GetEntries())
             {
-                result.At(entry.J,entry.I, entry.Value.execute(_x));
+                result.At(entry.J,entry.I, entry.Value.Execute(_x));
             }
             /*for (int j = 0; j < Size; j++)
             {
@@ -132,7 +132,7 @@ namespace ElectricalPowerSystems.MathUtils
             return result;
         }
 
-        public override Matrix<double> dFdX(Vector<double> x, Vector<double> dx, double t)
+        public override Matrix<double> DFdX(Vector<double> x, Vector<double> dx, double t)
         {
             //double[,] result = new double[Size,Size];
             List<double> lx = new List<double>();
@@ -143,7 +143,7 @@ namespace ElectricalPowerSystems.MathUtils
             Matrix<double> result = Matrix<double>.Build.Sparse(Size, Size);
             foreach (var entry in dFdXequations.GetEntries())
             {
-                result.At(entry.J, entry.I, entry.Value.execute(_x));
+                result.At(entry.J, entry.I, entry.Value.Execute(_x));
             }
             /*for (int j = 0; j < Size; j++)
             {
@@ -167,7 +167,7 @@ namespace ElectricalPowerSystems.MathUtils
             double[] _x = lx.ToArray();
             for (int i=0;i<Size;i++)
             {
-                result[i] = equations[i].execute(_x);
+                result[i] = equations[i].Execute(_x);
             }
             return result;
         }

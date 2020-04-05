@@ -22,12 +22,12 @@ namespace ElectricalPowerSystems
             new PropertyMetadata((obj, args) =>
             {
                 MvvmTextEditor target = (MvvmTextEditor)obj;
-                if (target.baseText != (string)args.NewValue) 
+                if (target.BaseText != (string)args.NewValue) 
                     target.Text = (string)args.NewValue;
             })
         );
 
-        internal string baseText { get { return base.Text; } set { base.Text = value; } }
+        internal string BaseText { get { return base.Text; } set { base.Text = value; } }
       
         protected override void OnTextChanged(EventArgs e)
         {

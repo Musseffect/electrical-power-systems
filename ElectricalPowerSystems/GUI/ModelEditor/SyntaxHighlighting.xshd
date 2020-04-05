@@ -2,6 +2,7 @@
 <SyntaxDefinition name="Model language" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
   <Color name="Comment" foreground="Green" />
   <Color name="String" foreground="DarkOrange" />
+  <Color name="Object" foreground="DarkGreen" />
 
   <!-- This is the main ruleset. -->
   <RuleSet>
@@ -17,6 +18,17 @@
       </RuleSet>
     </Span>
 
+    <Keywords fontWeight="bold" foreground="Red">
+      <Word>model</Word>
+      <Word>connections</Word>
+      <Word>elements</Word>
+    </Keywords>
+
+    <Keywords fontWeight="bold" foreground="Blue">
+      <Word>true</Word>
+      <Word>false</Word>
+    </Keywords>
+    <!--
     <Keywords fontWeight="bold" foreground="Blue">
       <Word>resistor</Word>
       <Word>inductor</Word>
@@ -30,12 +42,13 @@
       <Word>impedance</Word>
       <Word>voltageSource</Word>
       <Word>currentSource</Word>
-    </Keywords>
+    </Keywords>-->
 
     <Keywords fontWeight="bold" foreground="DarkTurquoise">
+      <!--
       <Word>voltage</Word>
       <Word>current</Word>
-      <Word>print</Word>
+      <Word>print</Word>-->
       <Word>re</Word>
       <Word>im</Word>
       <Word>magn</Word>
@@ -43,8 +56,12 @@
       <Word>radians</Word>
       <Word>degrees</Word>
       <Word>conj</Word>
+      <Word>complex</Word>
+      <Word>complexExp</Word>
     </Keywords>
-
+    <Rule color="Object">
+      \b[a-zA-Z_][\w_]*(?=\s*\{)
+    </Rule>
     <!--
 		<Rule color="MethodCall">
 		\b

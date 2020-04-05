@@ -1,10 +1,10 @@
-﻿using ElectricalPowerSystems.ACGraph;
-using ElectricalPowerSystems.Interpreter;
-using ElectricalPowerSystems.Interpreter.Equations;
-using ElectricalPowerSystems.Interpreter.Equations.DAE;
-using ElectricalPowerSystems.Interpreter.Equations.Nonlinear;
+﻿using ElectricalPowerSystems.PowerModel.OldModel.ACGraph;
+using ElectricalPowerSystems;
+using ElectricalPowerSystems.Equations;
+using ElectricalPowerSystems.Equations.DAE;
+using ElectricalPowerSystems.Equations.Nonlinear;
 using ElectricalPowerSystems.MathUtils;
-using ElectricalPowerSystems.PowerGraph;
+using ElectricalPowerSystems.PowerModel.OldModel.PowerGraph;
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using System;
@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ElectricalPowerSystems.PowerModel;
 
 /*
 voltageSource("4", "1", 1000.0, 0.0, 60.0);
@@ -47,16 +48,279 @@ namespace ElectricalPowerSystems.Test
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             try
             {
+                TestNewModelLanguage();
                 //TestNonlinearEquationParser();
                 //TestNonlinearEquationSolver();
                 //TestCircuitEquationGeneration();
-                TestCircuitModel2();
+                //TestCircuitModel2();
                 //TestPowerModelSimple();
-                //TestPowerModel();
+                TestPowerModel();
 
             } catch (Exception exc)
             {
                 Stdout.WriteLine("Exception in RunTests: " + exc.Message);
+            }
+            Stdout.WriteLine("");
+            Stdout.Flush();
+            Stdout.Close();
+        }
+        static public void TestNewModelLanguage()
+        {
+            Stream StdoutStream = Console.OpenStandardOutput();
+            StreamWriter Stdout = new StreamWriter(StdoutStream);
+            Stdout.WriteLine("\tTest circuit model 2");
+            string modelSteadyState =
+@"
+model:
+steadystate{
+    solver = newton{
+        iterations = 20,
+        fAbsTol = 0.01,
+        alpha = 1.0
+    }
+};
+elements:
+    v1 = voltageSource{
+       Peak = 20412,
+       Phase = 0,
+       Frequency = 60
+    };
+    g = ground{
+    };
+    scope1 = scope1p{
+        Label=""scope1""
+    };
+    scope2 = scope1p{
+        Label=""scope2""
+    };
+    r1 = resistor{
+        R = 600
+    };
+    l1 = inductor{
+        L = 20
+    };
+    r2 = resistor{
+        R = 300
+    };
+    l2 = inductor{
+        L = 6
+    };
+connections:
+    connect(v1.in, g.in);
+    connect(v1.out, scope1.in);
+    connect(scope1.out, r1.in);
+    connect(r1.out, l1.in);
+    connect(l1.out, scope2.in);
+    connect(scope2.out, r2.in);
+    connect(r2.out, l2.in);
+    connect(l2.out, g.in);
+";
+            string modelPowerSystemSimple =
+                @"
+model:
+	steadystate{
+		solver = newton{
+			iterations = 20,
+			fAbsTol = 0.01,
+			alpha = 1.0
+		}
+	};
+elements:
+	generator1 = generatorY{
+		Peak = 100.0,
+		Phase = 0.0,
+		Z = 0.01+j 0.001,
+        Frequency = 60 //in Herz
+	};
+	scope1 = scope3p
+	{
+		Label = ""Generator""
+    };
+    scope2 = scope3p
+	{
+		Label = ""Load""
+    };
+    resistorGen1 = resistor{
+		R = 1000
+	};
+    line1 = linePiSection{
+		  R = 0.02,
+          L = 0.01,
+          B = 0.01,
+          G = 1000,
+          Bp = 0.01
+	};
+	load1 = loadY{
+		ZA = 1,
+		ZB = 1,
+		ZC = 1
+	};
+	ground = ground{
+	};
+connections:
+	connect(generator1.n, resistorGen1.in);
+    connect(resistorGen1.out, ground.in);
+    connect(generator1.out, scope1.in);
+    connect(scope1.out, line1.in);
+    connect(line1.out, scope2.in);
+    connect(scope2.out, load1.in);
+    connect(load1.n, ground.in);";
+            string modelPowerSystem =
+                @"
+model:
+	steadystate{
+		solver = newton{
+			iterations = 20,
+			fAbsTol = 0.005,
+			alpha = 1.0
+		},
+        baseFrequency = 60
+	};
+elements:
+	generator1 = GeneratorY{
+		Peak = 100.0,
+		Phase = 0.0,
+		Z = 0.001+ j 0.001,
+        Frequency = 60 //in Herz
+	};
+	scope1 = Scope3p
+	{
+		Label = ""Generator""
+    };
+    scope2 = Scope3p
+	{
+		Label = ""Load""
+    };
+    scope3 = Scope1p
+	{
+		Label = ""ground""
+    };
+    scope4 = Scope3p
+	{
+		Label = ""line in""
+    };
+    scope5 = Scope3p
+	{
+		Label = ""line out""
+    };
+    resistorGen1 = Resistor{
+		R = 1000
+	};
+    line1 = LinePiSection{
+		  R = 0.002,
+          L = 0.001,
+          B = 0.01,
+          G = 100000,
+          Bp = 0.01
+	};
+	transformer1 = TransformerDy{
+		K = 20,
+		Zs = 0.001 + j 0.005,
+		Zp = 0.001 + j 0.001,
+        Rc = 10000,
+        Xm = 10000,
+        Group = Dy1
+	};
+	transformer2 = TransformerDd{
+		K = 20,
+		Zs = 0.001 + j 0.005,
+		Zp = 0.001 + j 0.001,
+        Rc = 10000.0,
+        Xm = 10000,
+        Group = Dd0
+	};
+	load1 = LoadY{
+		ZA = 1,
+		ZB = 1,
+		ZC = 1
+	};
+	ground = Ground{
+	};
+connections:
+	connect(generator1.n, resistorGen1.in);
+    connect(resistorGen1.out,scope3.in);
+    connect(scope3.out, ground.in);
+    connect(generator1.out, scope1.in);
+    connect(scope1.out, transformer1.in);
+    connect(transformer1.out, scope4.in);
+    connect(scope4.out,line1.in);
+    connect(transformer1.out_n, ground.in);
+    connect(line1.out, scope5.in);
+    connect(scope5.out, transformer2.out);
+    connect(transformer2.in, scope2.in);
+    connect(scope2.out, load1.in);
+    connect(load1.n, ground.in);";
+            string modelTransient =
+@"
+model:
+transient{
+    solver = radauIIA5{
+        iterations = 20,
+        fAbsTol = 0.01,
+        alpha = 1.0,
+        step = 0.01
+    }
+    t0 = 0,
+    t1 = 1
+};
+elements:
+    v1 = voltageSource{
+       Peak = 20412,
+       Phase = 0,
+       Frequency = 60
+    };
+    g = ground{
+    };
+    scope = scope1p{
+        Label=""scope1""
+    };
+    r1 = resistor{
+        R = 600
+    };
+    l1 = inductor{
+        L = 20
+    };
+    r2 = resistor{
+        R = 300
+    };
+    l2 = inductor{
+        L = 6
+    };
+connections:
+    connect(v1.in, g.in);
+    connect(v1.out, r1.in);
+    connect(r1.out, scope.in);
+    connect(scope.out, l1.in);
+    connect(l1.out, r2.in);
+    connect(r2.out, l2.in);
+    connect(l2.out, g.in);
+";
+            List<string> output = new List<string>();
+            List<ErrorMessage> errorList = new List<ErrorMessage>();
+            try
+            {
+                MainInterpreter.RunModel(modelPowerSystem, ref errorList,ref output);
+                foreach (var o in output)
+                {
+                    Stdout.WriteLine(o);
+                }
+            }
+            catch (CompilerException exc)
+            {
+                Stdout.WriteLine(exc.Message);
+                var errors = exc.Errors;
+                foreach (var error in errors)
+                {
+                    Stdout.WriteLine(error.Message + " Line: " + error.Line + " Position: " + error.Position);
+                }
+            }
+            catch (Exception exc)
+            {
+                Stdout.WriteLine(exc.Message);
+            }
+            foreach (var error in errorList)
+            {
+                Stdout.WriteLine(error.Message + " Line: " + error.Line + " Position: " + error.Position);
             }
             Stdout.WriteLine("");
             Stdout.Flush();
@@ -80,7 +344,7 @@ namespace ElectricalPowerSystems.Test
             model.AddCurrentOutput(r2);
             model.AddCurrentOutput(r3);
             model.AddCurrentOutput(rg);
-            Stdout.WriteLine(model.TestEquationGeneration(true));
+            //Stdout.WriteLine(model.TestEquationGeneration(true));
             try
             {
                 List<string> solution = model.Solve();
@@ -195,17 +459,17 @@ namespace ElectricalPowerSystems.Test
         }
         static public void TestPowerModelSimple()
         {
-            PowerGraph.PowerGraphManager graph = new PowerGraph.PowerGraphManager();
-            PowerGraph.PowerGraphManager.powerFrequency = (float)(60.0);
+            PowerGraphManager graph = new PowerGraphManager();
+            PowerGraphManager.powerFrequency = (float)(60.0);
             List<int> elements = new List<int>();
-            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVWye("a1", 100.0f, 0.0f, new Complex32(0.001f,0.00001f), new ResistanceGrounding(1000.0f))));      
+            elements.Add(graph.addElement(new GraphGeneratorVWye("a1", 100.0f, 0.0f, new Complex32(0.001f,0.00001f), new ResistanceGrounding(1000.0f))));      
             
-            elements.Add(graph.addElement(new PowerGraph.GraphLoadWye("a2", 1.0f, 1.0f, 1.0f,new SolidGrounding())));
+            elements.Add(graph.addElement(new GraphLoadWye("a2", 1.0f, 1.0f, 1.0f,new SolidGrounding())));
             elements.Add(graph.addElement(
-                new PowerGraph.GraphTransformer2w("_a1", "_a2", 4, new Complex32(0.01f, 0.0001f),1000.0f,1000.0f, new Complex32(0.01f,0.0001f), 
+                new GraphTransformer2w("_a1", "_a2", 4, new Complex32(0.01f, 0.0001f), 1000.0f, 1000.0f, new Complex32(0.01f,0.0001f), 
                 new WyeWinding(WyeWinding.Mode.Y2,new Ungrounded()), new DeltaWinding(DeltaWinding.Mode.D1))));
-            elements.Add(graph.addElement(new PowerGraph.GraphWattmeter("a1","_a1","generator")));
-            elements.Add(graph.addElement(new PowerGraph.GraphWattmeter("_a2", "a2", "load")));
+            elements.Add(graph.addElement(new GraphWattmeter("a1","_a1","generator")));
+            elements.Add(graph.addElement(new GraphWattmeter("_a2", "a2", "load")));
             foreach (var element in elements)
             {
                 graph.addOutput(new PowerOutput(OutputMode.FULL, element));
@@ -246,8 +510,8 @@ namespace ElectricalPowerSystems.Test
         }
         static public void TestPowerModel()
         {
-            PowerGraph.PowerGraphManager graph = new PowerGraph.PowerGraphManager();
-            PowerGraph.PowerGraphManager.powerFrequency = (float)(60.0);
+            PowerGraphManager graph = new PowerGraphManager();
+            PowerGraphManager.powerFrequency = (float)(60.0);
             List<int> elements = new List<int>();
             /*
             elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVWye("a1", 100.0f, 0.0f,new Complex32(0.01f,0.001f), new ResistanceGrounding(1000.0f))));
@@ -287,43 +551,26 @@ namespace ElectricalPowerSystems.Test
              */
              
 
-            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVWye("a1", 100.0f, 0.0f,new Complex32(0.01f,0.001f), new ResistanceGrounding(1000.0f))));
-            
-            elements.Add(graph.addElement(new PowerGraph.GraphGeneratorVDelta("a10", 100.0f, 0.0f,new Complex32(0.01f,0.001f))));
-            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a2", 0.2f, 0.1f, 0.001f, 100.0f, 0.001f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a3", "a4", 0.2f, 0.2f, 0.005f, 300.0f, 0.006f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a1", "a6", 0.2f, 0.2f, 0.005f, 300.0f, 0.006f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a2", "a10", 0.2f, 0.2f, 0.005f, 300.0f, 0.006f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphAirLinePiSection("a7", "a8", 0.2f, 0.2f, 0.005f, 300.0f, 0.006f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a2", "a3", 10,
-                new Complex32(0.1f, 0.5f),
-                1000.0f, 10000.0f,
-                new Complex32(0.01f, 0.1f),
-                new WyeWinding(WyeWinding.Mode.Y0, new SolidGrounding()),
-                new DeltaWinding(DeltaWinding.Mode.D1))));
-            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a4", "a5", 0.2f,
-                new Complex32(0.1f, 0.5f),
-                1000.0f, 10000.0f,
-                new Complex32(0.01f, 0.1f),
-                new WyeWinding(WyeWinding.Mode.Y0, new SolidGrounding()),
-                new WyeWinding(WyeWinding.Mode.Y0, new SolidGrounding()))));
-            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a1", "a7", 0.2f,
-                new Complex32(0.1f, 2),
-                1000.0f, 10000.0f,
-                new Complex32(0.01f, 1),
-                new DeltaWinding(DeltaWinding.Mode.D1),
-                new DeltaWinding(DeltaWinding.Mode.D1))));
-            elements.Add(graph.addElement(new PowerGraph.GraphTransformer2w("a8", "a9", 0.2f,
-                new Complex32(0.1f, 0.5f),
-                1000.0f, 10000.0f,
-                new Complex32(0.01f, 0.1f),
+            elements.Add(graph.addElement(new GraphGeneratorVWye("a1", 100.0f, 0.0f,new Complex32(0.01f,0.001f), new ResistanceGrounding(1000.0f))));
+
+            elements.Add(graph.addElement(new GraphWattmeter("a1", "a2", "Generator")));
+            elements.Add(graph.addElement(new GraphTransformer2w("a2", "a3", 100f,
+                new Complex32(0.01f, 0.01f),
+                150000.0f, 50000.0f,
+                new Complex32(0.01f, 0.05f),
                 new DeltaWinding(DeltaWinding.Mode.D1),
                 new WyeWinding(WyeWinding.Mode.Y0, new SolidGrounding()))));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a3", 100.0f, 100.0f, 100.0f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoadDelta("a5", 100.0f, 100.0f, 100.0f)));
-            elements.Add(graph.addElement(new PowerGraph.GraphLoadWye("a9", 100.0f, 100.0f, 100.0f, new SolidGrounding())));
+            elements.Add(graph.addElement(new GraphAirLinePiSection("a3", "a4", 0.02f, 0.01f, 0.02f, 2000.0f, 0.02f)));
+            elements.Add(graph.addElement(new GraphTransformer2w("a5", "a4", 100f,
+                new Complex32(0.01f, 0.01f),
+                150000.0f, 50000.0f,
+                new Complex32(0.01f, 0.05f),
+                new DeltaWinding(DeltaWinding.Mode.D1),
+                new DeltaWinding(DeltaWinding.Mode.D1))));
+            elements.Add(graph.addElement(new GraphWattmeter("a5", "a6", "Load")));
+            elements.Add(graph.addElement(new GraphLoadWye("a6", 1.0f, 1.0f, 1.0f, new SolidGrounding())));
             //elements.Add(graph.addElement(new PowerGraph.GraphFaultSCLG("a7","_a7",new Complex32(0.01f,0.02f),GraphFaultSCLG.Phase.A)));
-            
+
             foreach (var element in elements)
             {
                 graph.addOutput(new PowerOutput(OutputMode.FULL, element));
@@ -334,14 +581,11 @@ namespace ElectricalPowerSystems.Test
             graph.addOutput(new VoltageOutput(OutputMode.FULL, "a4"));
             graph.addOutput(new VoltageOutput(OutputMode.FULL, "a5"));
             graph.addOutput(new VoltageOutput(OutputMode.FULL, "a6"));
-            graph.addOutput(new VoltageOutput(OutputMode.FULL, "a7"));
-            graph.addOutput(new VoltageOutput(OutputMode.FULL, "a8"));
-            graph.addOutput(new VoltageOutput(OutputMode.FULL, "a9"));
             //send output to console stream
             Stream StdoutStream = Console.OpenStandardOutput();
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             Stdout.WriteLine("\t Test three phase model");
-            Stdout.WriteLine(graph.TestEquationGeneration(false));
+           // Stdout.WriteLine(graph.TestEquationGeneration(false));
             try
             {
                 List<string> errors = new List<string>();
@@ -442,7 +686,7 @@ namespace ElectricalPowerSystems.Test
             double[] x = solution.ToArray();
             for (int i = 0; i < system.Equations.Count; i++)
             {
-                result += $"F{i}(X) = {system.Equations[i].execute(x)}" + Environment.NewLine;
+                result += $"F{i}(X) = {system.Equations[i].Execute(x)}" + Environment.NewLine;
             }
             return result;
         }
@@ -460,9 +704,9 @@ namespace ElectricalPowerSystems.Test
             {
                 {
                     NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equation1);
-                    NonlinearSystemSymbolicAnalytic system = new NonlinearSystemSymbolicAnalytic(compiledEquation);
+                    MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                     //calc solution
-                    Vector<double> solution = NewtonRaphsonSolver.Solve(
+                    Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(
                     system,
                     Vector<double>.Build.DenseOfArray(compiledEquation.InitialValues),
                     20,
@@ -475,9 +719,9 @@ namespace ElectricalPowerSystems.Test
                 }
                 {
                     NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equation2);
-                    NonlinearSystemSymbolicAnalytic system = new NonlinearSystemSymbolicAnalytic(compiledEquation);
+                    MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                     //calc solution
-                    Vector<double> solution = NewtonRaphsonSolver.Solve(
+                    Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(
                     system,
                     Vector<double>.Build.DenseOfArray(compiledEquation.InitialValues),
                     20,
@@ -490,9 +734,9 @@ namespace ElectricalPowerSystems.Test
                 }
                 {
                     NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equation3);
-                    NonlinearSystemSymbolicAnalytic system = new NonlinearSystemSymbolicAnalytic(compiledEquation);
+                    MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                     //calc solution
-                    Vector<double> solution = NewtonRaphsonSolver.Solve(
+                    Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(
                     system,
                     Vector<double>.Build.DenseOfArray(compiledEquation.InitialValues),
                     20,
@@ -505,9 +749,9 @@ namespace ElectricalPowerSystems.Test
                 }
                 {
                     NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equation4);
-                    NonlinearSystemSymbolicAnalytic system = new NonlinearSystemSymbolicAnalytic(compiledEquation);
+                    MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                     //calc solution
-                    Vector<double> solution = NewtonRaphsonSolver.Solve(
+                    Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(
                     system,
                     Vector<double>.Build.DenseOfArray(compiledEquation.InitialValues),
                     20,
@@ -542,7 +786,7 @@ namespace ElectricalPowerSystems.Test
             string differentialEquation = "x'=x;" +
                 "x(t0)=1.0;" +
                 "t0=0;";
-            string DAEequation = "set L=1.0;" +
+            string DAEequation = "constant L=1.0;" +
                 "x^2+y^2=L;" +
                 "x'=;" +
                 "y'=;";
@@ -568,7 +812,7 @@ namespace ElectricalPowerSystems.Test
                 "x(t0)=1.0;" +
                 "t0=0;" +
                 "time=5";
-            string DAEequation = "set L=1.0;" +
+            string DAEequation = "constant L=1.0;" +
                 "x^2+y^2=L;" +
                 "x'=;" +
                 "y'=;" +

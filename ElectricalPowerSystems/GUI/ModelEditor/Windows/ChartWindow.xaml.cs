@@ -30,11 +30,16 @@ namespace ElectricalPowerSystems
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(prop));
         }
-        public SeriesCollection SeriesCollection { get; set; }
+        public SeriesCollection SeriesCollection
+        {
+            get;
+            set;
+        }
         public ChartWindow()
         {
             InitializeComponent();
             SeriesCollection = new SeriesCollection();
+            DataContext = this;
         }
         public void AddLineSeries(double[] x, double[] t,string title)
         {
@@ -47,7 +52,7 @@ namespace ElectricalPowerSystems
                 LineSmoothness = 0
             });
         }
-        public void AddMultiple(List<double[]> values, List<double> time, string[] variables)
+        public void Plot(List<double[]> values, List<double> time, string[] variables)
         {
             for (int i = 0; i < variables.Length; i++)
             {

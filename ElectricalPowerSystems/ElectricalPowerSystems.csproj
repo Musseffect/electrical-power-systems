@@ -101,60 +101,88 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ACGraph\ACGraph.cs" />
-    <Compile Include="ACGraph\CircuitModelAC.cs" />
-    <Compile Include="ACGraph\ElementsAC.cs" />
+    <Compile Include="PowerModel\OldModel\ACGraph\ACGraph.cs" />
+    <Compile Include="PowerModel\OldModel\ACGraph\CircuitModelAC.cs" />
+    <Compile Include="PowerModel\OldModel\ACGraph\ElementsAC.cs" />
     <Compile Include="GUI\ModelEditor\Windows\HelpWindow.xaml.cs">
       <DependentUpon>HelpWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Interpreter\Equations\DAE\ASTNode.cs" />
-    <Compile Include="Interpreter\Equations\DAE\DAECompiler.cs" />
-    <Compile Include="Interpreter\Equations\DAE\DAEDefinition.cs" />
-    <Compile Include="Interpreter\Equations\DAE\DAEGrammarVisitor.cs" />
-    <Compile Include="Interpreter\Equations\DAE\DAEImplicitGrammar.g4.lexer.cs" />
-    <Compile Include="Interpreter\Equations\DAE\DAEImplicitGrammar.g4.parser.cs" />
-    <Compile Include="Interpreter\Equations\DAE\OLD\DAESimplifier.cs" />
-    <Compile Include="Interpreter\Equations\DAE\DAESolution.cs" />
-    <Compile Include="Interpreter\Equations\DAE\OLD\DAEValidator.cs" />
-    <Compile Include="Interpreter\Equations\Expression\Expression.cs" />
-    <Compile Include="Interpreter\Equations\Nonlinear\ASTNode.cs" />
-    <Compile Include="Interpreter\Equations\CompilerException.cs" />
-    <Compile Include="Interpreter\PowerModel\ASTNode.cs" />
+    <Compile Include="Equations\DAE\ASTNode.cs" />
+    <Compile Include="Equations\DAE\DAECompiler.cs" />
+    <Compile Include="Equations\DAE\DAEDefinition.cs" />
+    <Compile Include="Equations\DAE\DAEGrammarVisitor.cs" />
+    <Compile Include="Equations\DAE\DAEImplicitGrammar.g4.lexer.cs" />
+    <Compile Include="Equations\DAE\DAEImplicitGrammar.g4.parser.cs" />
+    <Compile Include="Equations\DAE\OLD\DAESimplifier.cs" />
+    <Compile Include="Equations\DAE\DAESolution.cs" />
+    <Compile Include="Equations\DAE\OLD\DAEValidator.cs" />
+    <Compile Include="Equations\Expression\Expression.cs" />
+    <Compile Include="Equations\Nonlinear\ASTNode.cs" />
+    <Compile Include="Equations\CompilerException.cs" />
+    <Compile Include="PowerModel\NewModel\ASTNode.cs" />
     <Compile Include="GUI\ModelEditor\MvvmTextEditor.cs" />
-    <Compile Include="Interpreter\PowerModel\Element.cs" />
-    <Compile Include="Interpreter\PowerModel\FunctionDictionary.cs" />
-    <Compile Include="Interpreter\PowerModel\ModelExpressions.cs" />
-    <Compile Include="Interpreter\PowerModel\ModelInterpreter.cs" />
-    <Compile Include="Interpreter\PowerModel\SteadyStateModel.cs" />
-    <Compile Include="Interpreter\PowerModel\TransientModel.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\LinePi.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Capacitor.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Fault.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\GeneratorY.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Ground.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Inductor.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Connection1P.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Connection3P.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\LoadD.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\LoadY.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Connection3P1P.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Transformer.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\TransformerDd.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\TransformerDy.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\TransformerYd.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\TransformerYy.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Scope1P.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Scope3P.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Break3P.cs" />
+    <Compile Include="PowerModel\NewModel\Element.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\VoltageSource.cs" />
+    <Compile Include="PowerModel\NewModel\FunctionDictionary.cs" />
+    <Compile Include="PowerModel\NewModel\ModelExpressions.cs" />
+    <Compile Include="PowerModel\NewModel\ModelInterpreter.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Resistor.cs" />
+    <Compile Include="PowerModel\NewModel\Pin.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Recloser3P.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Switch3P.cs" />
+    <Compile Include="PowerModel\OldModel\ASTNode.cs" />
+    <Compile Include="PowerModel\OldModel\ASTVisitor.cs" />
+    <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.lexer.cs" />
+    <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.parser.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\Visitor.cs" />
+    <Compile Include="PowerModel\NewModel\SteadyStateModel.cs" />
+    <Compile Include="PowerModel\NewModel\TransientModel.cs" />
+    <Compile Include="PowerModel\NewModel\SteadyStateSolvers.cs" />
     <Compile Include="MathUtils\SparseMatrix.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphAutotransformer.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphBreak.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphWattmeter.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphSwitch.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphTransformer3w.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphRecloser.cs" />
-    <Compile Include="PowerGraph\GraphElements\GroundingType.cs" />
-    <Compile Include="PowerGraph\GraphElements\TransformerMode.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphAutotransformer.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphBreak.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphWattmeter.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphSwitch.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GroundingType.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\TransformerMode.cs" />
     <Compile Include="GUI\ModelEditor\Windows\ChartWindow.xaml.cs">
       <DependentUpon>ChartWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="GUI\ModelEditor\Commands.cs" />
     <Compile Include="GUI\ModelEditor\DelegateCommand.cs" />
-    <Compile Include="EquationGrammar.g4.lexer.cs">
+    <Compile Include="Equations\Nonlinear\EquationGrammar.g4.lexer.cs">
       <DependentUpon>EquationGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="EquationGrammar.g4.parser.cs">
+    <Compile Include="Equations\Nonlinear\EquationGrammar.g4.parser.cs">
       <DependentUpon>EquationGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="Interpreter\Equations\Expression\DifferentiationVisitor.cs" />
-    <Compile Include="Interpreter\Equations\Nonlinear\EquationCompiler.cs" />
-    <Compile Include="Interpreter\Equations\Expression\FunctionTable.cs" />
-    <Compile Include="Interpreter\Equations\Nonlinear\EquationGrammarVisitor.cs" />
-    <Compile Include="Interpreter\Equations\Expression\ExpressionCompiler.cs" />
-    <Compile Include="Interpreter\Equations\Expression\RPNExpression.cs" />
-    <Compile Include="Interpreter\Equations\Nonlinear\Simplifier.cs" />
-    <Compile Include="Interpreter\Equations\Nonlinear\Validator.cs" />
+    <Compile Include="Equations\Expression\DifferentiationVisitor.cs" />
+    <Compile Include="Equations\Nonlinear\EquationCompiler.cs" />
+    <Compile Include="Equations\Expression\FunctionTable.cs" />
+    <Compile Include="Equations\Nonlinear\EquationGrammarVisitor.cs" />
+    <Compile Include="Equations\Expression\ExpressionCompiler.cs" />
+    <Compile Include="Equations\Expression\RPNExpression.cs" />
+    <Compile Include="Equations\Nonlinear\Simplifier.cs" />
+    <Compile Include="Equations\Nonlinear\Validator.cs" />
     <Compile Include="GUI\Graph\GraphViewer.xaml.cs">
       <DependentUpon>GraphViewer.xaml</DependentUpon>
     </Compile>
@@ -170,33 +198,33 @@
       <DependentUpon>ToolboxControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="GUI\ModelEditor\FileTabItem.cs" />
-    <Compile Include="Interpreter\ErrorListener.cs" />
+    <Compile Include="ErrorListener.cs" />
     <Compile Include="MathUtils\NewtonRaphsonSolver.cs" />
     <Compile Include="MathUtils\NonlinearEquation.cs" />
     <Compile Include="MathUtils\NonlinearSolver.cs" />
-    <Compile Include="ModelGrammar.g4.lexer.cs">
+    <Compile Include="PowerModel\NewModel\Grammar\ModelGrammar.g4.lexer.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="ModelGrammar.g4.parser.cs">
+    <Compile Include="PowerModel\NewModel\Grammar\ModelGrammar.g4.parser.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
     <Compile Include="GUI\Graph\NodeCanvas.xaml.cs">
       <DependentUpon>NodeCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PowerGraph\ABCElement.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphAirLine.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphFault.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphGenerator.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphElement.cs" />
-    <Compile Include="PowerGraph\GraphNode.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphLoad.cs" />
-    <Compile Include="PowerGraph\GraphOutput.cs" />
-    <Compile Include="PowerGraph\PowerElementScheme.cs" />
-    <Compile Include="PowerGraph\PowerGraphManager.cs" />
-    <Compile Include="PowerGraph\GraphElements\GraphTransformer2w.cs" />
-    <Compile Include="Interpreter\PowerModel\ASTVisitor.cs" />
-    <Compile Include="Interpreter\PowerModel\ObjectSystem.cs" />
-    <Compile Include="Interpreter\PowerModel\Interpreter.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\ABCElement.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphAirLine.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphFault.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphGenerator.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphElement.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphNode.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphLoad.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphOutput.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\PowerElementScheme.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\PowerGraphManager.cs" />
+    <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphTransformer2w.cs" />
+    <Compile Include="PowerModel\NewModel\ASTVisitor.cs" />
+    <Compile Include="PowerModel\OldModel\ObjectSystem.cs" />
+    <Compile Include="PowerModel\Interpreter.cs" />
     <Compile Include="GUI\ModelEditor\TabStyleSelector.cs" />
     <Compile Include="GUI\ModelEditor\TabTemplateSelector.cs" />
     <Compile Include="Test\Test.cs" />
@@ -265,14 +293,18 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Antlr4 Include="ModelGrammar.g4">
+    <Antlr4 Include="PowerModel\NewModel\Grammar\ModelGrammar.g4">
       <Generator>MSBuild:Compile</Generator>
-      <CustomToolNamespace>ElectricalPowerSystems</CustomToolNamespace>
+      <CustomToolNamespace>ElectricalPowerSystems.PowerModel.NewModel</CustomToolNamespace>
     </Antlr4>
     <None Include="Docs\umlDiagramOld.mdj" />
-    <Antlr4 Include="EquationGrammar.g4">
+    <Antlr4 Include="Equations\Nonlinear\EquationGrammar.g4">
       <Generator>MSBuild:Compile</Generator>
-      <CustomToolNamespace>ElectricalPowerSystems</CustomToolNamespace>
+      <CustomToolNamespace>ElectricalPowerSystems.Equations.Nonlinear</CustomToolNamespace>
+    </Antlr4>
+    <Antlr4 Include="PowerModel\OldModel\Grammar\OldGrammar.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <CustomToolNamespace>ElectricalPowerSystems.PowerModel.OldModel</CustomToolNamespace>
     </Antlr4>
     <None Include="packages.config">
       <SubType>Designer</SubType>
@@ -281,9 +313,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Antlr4 Include="Interpreter\Equations\DAE\DAEImplicitGrammar.g4">
+    <Antlr4 Include="Equations\DAE\DAEImplicitGrammar.g4">
       <Generator>MSBuild:Compile</Generator>
-      <CustomToolNamespace>ElectricalPowerSystems.Interpreter.Equations.DAE</CustomToolNamespace>
+      <CustomToolNamespace>ElectricalPowerSystems.Equations.DAE</CustomToolNamespace>
     </Antlr4>
     <EmbeddedResource Include="GUI\ModelEditor\SyntaxHighlighting.xshd" />
   </ItemGroup>
@@ -301,9 +333,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Docs\Grammar.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Docs\ModelLanguageDescription.txt" />
@@ -335,10 +364,13 @@
     <Resource Include="Resources\Icons\play-button.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Docs\SteadyState.txt" />
+    <Resource Include="Examples\SteadyStateExample1.txt" />
+    <Resource Include="Examples\SteadyStateExample2.txt" />
     <Content Include="Help\help.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="Interpreter\PowerModel\Recloser\TextFile1.txt" />
+    <Resource Include="PowerModel\NewModel\Recloser\TextFile1.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Docs\ThreePhaseLang.txt" />

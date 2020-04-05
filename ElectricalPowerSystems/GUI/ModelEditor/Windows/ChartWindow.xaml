@@ -12,7 +12,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <lvc:CartesianChart Grid.Row="0" x:Name="FunctionChart" Series="{Binding SeriesCollection}"  LegendLocation="Right" Margin="10,10,10,10" Grid.Column="1">
+        <lvc:CartesianChart x:Name="FunctionChart" Series="{Binding SeriesCollection}"  LegendLocation="Right" Margin="10,10,10,10" Grid.Column="1" Grid.Row="0">
             <lvc:CartesianChart.AxisY>
                 <lvc:Axis x:Name="YAxis" Title="x"/>
             </lvc:CartesianChart.AxisY>

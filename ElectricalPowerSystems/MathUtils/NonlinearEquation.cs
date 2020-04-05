@@ -1,5 +1,5 @@
-﻿using ElectricalPowerSystems.Interpreter.Equations.Expression;
-using ElectricalPowerSystems.Interpreter.Equations.Nonlinear;
+﻿using ElectricalPowerSystems.Equations.Expression;
+using ElectricalPowerSystems.Equations.Nonlinear;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -12,13 +12,13 @@ namespace ElectricalPowerSystems.MathUtils
     public abstract class NonlinearSystem
     { 
         public abstract Vector<double> F(Vector<double> x);
-        public abstract Matrix<double> dF(Vector<double> x);
+        public abstract Matrix<double> DF(Vector<double> x);
         public int Size { get; set; }
     };
     public abstract class NonlinearSystemNumericCentralDifference : NonlinearSystem
     {
         public double Epsilon { get; set; }
-        public override Matrix<double> dF(Vector<double> x)
+        public override Matrix<double> DF(Vector<double> x)
         {
             Matrix<double> result = Matrix<double>.Build.Dense(Size, Size); ;
             //central difference
@@ -52,12 +52,12 @@ namespace ElectricalPowerSystems.MathUtils
             double[] _x = x.ToArray();
             foreach (var equation in equations)
             {
-                result[i] = equation.execute(_x);
+                result[i] = equation.Execute(_x);
                 i++;
             }
             return result;
         }
-        public override Matrix<double> dF(Vector<double> x)
+        public override Matrix<double> DF(Vector<double> x)
         {
             Matrix<double> result = Matrix<double>.Build.Dense(Size, Size);
             double[] _x = x.ToArray();
@@ -66,7 +66,7 @@ namespace ElectricalPowerSystems.MathUtils
             {
                 for (int i = 0; i < equations.Count; i++)
                 {
-                    result[j,i] = derivatives[i,j].execute(_x);
+                    result[j,i] = derivatives[i,j].Execute(_x);
                 }
             }
             return result;
@@ -87,7 +87,7 @@ namespace ElectricalPowerSystems.MathUtils
             double[] _x = x.ToArray();
             foreach (var equation in equations)
             {
-                result[i] = equation.execute(_x);
+                result[i] = equation.Execute(_x);
                 i++;
             }
             return result;

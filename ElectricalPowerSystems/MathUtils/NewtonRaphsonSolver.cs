@@ -21,7 +21,7 @@ namespace ElectricalPowerSystems.MathUtils
             Vector<double> F = system.F(x);
             for (int i = 0; i < maxIterations; i++)
             {
-                Matrix<double> J = system.dF(x);
+                Matrix<double> J = system.DF(x);
 
                 Vector<double> dx = J.Solve(F.Multiply(-alpha));
                 Vector<double> x_new = x + dx;
