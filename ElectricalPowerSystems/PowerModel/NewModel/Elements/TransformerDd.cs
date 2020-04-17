@@ -50,7 +50,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
         {
             if (group < 0 || group > 5)
             {
-                throw new Exception("Incorrect value for parameter \"group\"");
+                throw new Exception($"Некорректное значение для параметра \"Group\": {group}");
             }
             this.group = group;
             this.zp = zp;

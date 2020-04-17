@@ -89,7 +89,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     case ElementDescription.NodeType.ThreePhase:
                         return new Pin3Phase(index);
                 }
-                throw new Exception("Unkown type");
+                throw new Exception("Неизвестный тип узла");
             }
             public ITransientElement CreateTransientElement(Object elementObject,
                 Dictionary<string, Pin> elementNodes)

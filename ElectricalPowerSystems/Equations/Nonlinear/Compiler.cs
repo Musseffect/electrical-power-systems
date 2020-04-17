@@ -137,14 +137,12 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
             compilerErrors = lexerListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
-                throw new CompilerException(compilerErrors, "Lexer error");
-                throw new Exception("Lexer Error");
+                throw new CompilerException(compilerErrors, "Ошибки лексера");
             }
             compilerErrors = parserListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
-                throw new CompilerException(compilerErrors, "Parser error");
-                throw new Exception("Parser error");
+                throw new CompilerException(compilerErrors, "Ошибки парсера");
             }
             GrammarVisitor visitor = new GrammarVisitor();
             ASTNode root = visitor.VisitCompileUnit(eqContext);
@@ -223,7 +221,6 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
             if (compilerErrors.Count>0)
             {
                 throw new CompilerException(compilerErrors);
-                //throw new Exception("Equation definition errors");
                 //fall back;
             }
             Expression.Compiler expCompiler = new Expression.Compiler(variables);
@@ -314,7 +311,7 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
                 FunctionEntry entry = FunctionTable.GetFunctionEntry(node.FunctionName);
                 if (entry.ArgNumber != node.Arguments.Count)
                 {
-                    compilerErrors.Add(new ErrorMessage(entry.ArgNumber.ToString() + "arguments expected in function " + node.FunctionName, node.Line, node.Position));
+                    compilerErrors.Add(new ErrorMessage($"{entry.ArgNumber.ToString()} аргументов ожидалось в функции \"{node.FunctionName}", node.Line, node.Position));
                     return null;
                 }
                 List<Expression.Expression> arguments = new List<Expression.Expression>();
@@ -326,7 +323,7 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
             }
             else
             {
-                compilerErrors.Add(new ErrorMessage("Unknown function " + node.FunctionName, node.Line, node.Position));
+                compilerErrors.Add(new ErrorMessage($"Неизвестная функция \"{node.FunctionName}\"", node.Line, node.Position));
                 return null;
             }
         }

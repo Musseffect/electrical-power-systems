@@ -51,7 +51,7 @@ namespace ElectricalPowerSystems.Equations.Expression
             }
             catch (KeyNotFoundException)
             {
-                throw new Exception("Incorrect function name [\"" + functionName + "\"].");
+                throw new Exception($"Неизвестная функция \"{functionName}\"");
             }
         }
         static public Operand Sin(List<Operand> args)

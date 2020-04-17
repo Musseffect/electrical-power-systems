@@ -40,7 +40,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     }
                     else if (checkArg == true)
                     {
-                        throw new Exception("Invalid function signature. Invalid default argument values placement.");
+                        throw new Exception("Некорректная сигнатура функции. Аргументы с значением по умолчанию должны стоять в конце.");
                     }
                 }
             }
@@ -63,7 +63,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     {
                         for (int i = 0; i < variables.Count; i++)
                         {
-                            Constant var = Convert(variables[i], f.Signature.Arguments[i].Type);
+                            Constant var;
+                            try
+                            {
+                                var = Convert(variables[i], f.Signature.Arguments[i].Type);
+                            }
+                            catch (TypeConversionError exc)
+                            {
+                                throw new Exception($"Невозможно преобразовать аргумент {i+1} из \"{exc.Src}\" в \"{exc.Dst}\"");
+                            }
                             args.Add(var);
                         }
                         for (int j = variables.Count; j < f.Signature.Arguments.Count; j++)
@@ -73,11 +81,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                         return f.Exec(args);
                     }
                     else
-                        throw new Exception("Invalid number of arguments in function");
+                        throw new Exception("Неправильное число аргументов в функции");
                 }
                 for (int i = 0; i < f.Signature.Arguments.Count; i++)
                 {
-                    Constant var = Convert(variables[i], f.Signature.Arguments[i].Type);
+                    Constant var;
+                    try
+                    {
+                        var = Convert(variables[i], f.Signature.Arguments[i].Type);
+                    }
+                    catch (TypeConversionError exc)
+                    {
+                        throw new Exception($"Невозможно преобразовать аргумент {i + 1} из \"{exc.Src}\" в \"{exc.Dst}\"");
+                    }
                     args.Add(var);
                 }
                 if (variables.Count > f.Signature.Arguments.Count)
@@ -88,7 +104,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                             args.Add(variables[i]);
                     }
                     else
-                        throw new Exception("Invalid number of arguments in function");
+                        throw new Exception("Неправильное число аргументов в функции");
                 }
                 return f.Exec(args);
             }
@@ -289,7 +305,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             catch (TypeConversionError err)
             {
-                throw new Exception($"Cannot convert argument in function print from {err.Src} to {err.Dst}");
+                throw new Exception($"Невозможно преобразовать аргумент в функции \"print\" из \"{err.Src}\" в \"{err.Dst}\"");
             }
             ModelInterpreter.GetInstanse().AddOutput(result);
             return new VoidValue();
@@ -304,7 +320,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             catch (Exception)
             {
-                throw new Exception($"File {fileName.Value} cannot be opened.");
+                throw new Exception($"Файл \"{fileName.Value}\" не получилось открыть");
             }
         }
         private static Constant Complex(List<Constant> args)

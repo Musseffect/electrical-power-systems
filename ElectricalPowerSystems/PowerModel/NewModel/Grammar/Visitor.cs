@@ -43,7 +43,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Grammar
                     type = Node.NodeType.Float;
                     break;
                 default:
-                    throw new Exception("Invalid NodeType");
+                    throw new Exception("Неизвестный тип узла");
             }
             return new ArrayNode {
                 ArrayType = type,

@@ -57,12 +57,12 @@ namespace ElectricalPowerSystems.Equations.DAE
             compilerErrors = lexerListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
-                throw new CompilerException(compilerErrors, "Lexer Error");
+                throw new CompilerException(compilerErrors, "Ошибки лексера");
             }
             compilerErrors = parserListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
-                throw new CompilerException(compilerErrors, "Parser error");
+                throw new CompilerException(compilerErrors, "Ошибки парсера");
             }
             DAEImplicitGrammarVisitor visitor = new DAEImplicitGrammarVisitor();
             ASTNode root = visitor.VisitCompileUnit(eqContext);
@@ -661,7 +661,7 @@ namespace ElectricalPowerSystems.Equations.DAE
                 FunctionEntry entry = FunctionTable.GetFunctionEntry(node.FunctionName);
                 if (entry.ArgNumber != node.Arguments.Count)
                 {
-                    compilerErrors.Add(new ErrorMessage(entry.ArgNumber.ToString() + "arguments expected in function " + node.FunctionName, node.Line, node.Position));
+                    compilerErrors.Add(new ErrorMessage($"{entry.ArgNumber.ToString()} аргументов ожидалось в функции \"{node.FunctionName}\"", node.Line, node.Position));
                     return new Function(entry,new List<Expression.Expression>());
                 }
                 List<Expression.Expression> arguments = new List<Expression.Expression>();
@@ -673,7 +673,7 @@ namespace ElectricalPowerSystems.Equations.DAE
             }
             else
             {
-                compilerErrors.Add(new ErrorMessage("Unknown function " + node.FunctionName, node.Line, node.Position));
+                compilerErrors.Add(new ErrorMessage($"Неизвестная функция \"{node.FunctionName}\"", node.Line, node.Position));
                 return new Function(null, new List<Expression.Expression>());
             }
         }

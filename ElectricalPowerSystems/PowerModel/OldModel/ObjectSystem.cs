@@ -22,18 +22,14 @@ namespace ElectricalPowerSystems.PowerModel.OldModel
             };
         public Dictionary<string, Object> variableTable;
         CircuitModelAC model;
-
-        PowerGraph.PowerGraphManager graph;
+        
         public ASTInterpreter()
         {
         }
         public CircuitModelAC generate(ASTNode ast,ref List<ErrorMessage> errorList,ref List<string> output)
         {
             model = new CircuitModelAC();
-            graph = new PowerGraph.PowerGraphManager();
-            PowerGraph.PowerGraphManager.powerFrequency = (float)(60.0 * 2.0 * Math.PI);
             FunctionStorage.model = model;
-            FunctionStorage.powerModel = graph;
             FunctionStorage.output = output;
             variableTable = new Dictionary<string, Object>();
             LValueIdentifier.variableTable = variableTable;
@@ -688,7 +684,6 @@ namespace ElectricalPowerSystems.PowerModel.OldModel
         static public class FunctionStorage
         {
             static public CircuitModelAC model;
-            static public PowerGraph.PowerGraphManager powerModel;
             static public List<string> output;
             static public Dictionary<string, List<FunctionDefinition>> functionTable = new Dictionary<string, List<FunctionDefinition>>
             {

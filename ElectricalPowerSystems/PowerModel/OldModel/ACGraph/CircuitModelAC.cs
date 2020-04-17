@@ -141,13 +141,13 @@ namespace ElectricalPowerSystems.PowerModel.OldModel.ACGraph
         public void AddCurrentOutput(int elementIndex)
         {
             if (elementIndex >= acGraph.elements.Count ||elementIndex<0)
-                throw new Exception("Incorrect element index.");
+                throw new Exception($"Некорректный элемент с индексом {elementIndex}");
             outputCurrent.Add(elementIndex);
         }
         public void AddVoltageOutput(int elementIndex)
         {
             if (elementIndex >= acGraph.elements.Count || elementIndex < 0)
-                throw new Exception("Incorrect element index.");
+                throw new Exception($"Incorrect element index {elementIndex}");
             outputNodeVoltage.Add(elementIndex);
         }
         public void AddVoltageOutput(string node1, string node2)

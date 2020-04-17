@@ -77,14 +77,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                         result.Values.Add(value.Key,type.Validate(value.Value));
                     } else
                     {
-                        throw new Exception($"Unknown member {value.Key} in object {obj.Name}");
+                        throw new Exception($"Неизвестное поле \"{value.Key}\" в объекте \"{obj.Name}\"");
                     }
                 }
                 foreach (var member in memberTypes)
                 {
                     if (!result.ContainsKey(member.Key))
                     {
-                        throw new Exception($"Missing member {member} in object {obj.Name}");
+                        throw new Exception($"Отсутствует поле \"{member}\" в объекте \"{obj.Name}\"");
                     }
                 }
                 return result;
@@ -125,7 +125,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             public override void SetValue(Constant value)
             {
                 if (value is VoidValue)
-                    throw new ModelInterpreterException("Cannot assign void.");
+                    throw new ModelInterpreterException("Невозможно присвоить Void");
                 ModelInterpreter.GetInstanse().variableTable[key] = value;
             }
             public override Constant GetRValue()
@@ -137,7 +137,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 }
                 catch (KeyNotFoundException)
                 {
-                    throw new Exception("Undefined variable \"" + key + "\"");
+                    throw new Exception($"Неопределённая переменная \"{key}\"");
                 }
             }
         }
@@ -411,13 +411,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             {
                 if (b == Constant.Type.String)
                     return b;
-                throw new Exception("Invalid type conversion.");
+                return a;
+                //throw new Exception("Invalid type conversion.");
             }
             else if (b == Constant.Type.Object || b == Constant.Type.Array)
             {
                 if (a == Constant.Type.String)
-                    return b;
-                throw new Exception("Invalid type conversion.");
+                    return a;
+                return b;
+                //throw new Exception("Invalid type conversion.");
             }
             switch (a)
             {
@@ -452,7 +454,8 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 case Constant.Type.Bool:
                     return b;
             }
-            throw new Exception("Invalid type conversion.");
+            return a;
+            //throw new Exception("Invalid type conversion.");
         }
         static public Constant Convert(Constant constant, Constant.Type newType)
         {
@@ -518,7 +521,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     Position = exp.Right.Position
                 };
             }
-            throw new ModelInterpreterException("Left part of assignment should be LValue (Identifier).")
+            throw new ModelInterpreterException("Левая часть присваивания должна быть идентификатором")
             {
                 Line = exp.Left.Line,
                 Position = exp.Left.Position
@@ -536,14 +539,8 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     return IntValue.OpNeg((IntValue)obj);
                 case Constant.Type.Float:
                     return FloatValue.OpNeg((FloatValue)obj);
-                default:
-                    throw new ModelInterpreterException("Negation is undefined for type \"" + obj.ConstantType.ToString() + "\"")
-                    {
-                        Line = exp.Line,
-                        Position = exp.Position
-                    };
             }
-            throw new ModelInterpreterException("Operator isn't available for custom types.")
+            throw new ModelInterpreterException($"Отрицание не определено для типа \"{obj.ConstantType.ToString()}\"")
             {
                 Line = exp.Line,
                 Position = exp.Position
@@ -585,7 +582,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                             return StringValue.OpAdd(l, r);
                         }
                 }
-                throw new ModelInterpreterException("Invalid type \"" + bt.ToString() + "\".")
+                throw new ModelInterpreterException("Сложение не определено для типа \"" + bt.ToString() + "\".")
+                {
+                    Line = exp.Line,
+                    Position = exp.Position
+                };
+            }
+            catch (TypeConversionError exc)
+            {
+                throw new ModelInterpreterException($"Не удалось преобразование из  \"{exc.Src}\" в \"{exc.Dst}\"")
                 {
                     Line = exp.Line,
                     Position = exp.Position
@@ -634,15 +639,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                             return FloatValue.OpSub(l, r);
                         }
                 }
-                throw new ModelInterpreterException("Invalid type \"" + bt.ToString() + "\".")
+                throw new ModelInterpreterException("Вычитание не определено для типа \"" + bt.ToString() + "\".")
                 {
                     Line = exp.Line,
                     Position = exp.Position
                 };
             }
-            catch (ModelInterpreterException exc)
+            catch (TypeConversionError exc)
             {
-                throw exc;
+                throw new ModelInterpreterException($"Не удалось преобразование из \"{exc.Src}\" в \"{exc.Dst}\"")
+                {
+                    Line = exp.Line,
+                    Position = exp.Position
+                };
             }
             catch (Exception exc)
             {
@@ -683,15 +692,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                             return FloatValue.OpMult(l, r);
                         }
                 }
-                throw new ModelInterpreterException("Invalid type \"" + bt.ToString() + "\".")
+                throw new ModelInterpreterException("Некорректная операция для типа \"" + bt.ToString() + "\".")
                 {
                     Line = exp.Line,
                     Position = exp.Position
                 };
             }
-            catch (ModelInterpreterException exc)
+            catch (TypeConversionError exc)
             {
-                throw exc;
+                throw new ModelInterpreterException($"Не удалось преобразование из  \"{exc.Src}\" в \"{exc.Dst}\"")
+                {
+                    Line = exp.Line,
+                    Position = exp.Position
+                };
             }
             catch (Exception exc)
             {
@@ -732,15 +745,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                             return FloatValue.OpDiv(l, r);
                         }
                 }
-                throw new ModelInterpreterException("Invalid type \"" + bt.ToString() + "\".")
+                throw new ModelInterpreterException("Деление не определено для типа \"" + bt.ToString() + "\".")
                 {
                     Line = exp.Line,
                     Position = exp.Position
                 };
             }
-            catch (ModelInterpreterException exc)
+            catch (TypeConversionError exc)
             {
-                throw exc;
+                throw new ModelInterpreterException($"Не удалось преобразование из \"{exc.Src}\" в \"{exc.Dst}\"")
+                {
+                    Line = exp.Line,
+                    Position = exp.Position
+                };
             }
             catch (Exception exc)
             {
@@ -760,7 +777,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             catch (Exception)
             {
-                throw new ModelInterpreterException("Invalid function name.")
+                throw new ModelInterpreterException($"Неизвестная функция \"{exp.FunctionName}\"")
                 {
                     Line = exp.Line,
                     Position = exp.Position
@@ -772,8 +789,8 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Constant obj = Eval(expNode).GetRValue();
                 args.Add(obj);
             }
-            Exception lastExc = new Exception("No definition for function \"" + exp.FunctionName + "\".");
-            foreach(FunctionDefinition fd in funcList)
+            Exception lastExc=null;
+            foreach (FunctionDefinition fd in funcList)
             {
                 try
                 {
@@ -784,7 +801,26 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     lastExc = exc;
                 }
             }
-            throw new ModelInterpreterException(lastExc.Message)
+            if (lastExc != null)
+            {
+                throw new ModelInterpreterException(lastExc.Message)
+                {
+                    Line = exp.Line,
+                    Position = exp.Position
+                };
+            }
+            string exceptionMessage = $"Не существует подходящего определения для функции {exp.FunctionName} ( ";
+            int i = 0;
+            foreach (var arg in args)
+            {
+                if (i != 0)
+                {
+                    exceptionMessage += ", ";
+                }
+                exceptionMessage += arg.ConstantType.ToString();
+            }
+            exceptionMessage += ")";
+            throw new ModelInterpreterException(exceptionMessage)
             {
                 Line = exp.Line,
                 Position = exp.Position
@@ -799,6 +835,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 BoolValue l = (BoolValue)Convert(left, Constant.Type.Bool);
                 BoolValue r = (BoolValue)Convert(right, Constant.Type.Bool);
                 return BoolValue.OpOr(l, r);
+            }
+            catch (TypeConversionError exc)
+            {
+                throw new ModelInterpreterException($"Операция \"ИЛИ\" не определена для типов \"{exc.Src}\" и \"{exc.Dst}\"")
+                {
+                    Line = exp.Line,
+                    Position = exp.Position
+                };
             }
             catch (Exception exc)
             {
@@ -819,6 +863,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 BoolValue r = (BoolValue)Convert(right, Constant.Type.Bool);
                 return BoolValue.OpAnd(l, r);
             }
+            catch (TypeConversionError exc)
+            {
+                throw new ModelInterpreterException($"Операция \"И\" не определена для типов \"{exc.Src}\" и \"{exc.Dst}\"")
+                {
+                    Line = exp.Line,
+                    Position = exp.Position
+                };
+            }
             catch (Exception exc)
             {
                 throw new ModelInterpreterException(exc.Message)
@@ -835,6 +887,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Constant node = Eval(exp.InnerNode).GetRValue();
                 BoolValue n = (BoolValue)Convert(node, Constant.Type.Bool);
                 return BoolValue.OpNot(n);
+            }
+            catch (TypeConversionError exc)
+            {
+                throw new ModelInterpreterException($"Операция \"НЕ\" не определена для типов \"{exc.Src}\" и \"{exc.Dst}\"")
+                {
+                    Line = exp.Line,
+                    Position = exp.Position
+                };
             }
             catch (Exception exc)
             {
@@ -943,8 +1003,6 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     return Or((OrNode)exp);
                 case Node.NodeType.Function:
                     return Function((FunctionNode)exp);
-                /*case ASTNode.NodeType.Member:
-                    return Member(exp);*/
                 case Node.NodeType.String:
                     return new StringValue()
                     {

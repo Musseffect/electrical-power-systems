@@ -71,7 +71,7 @@ namespace ElectricalPowerSystems.Equations.Expression
             }
             else
             {
-                throw new Exception("Couldn't find identifier index.");
+                throw new Exception("Не удалось найти индекс идентификатора");
             }
         }
         void CompileConstant(Float node)
