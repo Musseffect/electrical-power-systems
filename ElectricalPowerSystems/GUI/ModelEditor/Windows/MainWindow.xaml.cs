@@ -22,7 +22,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
-namespace ElectricalPowerSystems
+namespace ElectricalPowerSystems.GUI.ModelEditor.Windows
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
@@ -102,7 +102,7 @@ namespace ElectricalPowerSystems
             UIEnabled = true;
 
             ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition customHighlighting;
-            using (Stream s = typeof(MainWindow).Assembly.GetManifestResourceStream("ElectricalPowerSystems.GUI.ModelEditor.SyntaxHighlighting.xshd"))
+            using (Stream s = typeof(MainWindow).Assembly.GetManifestResourceStream("ElectricalPowerSystems.GUI.ModelEditor.SyntaxHighlightingModelLanguage.xshd"))
             {
                 if (s == null)
                     throw new InvalidOperationException("Could not find embedded resource");
@@ -119,6 +119,8 @@ namespace ElectricalPowerSystems
             errors = new ObservableCollection<ErrorMessage>();
             _tabItems = new ObservableCollection<FileTabItem>();
             InitializeComponent();
+            AddNewTab();
+            AddNewTab();
             AddNewTab();
             AddNewTab();
             AddNewTab();
@@ -198,6 +200,19 @@ voltage(""3_a6"",""g"");";
 	    },
         baseFrequency = 60
 	};
+    /*
+    transient{
+	    solver = radauIIA3{
+		    iterations = 20,
+		    fAbsTol = 0.01,
+		    alpha = 1.0,
+            step = 0.004
+	    },
+        baseFrequency = 60,
+        t0 = 0,
+        t1 = 5./60//5 cycles
+	};
+    */
 elements:
     v1 = VoltageSource{
         Peak = 220,
@@ -267,8 +282,53 @@ x(0) = 0;";
 constant t0 = 0;
 constant time = 1;
 
-der(x) = a * x;
-x(t0) = 1;";
+der(x) = a * x + y;
+der(y) = y;
+z = x + y;
+x(t0) = 1;
+y(t0) = 1;
+z(t0) = 1;";
+
+            ((FileTabItem)_tabItems[4]).Filename = "DAE2 RLC parallel";
+            ((FileTabItem)_tabItems[4]).Document.Text =
+@"constant Y = 1;
+constant C = 0.01;
+constant L = 1;
+constant E = 0.5;
+constant t0 = 0;
+constant f = 60;
+constant w = f*2*pi();
+constant time = 5/f;//5 cycles
+
+-I_e+Y*v_1+I_l+C*der(v_1) = 0;
+v_1 = -E*sin(w*t);
+v_1 = L * der(I_l);
+I_e(t0) = 0;
+v_1(t0) = 0;
+I_l(t0) = 0;
+";
+            ((FileTabItem)_tabItems[5]).Filename = "DAE2 RLC serial";
+            ((FileTabItem)_tabItems[5]).Document.Text =
+@"constant Y = 1;
+constant C = 0.01;
+constant L = 1;
+constant E = 0.5;
+constant t0 = 0;
+constant f = 60;
+constant w = f*2*pi();
+constant time = 5/f;//5 cycles
+
+-I_e+Y*(v_1-v_2) = 0;
+I_l-Y*(v_1-v_2)=0;
+der(v_3)*C-I_l=0;
+v_1 = -E*sin(w*t);
+L*der(I_l)=(v_2-v_3);
+v_1(t0) = 0;
+v_2(t0) = 0;
+v_3(t0) = 0;
+I_e(t0) = 0;
+I_l(t0) = 0;
+";
 
             DispatcherTimer dt = new DispatcherTimer();
             dt.Interval = TimeSpan.FromSeconds(2);
@@ -368,7 +428,7 @@ x(t0) = 1;";
                 //item.Changed = true;
             }*/
         }
-        private static void FormOutput(MathNet.Numerics.LinearAlgebra.Vector<double> solution, Equations.Nonlinear.NonlinearEquationDefinition system, ref List<string> outputList)
+        private static void FormOutput(MathNet.Numerics.LinearAlgebra.Vector<double> solution, Equations.Nonlinear.NonlinearEquationDescription system, ref List<string> outputList)
         {
             for (int i = 0; i < solution.Count; i++)
             {
@@ -397,6 +457,21 @@ x(t0) = 1;";
             try
             {
                 await Task.Run(() => RunOldModel(this));
+            }
+            catch (Exception exc)
+            {
+                Console.Write(exc.Message);
+            }
+            UIEnabled = true;
+            Expander.IsExpanded = true;
+        }
+        private async void RunOldTransientMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            UIEnabled = false;
+            ClearOutput();
+            try
+            {
+                await Task.Run(() => RunOldTransientModel(this));
             }
             catch (Exception exc)
             {
@@ -434,13 +509,26 @@ x(t0) = 1;";
 @"   //rlc series scheme
 
 model:
-steadystate{
-    solver = newton{
-        iterations = 20,
-        fAbsTol = 0.01,
-        alpha = 1.0
-    }
-};
+    steadystate{
+        solver = newton{
+            iterations = 20,
+            fAbsTol = 0.01,
+            alpha = 1.0
+        }
+    };
+    /*
+    transient{
+	    solver = radauIIA3{
+		    iterations = 20,
+		    fAbsTol = 0.01,
+		    alpha = 1.0,
+            step = 0.002
+	    },
+        baseFrequency = 60,
+        t0 = 0,
+        t1 = 5./60//5 cycles
+	};
+    */
 elements:
     v1 = voltageSource{
        Peak = 220,
@@ -486,13 +574,24 @@ connections:
 @"   //rlc parallel scheme
            
 model:
-steadystate{
-    solver = newton{
-        iterations = 20,
-        fAbsTol = 0.01,
-        alpha = 1.0
-    }
-};
+    steadystate{
+        solver = newton{
+            iterations = 20,
+            fAbsTol = 0.01,
+            alpha = 1.0
+        }
+    };
+    /*transient{
+	    solver = radauIIA3{
+		    iterations = 20,
+		    fAbsTol = 0.01,
+		    alpha = 1.0,
+            step = 0.002
+	    },
+        baseFrequency = 60,
+        t0 = 0,
+        t1 = 5/60//5 cycles
+	};*/
 elements:
     v1 = voltageSource{
        Peak = 220,
@@ -564,12 +663,22 @@ connections:
         }
         private async void RunDAETest_Click(object sender, RoutedEventArgs e)
         {
+            DAESolverDialog dialog = new DAESolverDialog();
+            if (!dialog.ShowDialog().Value)
+            {
+                return;
+            }
+            double alpha = dialog.Alpha;
+            double fAbsTol = dialog.FAbsTol;
+            double step = dialog.Step;
+            int iterations = dialog.Iterations;
+            int method = dialog.SelectedMethod;
             //Тестирование решения ДАУ системы
             UIEnabled = false;
             ClearOutput();
             try
             {
-                await Task.Run(() => RunDAETest(this));
+                await Task.Run(() => RunDAETest(this,alpha,fAbsTol,step,iterations,method));
             }
             catch (Exception exc)
             {
@@ -591,6 +700,17 @@ model:
 		},
         baseFrequency = 60
 	};
+    /*transient{
+	    solver = radauIIA3{
+		    iterations = 20,
+		    fAbsTol = 0.01,
+		    alpha = 1.0,
+            step = 0.002
+	    },
+        baseFrequency = 60,
+        t0 = 0,
+        t1 = 5/60//5 cycles
+	};*/
 elements:
 	generator1 = generatorY{
 		Peak = 100.0,
@@ -712,8 +832,8 @@ connections:
             {
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-                Equations.Nonlinear.EquationCompiler compiler = new Equations.Nonlinear.EquationCompiler();
-                Equations.Nonlinear.NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(text);
+                Equations.Nonlinear.Compiler compiler = new Equations.Nonlinear.Compiler();
+                Equations.Nonlinear.NonlinearEquationDescription compiledEquation = compiler.CompileEquations(text);
                 MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                 //calc solution
                 MathNet.Numerics.LinearAlgebra.Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(
@@ -791,7 +911,18 @@ connections:
             {
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-                PowerModel.MainInterpreter.RunModel(text, ref errorList, ref outputList);
+                Dispatcher.Invoke(() => {
+                    PowerModel.MainInterpreter.RunModel(text, ref errorList, ref outputList);
+                });
+            }
+            catch (Equations.CompilerException exc)
+            {
+                outputList.Add(exc.Message);
+                var errors = exc.Errors;
+                foreach (var error in errors)
+                {
+                    errorList.Add(error);
+                }
             }
             catch (Exception exc)
             {
@@ -840,8 +971,8 @@ connections:
             {
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-                Equations.Nonlinear.EquationCompiler compiler = new Equations.Nonlinear.EquationCompiler();
-                Equations.Nonlinear.NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(text);
+                Equations.Nonlinear.Compiler compiler = new Equations.Nonlinear.Compiler();
+                Equations.Nonlinear.NonlinearEquationDescription compiledEquation = compiler.CompileEquations(text);
                 outputList.Add("Variables:");
                 outputList.Add(compiledEquation.PrintVariables());
                 outputList.Add(compiledEquation.PrintEquations());
@@ -912,12 +1043,79 @@ connections:
             {
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-                Equations.DAE.DAECompiler compiler = new Equations.DAE.DAECompiler();
-                Equations.DAE.DAEImplicitDefinition compiledEquation = compiler.CompileDAEImplicit(text);
+                Equations.DAE.Compiler compiler = new Equations.DAE.Compiler();
+                Equations.DAE.Implicit.DAEIDescription compiledEquation = compiler.CompileDAEImplicit(text);
                 outputList.Add("Variables:");
                 outputList.Add(compiledEquation.PrintVariables());
                 outputList.Add("Equations:");
                 outputList.Add(compiledEquation.PrintEquations());
+            }
+            catch (Equations.CompilerException exc)
+            {
+                outputList.Add(exc.Message);
+                var errors = exc.Errors;
+                foreach (var error in errors)
+                {
+                    errorList.Add(error);
+                }
+            }
+            catch (Exception exc)
+            {
+                window.Dispatcher.Invoke(() =>
+                {
+                    window.OutputText += exc.Message;
+                    window.OutputText += "\n";
+                    window.OutputText += exc.StackTrace;
+                });
+                return;
+            }
+            try
+            {
+                window.Dispatcher.Invoke(() =>
+                {
+                    foreach (ErrorMessage error in errorList)
+                    {
+                        window.errors.Add(error);
+                    }
+                    foreach (var output in outputList)
+                    {
+                        window.OutputText += output;
+                        window.OutputText += "\n";
+                    }
+                    window.StatusText = "Готово";
+                }
+                );
+            }
+            catch (Exception exc)
+            {
+                Console.Write(exc.Message);
+            }
+            return;
+        }
+        internal void RunOldTransientModel(MainWindow window)
+        {
+            FileTabItem tab = null;
+            window.Dispatcher.Invoke(() =>
+            {
+                tab = window.FileTab.SelectedItem as FileTabItem;
+            });
+            if (tab == null)
+            {
+                return;
+            }
+            List<ErrorMessage> errorList = new List<ErrorMessage>();
+            window.Dispatcher.Invoke(() =>
+            {
+                window.FileTab.Focus();
+                window.StatusText = "Расчёт";
+            });
+            //Thread.Sleep(4000); //Test of UI
+            List<string> outputList = new List<string>();
+            try
+            {
+                string text = "";
+                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
+                PowerModel.MainInterpreter.RunModelOldTransient(text, ref errorList, ref outputList);
             }
             catch (Equations.CompilerException exc)
             {
@@ -1028,9 +1226,10 @@ connections:
             }
             return;
         }
-        internal void RunDAETest(MainWindow window)
+        internal void RunDAETest(MainWindow window,double alpha,double fAbsTol,double step,int iterations,int method)
         {
             FileTabItem tab = null;
+
             window.Dispatcher.Invoke(() =>
             {
                 tab = window.FileTab.SelectedItem as FileTabItem;
@@ -1051,15 +1250,28 @@ connections:
             {
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-                Equations.DAE.DAECompiler compiler = new Equations.DAE.DAECompiler();
-                Equations.DAE.DAEImplicitDefinition compiledEquation = compiler.CompileDAEImplicit(text);
+                Equations.DAE.Compiler compiler = new Equations.DAE.Compiler();
+                Equations.DAE.Implicit.DAEIDescription compiledEquation = compiler.CompileDAEImplicit(text);
 
-                MathUtils.RADAUIIA3 solver = new MathUtils.RADAUIIA3();
-                float step = 0.1f;
-                solver.SetStep(step);
-                solver.SetNewtonIterations(20);
-                solver.SetNewtonFAbsTol(0.1f);
-                Equations.DAE.DAESolution solution = MathUtils.DAEImplicitSolver.Solve(compiledEquation, solver);
+                //Equations.DAE.Implicit.RADAUIIA3 solver = new Equations.DAE.Implicit.RADAUIIA3();
+                Equations.DAE.Implicit.DAEISolver solver;
+                switch (method)
+                {
+                    case (int)METHOD.RADAUIIA3:
+                        solver = new Equations.DAE.Implicit.RADAUIIA3(fAbsTol,iterations,alpha,step);
+                        break;
+                    case (int)METHOD.RADAUIIA5:
+                        solver = new Equations.DAE.Implicit.RADAUIIA5(fAbsTol, iterations, alpha, step);
+                        break;
+                    case (int)METHOD.BDF:
+                        solver = new Equations.DAE.Implicit.BDF1(fAbsTol, iterations, alpha, step);
+                        break;
+                    case (int)METHOD.TRAPEZOID:
+                        throw new NotImplementedException();
+                    default:
+                        throw new NotImplementedException();
+                }
+                Equations.DAE.Solution solution = Equations.DAE.Implicit.DAEISolver.Solve(compiledEquation, solver);
                 window.Dispatcher.Invoke(() =>
                 {
                     solution.ShowResults();
@@ -1128,9 +1340,7 @@ connections:
             {
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-#if MODELINTERPRETER
-                Interpreter.MainInterpreter.EquationGeneration(text, ref errorList, ref outputList);
-#endif
+                PowerModel.MainInterpreter.EquationGeneration(text, ref errorList, ref outputList);
             }
             catch (Exception exc)
             {
@@ -1177,9 +1387,7 @@ connections:
             {
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-#if MODELINTERPRETER
-                Interpreter.MainInterpreter.EquationGenerationDAE(text, ref errorList, ref outputList);
-#endif
+                PowerModel.MainInterpreter.EquationGenerationDAE(text, ref errorList, ref outputList);
             }
             catch (Exception exc)
             {

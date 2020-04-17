@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.PowerModel.NewModel
+namespace ElectricalPowerSystems.PowerModel.NewModel.Grammar
 {
-    public class ASTNode
+    public class Node
     {
         public enum NodeType
         {
@@ -40,28 +40,28 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
         public int Line { get; set; }
         public int Position { get; set; }
     }
-    public class ConnectionNode :ASTNode
+    public class ConnectionNode :Node
     {
         public string Element1;
         public string Node1;
         public string Element2;
         public string Node2;
     }
-    public class ElementNode:ASTNode
+    public class ElementNode:Node
     {
         public string Id;
         public ObjectNode Definition;
     }
-    public class KeyValueNode : ASTNode
+    public class KeyValueNode : Node
     {
         public string Key { get; set; }
         public ExpressionNode Value { get; set; }
     }
-    public class ModelNode : ASTNode
+    public class ModelNode : Node
     {
         public ModelNode()
         {
-            Type = ASTNode.NodeType.Model;
+            Type = Node.NodeType.Model;
         }
         public ObjectNode ModelParameters { get; set; }
         //public List<KeyValueNode> ModelParameters { get; set; }
@@ -69,7 +69,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
         public List<ElementNode> Elements { get; set; }
         public List<ConnectionNode> Connections { get; set; }
     }
-    public class ExpressionNode : ASTNode
+    public class ExpressionNode : Node
     {
     }
     public class ObjectNode : ExpressionNode

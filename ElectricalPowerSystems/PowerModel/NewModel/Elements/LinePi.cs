@@ -17,9 +17,9 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
         float bp;
         Pin3Phase in_pin;
         Pin3Phase out_pin;
-        public string IA { get { return $"I_{ID}a1"; } }
+        public string IA1 { get { return $"I_{ID}a1"; } }
         public string IB1 { get { return $"I_{ID}b1"; } }
-        public string I1C { get { return $"I_{ID}c1"; } }
+        public string IC1 { get { return $"I_{ID}c1"; } }
         public string IA12re { get { return $"I_{ID}a12_re"; } }
         public string IB12re { get { return $"I_{ID}b12_re"; } }
         public string IC12re { get { return $"I_{ID}c12_re"; } }
@@ -158,7 +158,6 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             });
 
 
-
             equations.Add(new EquationBlock
             {
                 Equation = $"{in_pin.VAre} - {out_pin.VAre} = {IA12re} * R_{ID} - {IA12im} * frequency * L_{ID};"
@@ -236,7 +235,6 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
                 Equation = $"{ICG2im} * G_{ID} = {out_pin.VCim} + {out_pin.VCre} * G_{ID} * B_{ID} * frequency;"
             });
             return equations;
-
         }
 
         List<EquationBlock> ISteadyStateElement.GenerateParameters(double frequency)

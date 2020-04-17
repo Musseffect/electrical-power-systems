@@ -166,8 +166,8 @@ namespace ElectricalPowerSystems.PowerModel.OldModel.ACGraph
                 result += equations + Environment.NewLine;
                 if (useCompiledEquation)
                 {
-                    EquationCompiler compiler = new EquationCompiler();
-                    NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equations);
+                    Compiler compiler = new Compiler();
+                    NonlinearEquationDescription compiledEquation = compiler.CompileEquations(equations);
                     result += compiledEquation.PrintVariables() + Environment.NewLine;
                     result += compiledEquation.PrintEquations() + Environment.NewLine;
                     result += compiledEquation.PrintJacobiMatrix() + Environment.NewLine;
@@ -259,6 +259,10 @@ namespace ElectricalPowerSystems.PowerModel.OldModel.ACGraph
             {
                 return "Invalid element index";
             }
+        }
+        public void SolveTransient()
+        {
+            throw new NotImplementedException();
         }
     }
 }

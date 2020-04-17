@@ -1,4 +1,4 @@
-﻿#define MODELINTERPRETER
+﻿
 using ElectricalPowerSystems.Equations.Nonlinear;
 using ElectricalPowerSystems.MathUtils;
 using MathNet.Numerics.LinearAlgebra;
@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.PowerModel.NewModel
 {
-#if MODELINTERPRETER
     public interface IScopeReading
     {
     }
@@ -163,7 +162,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     equations += block.Equation + Environment.NewLine;
                 }
             }
-            equations += $"set frequency = {frequency.ToString(new System.Globalization.CultureInfo("en-US"))} * 2 * pi();";*/
+            equations += $"constant frequency = {frequency.ToString(new System.Globalization.CultureInfo("en-US"))} * 2 * pi();";*/
             return equations;
         }
         public void SetSolver(ISteadyStateSolver solver)
@@ -195,7 +194,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
         }
         public string Solve()
         {
-            EquationCompiler compiler = new EquationCompiler();
+            Compiler compiler = new Compiler();
             if (frequencies.Count == 0)
                 frequencies.Add(0.0);
             for (int i = 0; i < elements.Count; i++)
@@ -219,7 +218,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 system += "//Parameters" + Environment.NewLine;
                 system += GenerateParameters(frequency);
                 //parse equations
-                NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(system);
+                NonlinearEquationDescription compiledEquation = compiler.CompileEquations(system);
                 NonlinearSystemSymbolicAnalytic nonlinearSystem = new NonlinearSystemSymbolicAnalytic(compiledEquation);
                 //solve
                 Vector<double> values = solver.Solve(nonlinearSystem, Vector<double>.Build.DenseOfArray(compiledEquation.InitialValues));
@@ -236,5 +235,4 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             return solution.ToString(scopeElements,frequencies.ToArray());
         }
     }
-#endif
 }

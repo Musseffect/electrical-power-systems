@@ -1,4 +1,5 @@
-﻿using ElectricalPowerSystems.Equations.DAE;
+﻿//#define ALTERNATIVE
+using ElectricalPowerSystems.Equations.DAE;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -6,23 +7,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.MathUtils
+namespace ElectricalPowerSystems.Equations.DAE.Implicit
 {
+#if !ALTERNATIVE
     /// <summary>
     /// mathematik.hu-berlin.de/~steffen/pub/introduction_to_daes_497.pdf
     /// https://reference.wolfram.com/language/tutorial/NDSolveDAE.html
     /// </summary>
-    abstract class DAEImplicitSolver
+    public abstract class DAEISolver
     {
         protected double step;
-        public double Step { get; }
-        public abstract Vector<double> IntegrateStep(DAEImplicitSystem system, Vector<double> x, double t);
-        static public DAESolution Solve(Equations.DAE.DAEImplicitDefinition equations, DAEImplicitSolver solver)
+        public double Step { get { return step; } }
+        public abstract Vector<double> IntegrateStep(DAEISystem system, Vector<double> x, double t);
+        static public Solution Solve(DAEIDescription equations, DAEISolver solver)
         {
             List<double[]> values = new List<double[]>();
             List<double> time = new List<double>();
             Vector<double> x = Vector<double>.Build.Dense(equations.InitialValues);
-            DAEImplicitSystemAnalytic system = new DAEImplicitSystemAnalytic(equations);
+            DAEIAnalytic system = new DAEIAnalytic(equations);
             values.Add(equations.InitialValues);
             time.Add(equations.T0);
             for (double t = 0.0; t < equations.Time;)
@@ -35,19 +37,28 @@ namespace ElectricalPowerSystems.MathUtils
                 time.Add(tnext);
             }
             string[] variables = equations.VariableNames;
-            return new DAESolution(values, time, variables);
+            return new Solution(values, time, variables);
         }
     }
-    //TODO add BDF2 and Trapezoid
-    class ImplicitEulerDAESolver: DAEImplicitSolver
+    //TODO Trapezoid (with ImplicitDividedSystem)
+    public class Trapezoidal : DAEISolver
     {
         int newtonIterations;
         double fAbsTol;
-        public ImplicitEulerDAESolver()
+        double alpha;
+        public Trapezoidal(double fAbsTol, int iterations, double alpha, double step)
+        {
+            this.fAbsTol = fAbsTol;
+            this.newtonIterations = iterations;
+            this.alpha = alpha;
+            this.step = step;
+        }
+        public Trapezoidal()
         {
             step = 0.1;
             newtonIterations = 20;
             fAbsTol = 0.001;
+            alpha = 1;
         }
         public void SetStep(float step)
         {
@@ -61,18 +72,61 @@ namespace ElectricalPowerSystems.MathUtils
         {
             this.fAbsTol = value;
         }
-        public override Vector<double> IntegrateStep(DAEImplicitSystem system, Vector<double> x, double t)
+        public override Vector<double> IntegrateStep(DAEISystem system, Vector<double> x, double t)
+        {
+            /*
+             solve
+             f(x_n+1,(x_n+1-x_n)*2h-x'_n,t_n);
+             f(x_n,x'_n,t_n);
+             only when df/dx' exists
+             */
+            throw new NotImplementedException();
+        }
+    }
+    public class BDF1: DAEISolver
+    {
+        int newtonIterations;
+        double fAbsTol;
+        double alpha;
+        public BDF1(double fAbsTol, int iterations, double alpha, double step)
+        {
+            this.fAbsTol = fAbsTol;
+            this.newtonIterations = iterations;
+            this.alpha = alpha;
+            this.step = step;
+        }
+        public BDF1()
+        {
+            step = 0.1;
+            newtonIterations = 20;
+            fAbsTol = 0.001;
+            alpha = 1;
+        }
+        public void SetStep(float step)
+        {
+            this.step = step;
+        }
+        public void SetNewtonIterations(int iterations)
+        {
+            this.newtonIterations = iterations;
+        }
+        public void SetNewtonFAbsTol(float value)
+        {
+            this.fAbsTol = value;
+        }
+        public override Vector<double> IntegrateStep(DAEISystem system, Vector<double> x, double t)
         {
             //solve f(xn+1,(xn+1-xn)/h,t+h)
             Vector<double> xNew = x;
             for (int i = 0; i < newtonIterations; i++)
             {
                 Vector<double> dx = (xNew-x)/step;
-                Vector<double> f = Vector<double>.Build.Dense(system.Size);
                 double time = t + step;
                 Matrix<double> dFdX = system.DFdX(xNew, dx, time); //use k as dx
                 Matrix<double> dFddX = system.DFddX(xNew, dx, time);
-                double[] F = system.F(xNew, dx, time);
+                Vector<double> F = system.F(xNew, dx, time);
+                F = F * alpha;
+                //Vector<double> f = Vector<double>.Build.SparseOfArray(F).Multiply(alpha);
                 Matrix<double> jacobiMatrix;// = Matrix<double>.Build.Sparse(system.Size, system.Size);
                 jacobiMatrix = dFdX.Add(dFddX.Divide(step));
                 /* for (int m = 0; m < system.Size; m++)
@@ -82,9 +136,9 @@ namespace ElectricalPowerSystems.MathUtils
                          jacobiMatrix[m, l] = dFdX[m, l]  + dFddX[m, l]/step;
                      }
                  }*/
-                Vector<double> deltax = jacobiMatrix.Solve(-f);
+                Vector<double> deltax = jacobiMatrix.Solve(-F);
                 xNew += deltax;
-                if (f.L2Norm() < fAbsTol)
+                if (F.L2Norm() < fAbsTol)
                 {
                     return xNew;
                 }
@@ -92,7 +146,11 @@ namespace ElectricalPowerSystems.MathUtils
             throw new Exception("Решение не сошлось");
         }
     }
-    abstract class ImplicitRungeKuttaDAESolver : DAEImplicitSolver
+    ///<summary>
+    ///kx_i=f(x_n+sum[a_ij*kx_j],zn+sum[a_ij*kz_j],t_n+c_i*h);<para></para> 
+    ///0=g(x_n+sum[a_ij*k_xj],z_n+sum[a_ij*kz_j],tn+c_i*h);
+    ///</summary>
+    abstract class RungeKutta : DAEISolver
     {
         protected double[,] a;
         protected double[] b;
@@ -100,15 +158,19 @@ namespace ElectricalPowerSystems.MathUtils
         public int Stages { get; protected set; }
         int newtonIterations;
         double fAbsTol;
-        /*
-         kxi=f(xn+sum aij*kxj,zn+sum aij*kzj,tn+ci*h)
-         0=g(xn+sum aij*kxj,zn+sum aij*kzj,tn+ci*h)
-         */
-        public ImplicitRungeKuttaDAESolver()
+        double alpha;
+        public RungeKutta(double fAbsTol, int iterations, double alpha, double step) {
+            this.fAbsTol = fAbsTol;
+            this.newtonIterations = iterations;
+            this.alpha = alpha;
+            this.step = step;
+        }
+        public RungeKutta()
         {
             step = 0.1;
             newtonIterations = 20;
             fAbsTol = 0.001;
+            alpha = 1;
         }
         public void SetStep(float step)
         {
@@ -218,7 +280,7 @@ namespace ElectricalPowerSystems.MathUtils
         // k_i is a vector and sizeOf(k_i) == sizeOf(x)
         // or f(x_n + h*sum k_j * a_ij, k_i, t_n + h * c_i)
         // solve this implicit nonlinear system for all k's 
-        public override Vector<double> IntegrateStep(DAEImplicitSystem system,Vector<double> x,double t)
+        public override Vector<double> IntegrateStep(DAEISystem system,Vector<double> x,double t)
         {
             int size = system.Size * Stages;
             Vector<double> [] k = new Vector<double> [Stages];// vector k=[k1_1,k1_2,...k1_n,...,kn_1,...,kn_n]
@@ -242,12 +304,12 @@ namespace ElectricalPowerSystems.MathUtils
                     double time = t + step * c[j];
                     Matrix<double> dFdX = system.DFdX(t_x, k[j], time); //use k as dx
                     Matrix<double> dFddX = system.DFddX(t_x, k[j], time);
-                    double[] F = system.F(t_x, k[j], time);
-                        //subMatrix Size*Size
+                    Vector<double> F = system.F(t_x, k[j], time);
+                    //subMatrix Size*Size
                     for (int m = 0; m < system.Size; m++)
                     {
                         int row = m + j * system.Size;
-                        f[row] = F[m];
+                        f[row] = F[m]*alpha;
                         for (int p = 0; p < Stages; p++)
                         {
                             for (int l = 0; l < system.Size; l++)
@@ -274,12 +336,12 @@ namespace ElectricalPowerSystems.MathUtils
             throw new Exception("Решение не сошлось");
         }
     }
-    class RADAUIIA3: ImplicitRungeKuttaDAESolver
+    class RADAUIIA3: RungeKutta
     {
-        public RADAUIIA3()
+        private void Init()
         {
             Stages = 2;
-            a = new double[2, 2] { 
+            a = new double[2, 2] {
                 {5.0 / 12.0, -1.0 / 12.0},
                 {3.0 / 4.0, 1.0 / 4.0}
             };
@@ -292,10 +354,18 @@ namespace ElectricalPowerSystems.MathUtils
                 1.0
             };
         }
+        public RADAUIIA3(double fAbsTol, int iterations, double alpha, double step) : base(fAbsTol, iterations, alpha, step)
+        {
+            Init();
+        }
+        public RADAUIIA3() : base()
+        {
+            Init();
+        }
     }
-    class RADAUIIA5 : ImplicitRungeKuttaDAESolver
+    class RADAUIIA5 : RungeKutta
     {
-        public RADAUIIA5()
+        private void Init()
         {
             Stages = 3;
             a = new double[3, 3] {
@@ -326,94 +396,199 @@ namespace ElectricalPowerSystems.MathUtils
                 1.0
             };
         }
+        public RADAUIIA5(double fAbsTol, int iterations, double alpha, double step) : base(fAbsTol, iterations, alpha, step)
+        {
+            Init();
+        }
+        public RADAUIIA5() : base()
+        {
+            Init();
+        }
     }
-
-    
-
-#if SEMIEXPLICIT
-    abstract class DAESemiExplicitSolver
+#else
+    public abstract class DAEISolver
     {
         protected double step;
         public double Step { get; }
-        public abstract Vector<double> IntegrateStep(DAESemiExplicitSystem system, Vector<double> x, Vector<double> z, double t);
-        static public DAESolution Solve(Interpreter.Equations.DAE.DAESemiExplicitDefinition equations, DAESemiExplicitSolver solver)
+        public abstract XZVectorPair IntegrateStep(DAEISystem system, XZVectorPair x, double t);
+        static public DAESolution Solve(DAEIDescription equations, DAEISolver solver)
         {
-            throw new NotImplementedException();
-            /*List<double[]> values = new List<double[]>();
+            List<double[]> values = new List<double[]>();
             List<double> time = new List<double>();
-            Vector<double> x = Vector<double>.Build.Dense(equations.InitialValuesX);
-            Vector<double> z = Vector<double>.Build.Dense(equations.InitialValuesZ);
-            DAESemiExplicitSystemAnalytic system = new DAESemiExplicitSystemAnalytic(equations);
-            values.Add(equations.Initi);
+            XZVectorPair xz = new XZVectorPair
+            {
+                X = Vector<double>.Build.Dense(equations.InitialValuesX),
+                Z = Vector<double>.Build.Dense(equations.InitialValuesZ)
+            };
+            DAEIAnalytic system = new DAEIAnalytic(equations);
+            values.Add(xz.ToArray());
             time.Add(equations.T0);
             for (double t = 0.0; t < equations.Time;)
             {
                 double ti = t + equations.T0;
                 t += solver.step;
-                x = solver.IntegrateStep(system, x,z, ti);
-                values.Add(x.ToArray());
+                xz = solver.IntegrateStep(system, xz, ti);
+                values.Add(xz.ToArray());
                 double tnext = t + equations.T0;
                 time.Add(tnext);
             }
             string[] variables = equations.VariableNames;
-            return new DAESolution(values, time, variables);*/
+            return new DAESolution(values, time, variables);
         }
     }
-    
-     class SemiExplicitEulerDAESolver: DAESemiExplicitSolver
+    public class BDF1 : DAEISolver
     {
         int newtonIterations;
-        public override Vector<double> IntegrateStep(DAESemiExplicitSystem system, Vector<double> x, Vector<double> z, double t)
+        double fAbsTol;
+        double alpha;
+        public BDF1(double fAbsTol, int iterations, double alpha, double step)
         {
-            Vector<double> xNew = x;
-            Vector<double> zNew = z;
-            for (int i = 0; i < newtonIterations; i++)
-            {
-                Matrix<double> jacobiMatrix = Matrix<double>.Build.Dense(system.Size, system.Size);
-                Vector<double> f = Vector<double>.Build.Dense(system.Size);
-                double time = t + step;
-                double[] F = system.F(xNew, zNew, time);
-                double[] G = system.G(xNew, zNew, time);
-                double[,] dFdX = system.dFdX(xNew, zNew, time);
-                double[,] dFdZ = system.dFdZ(xNew, zNew, time);
-                double[,] dGdX = system.dGdX(xNew, zNew, time);
-                double[,] dGdZ = system.dGdZ(xNew, zNew, time);
-                for (int j = 0; j < system.SizeX; j++)
-                {
-                    f[j] = xNew[j] - x[j] - step * F[j];
-                    for (int k = 0; k < system.SizeX; k++)
-                    {
-                        jacobiMatrix[j, k] = 1.0 - step * dFdX[j, k];
-                    }
-                    for (int k = 0; k < system.SizeZ; k++)
-                    {
-                        jacobiMatrix[j, k + system.SizeX] = -step * dFdZ[j, k];
-                    }
-                }
-                for (int j = 0; j < system.SizeZ; j++)
-                {
-                    int row = j + system.SizeX;
-                    f[row] = G[j];
-                    for (int k = 0; k < system.SizeX; k++)
-                    {
-                        jacobiMatrix[row, k] = dGdX[j, k];
-                    }
-                    for (int k = 0; k < system.SizeZ; k++)
-                    {
-                        jacobiMatrix[row, k + system.SizeX] = dGdZ[j, k];
-                    }
-
-                }
-                Vector<double> delta = jacobiMatrix.Solve(-f);
-                xNew += delta.SubVector(0, system.SizeX);
-                zNew += delta.SubVector(0, system.SizeZ);
-            }
-            //return x and z
+            this.fAbsTol = fAbsTol;
+            this.newtonIterations = iterations;
+            this.alpha = alpha;
+            this.step = step;
+        }
+        public BDF1()
+        {
+            step = 0.1;
+            newtonIterations = 20;
+            fAbsTol = 0.001;
+            alpha = 1;
+        }
+        public void SetStep(float step)
+        {
+            this.step = step;
+        }
+        public void SetNewtonIterations(int iterations)
+        {
+            this.newtonIterations = iterations;
+        }
+        public void SetNewtonFAbsTol(float value)
+        {
+            this.fAbsTol = value;
+        }
+        public override XZVectorPair IntegrateStep(DAEISystem system, XZVectorPair x, double t)
+        {
             throw new NotImplementedException();
         }
     }
-   
-
+    public class RungeKutta : DAEISolver
+    {
+        protected double[,] a;
+        protected double[] b;
+        protected double[] c;
+        public int Stages { get; protected set; }
+        int newtonIterations;
+        double fAbsTol;
+        double alpha;
+        public RungeKutta(double fAbsTol, int iterations, double alpha, double step)
+        {
+            this.fAbsTol = fAbsTol;
+            this.newtonIterations = iterations;
+            this.alpha = alpha;
+            this.step = step;
+        }
+        public RungeKutta()
+        {
+            step = 0.1;
+            newtonIterations = 20;
+            fAbsTol = 0.001;
+            alpha = 1;
+        }
+        public void SetStep(float step)
+        {
+            this.step = step;
+        }
+        public void SetNewtonIterations(int iterations)
+        {
+            this.newtonIterations = iterations;
+        }
+        public void SetNewtonFAbsTol(float value)
+        {
+            this.fAbsTol = value;
+        }
+        public override XZVectorPair IntegrateStep(DAEISystem system, XZVectorPair x, double t)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    public class Trapezoidal : DAEISolver
+    {
+        public override XZVectorPair IntegrateStep(DAEISystem system, XZVectorPair x, double t)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    class RADAUIIA3 : RungeKutta
+    {
+        private void Init()
+        {
+            Stages = 2;
+            a = new double[2, 2] {
+                {5.0 / 12.0, -1.0 / 12.0},
+                {3.0 / 4.0, 1.0 / 4.0}
+            };
+            b = new double[2] {
+                3.0 / 4.0,
+                1.0 / 4.0
+            };
+            c = new double[2] {
+                1.0 / 3.0,
+                1.0
+            };
+        }
+        public RADAUIIA3(double fAbsTol, int iterations, double alpha, double step) : base(fAbsTol, iterations, alpha, step)
+        {
+            Init();
+        }
+        public RADAUIIA3() : base()
+        {
+            Init();
+        }
+    }
+    class RADAUIIA5 : RungeKutta
+    {
+        private void Init()
+        {
+            Stages = 3;
+            a = new double[3, 3] {
+                {
+                    11.0 / 45.0 - 7.0 * Math.Sqrt(6.0) / 360.0,
+                    37.0 / 225.0 - 169.0 * Math.Sqrt(6.0) / 1800.0,
+                    -2.0 / 225.0 + Math.Sqrt(6.0) / 75.0
+                },
+                {
+                    37.0 / 225.0 + 169.0 * Math.Sqrt(6.0) / 1800.0,
+                    11.0 / 45.0 + 7.0 * Math.Sqrt(6.0) / 360.0,
+                    -2.0 / 225.0 - Math.Sqrt(6.0) / 75.0
+                },
+                {
+                    4.0 / 9.0 - Math.Sqrt(6.0) / 36.0,
+                    4.0 / 9.0 + Math.Sqrt(6.0),
+                    1.0 / 9.0
+                }
+            };
+            b = new double[3] {
+                4.0 / 9.0 - Math.Sqrt(6.0) / 36.0,
+                4.0 / 9.0 + Math.Sqrt(6.0),
+                1.0 / 9.0
+            };
+            c = new double[3] {
+                2.0 / 5.0 - Math.Sqrt(6.0) / 10.0,
+                2.0 / 5.0 + Math.Sqrt(6.0) / 10.0,
+                1.0
+            };
+        }
+        public RADAUIIA5(double fAbsTol, int iterations, double alpha, double step) : base(fAbsTol, iterations, alpha, step)
+        {
+            Init();
+        }
+        public RADAUIIA5() : base()
+        {
+            Init();
+        }
+    }
 #endif
+
 
 }

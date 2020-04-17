@@ -1,0 +1,62 @@
+﻿<?xml version="1.0"?>
+<SyntaxDefinition name="Model language" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" foreground="Green" />
+  <Color name="String" foreground="DarkOrange" />
+  <!-- This is the main ruleset. -->
+  <RuleSet>
+    <Span color="Comment" begin="//" />
+    <Span color="Comment" multiline="true" begin="/\*" end="\*/" />
+    <Span color="String">
+      <Begin>"</Begin>
+      <End>"</End>
+      <RuleSet>
+        <!-- nested span for escape sequences -->
+        <Span begin="\\" end="." />
+      </RuleSet>
+    </Span>
+    <Span color="String">
+      <Begin>'</Begin>
+      <End>'</End>
+      <RuleSet>
+        <!-- nested span for escape sequences -->
+        <Span begin="\\" end="." />
+      </RuleSet>
+    </Span>
+    <!--keywords-->
+    <Keywords fontWeight="bold" foreground="Blue">
+      <Word>true</Word>
+      <Word>false</Word>
+      <Word>and</Word>
+      <Word>or</Word>
+      <Word>not</Word>
+      <Word>in</Word>
+      <Word>inout</Word>
+      <Word>break</Word>
+      <Word>float</Word>
+      <Word>bool</Word>
+      <Word>int</Word>
+      <Word>string</Word>
+      <Word>struct</Word>
+      <Word>continue</Word>
+      <Word>switch</Word>
+      <Word>case</Word>
+      <Word>default</Word>
+      <Word>while</Word>
+      <Word>if</Word>
+      <Word>new</Word>
+      <Word>else</Word>
+      <Word>return</Word>
+      <Word>void</Word>
+    </Keywords>
+    <Rule foreground="Black">
+      \b[_]*([A-Za-z])[A-Za-z0-9_]*
+    </Rule>
+    <!-- Digits -->
+    <Rule foreground="DarkBlue">
+      (    \b\d+(\.[0-9]+)?   #number with optional floating point
+      |    \.[0-9]+         #or just starting with floating point
+      )
+      ([eE][+-]?[0-9]+)? # optional exponent
+    </Rule>
+  </RuleSet>
+</SyntaxDefinition>

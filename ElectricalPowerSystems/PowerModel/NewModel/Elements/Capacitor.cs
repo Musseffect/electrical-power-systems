@@ -40,7 +40,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             List<EquationBlock> equations = new List<EquationBlock>();
             equations.Add(new EquationBlock
             {
-                Equation = $"set C_{ID} = {capacitance.ToString(new CultureInfo("en-US"))};"
+                Equation = $"constant C_{ID} = {capacitance.ToString(new CultureInfo("en-US"))};"
             });
             return equations;
         }
@@ -75,6 +75,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
     public class SteadyStateCapacitorModel : ISteadyStateElementModel
     {
         ISteadyStateElement ISteadyStateElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            double capacitance = (elementObject.GetValue("C") as FloatValue).Value;
+            return new Capacitor((float)capacitance, elementNodes["in"] as Pin1Phase, elementNodes["out"] as Pin1Phase);
+        }
+    }
+    public class TransientCapacitorModel : ITransientElementModel
+    {
+        ITransientElement ITransientElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
         {
             double capacitance = (elementObject.GetValue("C") as FloatValue).Value;
             return new Capacitor((float)capacitance, elementNodes["in"] as Pin1Phase, elementNodes["out"] as Pin1Phase);

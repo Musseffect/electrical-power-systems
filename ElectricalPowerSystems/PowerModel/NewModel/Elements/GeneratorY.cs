@@ -12,7 +12,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
     class GeneratorY : Element, ITransientElement, ISteadyStateElement,IACSourceElement
     {
         Pin1Phase n_pin;
-        Pin3Phase abc_pin;
+        Pin3Phase out_pin;
         float peak;
         float phase;
         float frequency;
@@ -26,19 +26,18 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
         public string IAim { get { return $"I_{ID}a_im"; } }
         public string IBim { get { return $"I_{ID}b_im"; } }
         public string ICim { get { return $"I_{ID}c_im"; } }
-        public GeneratorY(float peak, float phase, float frequency, Complex32 z, Pin3Phase abc_pin, Pin1Phase n_pin) : base()
+        public GeneratorY(float peak, float phase, float frequency, Complex32 z, Pin3Phase out_pin, Pin1Phase n_pin) : base()
         {
             this.peak = peak;
             this.phase = phase;
             this.z = z;
-            this.abc_pin = abc_pin;
+            this.out_pin = out_pin;
             this.n_pin = n_pin;
             this.frequency = frequency;
         }
         List<EquationBlock> ITransientElement.GenerateEquations()
         {
-            throw new NotImplementedException();
-            /*List<EquationBlock> equations = new List<EquationBlock>();
+            List<EquationBlock> equations = new List<EquationBlock>();
             string E = $"E_{ID}";
             string w = $"w_{ID}";
             string ph = $"ph_{ID}";
@@ -46,33 +45,33 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             {
                 Equation = IA,
                 Node1 = n_pin.V,
-                Node2 = abc_pin.VA
+                Node2 = out_pin.VA
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = IB,
                 Node1 = n_pin.V,
-                Node2 = abc_pin.VB
+                Node2 = out_pin.VB
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = IC,
                 Node1 = n_pin.V,
-                Node2 = abc_pin.VC
+                Node2 = out_pin.VC
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{n_pin.V} - {abc_pin.VA} = {E} * sin({w} * time + {ph});"
+                Equation = $"{out_pin.VA} - {n_pin.V} = {E} * sin({w} * time + {ph}) - ({IA} * R_{ID} + der({IA}) * L_{ID});"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{n_pin.V} - {abc_pin.VB} = {E} * sin({w} * time + {ph} + pi()*2.0/3.0);"
+                Equation = $"{out_pin.VB} - {n_pin.V} = {E} * sin({w} * time + {ph} + pi()*2.0/3.0) - ({IB} * R_{ID} + der({IB}) * L_{ID});"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{n_pin.V} - {abc_pin.VC} = {E} * sin({w} * time + {ph} + pi()*4.0/3.0);"
+                Equation = $"{out_pin.VC} - {n_pin.V} = {E} * sin({w} * time + {ph} + pi()*4.0/3.0) - ({IC} * R_{ID} + der({IC}) * L_{ID});"
             });
-            return equations;*/
+            return equations;
         }
         List<EquationBlock> ITransientElement.GenerateParameters()
         {
@@ -100,61 +99,61 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             {
                 Equation = IAre,
                 Node1 = n_pin.Vre,
-                Node2 = abc_pin.VAre
+                Node2 = out_pin.VAre
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = IAim,
                 Node1 = n_pin.Vim,
-                Node2 = abc_pin.VAim
+                Node2 = out_pin.VAim
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = IBre,
                 Node1 = n_pin.Vre,
-                Node2 = abc_pin.VBre
+                Node2 = out_pin.VBre
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = IBim,
                 Node1 = n_pin.Vim,
-                Node2 = abc_pin.VBim
+                Node2 = out_pin.VBim
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = ICre,
                 Node1 = n_pin.Vre,
-                Node2 = abc_pin.VCre
+                Node2 = out_pin.VCre
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = ICim,
                 Node1 = n_pin.Vim,
-                Node2 = abc_pin.VCim
+                Node2 = out_pin.VCim
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VAre} - {n_pin.Vre} = {E} * cos({ph}) - ({IAre} * R_{ID} - frequency * {IAim} * L_{ID});"
+                Equation = $"{out_pin.VAre} - {n_pin.Vre} = {E} * cos({ph}) - ({IAre} * R_{ID} - frequency * {IAim} * L_{ID});"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VAim} - {n_pin.Vim} = {E} * sin({ph}) - ({IAim} * R_{ID} + frequency * {IAre} * L_{ID});"
+                Equation = $"{out_pin.VAim} - {n_pin.Vim} = {E} * sin({ph}) - ({IAim} * R_{ID} + frequency * {IAre} * L_{ID});"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VBre} - {n_pin.Vre} = {E} * cos({ph} + pi()*2.0/3.0) - ({IBre} * R_{ID} - frequency * {IBim} * L_{ID});"
+                Equation = $"{out_pin.VBre} - {n_pin.Vre} = {E} * cos({ph} + pi()*2.0/3.0) - ({IBre} * R_{ID} - frequency * {IBim} * L_{ID});"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VBim} - {n_pin.Vim}= {E} * sin({ph} + pi()*2.0/3.0) - ({IBim} * R_{ID} + frequency * {IBre} * L_{ID});"
+                Equation = $"{out_pin.VBim} - {n_pin.Vim}= {E} * sin({ph} + pi()*2.0/3.0) - ({IBim} * R_{ID} + frequency * {IBre} * L_{ID});"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VCre} - {n_pin.Vre} = {E} * cos({ph} + pi()*4.0/3.0) - ({ICre} * R_{ID} - frequency * {ICim} * L_{ID});"
+                Equation = $"{out_pin.VCre} - {n_pin.Vre} = {E} * cos({ph} + pi()*4.0/3.0) - ({ICre} * R_{ID} - frequency * {ICim} * L_{ID});"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VCim} - {n_pin.Vim} = {E} * sin({ph} + pi()*4.0/3.0) - ({ICim} * R_{ID} + frequency * {ICre} * L_{ID});"
+                Equation = $"{out_pin.VCim} - {n_pin.Vim} = {E} * sin({ph} + pi()*4.0/3.0) - ({ICim} * R_{ID} + frequency * {ICre} * L_{ID});"
             });
             return equations;
         }

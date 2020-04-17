@@ -160,5 +160,13 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             return new Switch3P(state, elementNodes["in"] as Pin3Phase, elementNodes["out"] as Pin3Phase);
         }
     }
+    public class TransientSwitch3PModel : ITransientElementModel
+    {
+        public ITransientElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            bool state = (elementObject.GetValue("State") as BoolValue).Value;
+            return new Switch3P(state, elementNodes["in"] as Pin3Phase, elementNodes["out"] as Pin3Phase);
+        }
+    }
 }
 

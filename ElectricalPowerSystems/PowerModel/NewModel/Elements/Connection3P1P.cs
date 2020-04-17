@@ -145,4 +145,11 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             return new Connection3P1P(elementNodes["abc"] as Pin3Phase, elementNodes["a"] as Pin1Phase, elementNodes["b"] as Pin1Phase, elementNodes["c"] as Pin1Phase);
         }
     }
+    public class TransienteConnection3P1PModel : ITransientElementModel
+    {
+        ITransientElement ITransientElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            return new Connection3P1P(elementNodes["abc"] as Pin3Phase, elementNodes["a"] as Pin1Phase, elementNodes["b"] as Pin1Phase, elementNodes["c"] as Pin1Phase);
+        }
+    }
 }

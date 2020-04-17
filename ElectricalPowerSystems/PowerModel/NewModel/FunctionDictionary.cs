@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -118,7 +119,39 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                         },false)
                     )
                     }
-
+                },
+                {"import", new List<FunctionDefinition>{
+                    new FunctionDefinition
+                    (
+                        Import,
+                        new FunctionSignature(new List<ArgumentDescription>
+                        {
+                            new ArgumentDescription(Constant.Type.String)
+                        },false)
+                    )
+                    }
+                },
+                { "float", new List<FunctionDefinition>{
+                    new FunctionDefinition
+                    (
+                        Float,
+                        new FunctionSignature(new List<ArgumentDescription>
+                        {
+                            new ArgumentDescription(Constant.Type.Float)
+                        },false)
+                    )
+                    }
+                },
+                { "int", new List<FunctionDefinition>{
+                    new FunctionDefinition
+                    (
+                        Int,
+                        new FunctionSignature(new List<ArgumentDescription>
+                        {
+                            new ArgumentDescription(Constant.Type.Float)
+                        },false)
+                    )
+                    }
                 },
                 { "complex", new List<FunctionDefinition>{
                     new FunctionDefinition
@@ -230,8 +263,49 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                         },false)
                     )
                     }
+                },
+                { "print", new List<FunctionDefinition>{
+                    new FunctionDefinition
+                    (
+                        Print,
+                        new FunctionSignature(new List<ArgumentDescription>
+                        {
+                            new ArgumentDescription(Constant.Type.String)
+                        },true)
+                    )
+                    }
                 }
             };
+        }
+        private static Constant Print(List<Constant> args)
+        {
+            string result="";
+            try
+            {
+                foreach (var arg in args)
+                {
+                    result += (arg as StringValue).Value;
+                }
+            }
+            catch (TypeConversionError err)
+            {
+                throw new Exception($"Cannot convert argument in function print from {err.Src} to {err.Dst}");
+            }
+            ModelInterpreter.GetInstanse().AddOutput(result);
+            return new VoidValue();
+        }
+        private static Constant Import(List<Constant> args)
+        {
+            StringValue fileName = args[0] as StringValue;
+            try
+            {
+                string content = File.ReadAllText(fileName.Value);
+                return new StringValue(content);
+            }
+            catch (Exception)
+            {
+                throw new Exception($"File {fileName.Value} cannot be opened.");
+            }
         }
         private static Constant Complex(List<Constant> args)
         {
@@ -239,7 +313,16 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             FloatValue im = args[1] as FloatValue;
             return new ComplexValue(re.Value,im.Value);
         }
-
+        private static Constant Float(List<Constant> args)
+        {
+            FloatValue x = args[0] as FloatValue;
+            return x;
+        }
+        private static Constant Int(List<Constant> args)
+        {
+            FloatValue x = args[0] as FloatValue;
+            return new IntValue((int)x.Value);
+        }
         private static Constant Pow(List<Constant> args)
         {
             FloatValue x = args[0] as FloatValue;

@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.Equations.DAE
 {
-    class DAESolution
+    public class Solution
     {
         List<double[]> values;
         List<double> time;
         string[] variables;
-        public DAESolution(List<double[]> values,List<double> time, string[] variables)
+        public Solution(List<double[]> values,List<double> time, string[] variables)
         {
             this.values = values;
             this.time = time;
@@ -19,7 +19,7 @@ namespace ElectricalPowerSystems.Equations.DAE
         }
         public void ShowResults()
         {
-            ChartWindow window = new ChartWindow();
+            GUI.ModelEditor.Windows.ChartWindow window = new GUI.ModelEditor.Windows.ChartWindow();
             window.Plot(values,time,variables);
             window.Show();
         }

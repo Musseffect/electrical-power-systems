@@ -62,6 +62,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\Icons\app.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Antlr4.Runtime, Version=4.6.0.0, Culture=neutral, PublicKeyToken=09abb75b9ed49849, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr4.Runtime.4.6.5\lib\net45\Antlr4.Runtime.dll</HintPath>
@@ -95,12 +98,55 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.8.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.8.1\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=3.8.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.8.1\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=3.8.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.8.1\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=3.8.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.8.1\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit, Version=3.8.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.8.1\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Equations\DAE\DAEDescription.cs" />
+    <Compile Include="Equations\DAE\Explicit\DAEEDescription.cs" />
+    <Compile Include="Equations\DAE\Explicit\DAEESystem.cs" />
+    <Compile Include="Equations\DAE\Explicit\DAEESolver.cs" />
+    <Compile Include="Equations\DAE\Parameter.cs" />
+    <Compile Include="Equations\DAE\SemiExplicit\DAESEDescription.cs" />
+    <Compile Include="Equations\DAE\SemiExplicit\DAESESolver.cs" />
+    <Compile Include="Equations\DAE\SemiExplicit\DAESESystem.cs" />
+    <Compile Include="Equations\DAE\DividedImplicit\DAEDIDescription.cs" />
+    <Compile Include="Equations\DAE\DividedImplicit\DAEDISolver.cs" />
+    <Compile Include="Equations\DAE\DividedImplicit\DAEDISystem.cs" />
+    <Compile Include="Equations\DAE\XZVectorPair.cs" />
+    <Compile Include="GUI\ModelEditor\Windows\DAESolverDialog.xaml.cs">
+      <DependentUpon>DAESolverDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PowerModel\NewModel\Elements\Break1P.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\GeneratorD.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\LineRL.cs" />
+    <Compile Include="PowerModel\NewModel\Elements\Switch2Way1P.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\Compiler.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\RecloserGrammar.g4.lexer.cs">
+      <DependentUpon>RecloserGrammar.g4</DependentUpon>
+    </Compile>
+    <Compile Include="PowerModel\NewModel\Recloser\RecloserGrammar.g4.parser.cs">
+      <DependentUpon>RecloserGrammar.g4</DependentUpon>
+    </Compile>
+    <Compile Include="PowerModel\NewModel\Recloser\VirtualMachine.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\Visitor.cs" />
     <Compile Include="PowerModel\OldModel\ACGraph\ACGraph.cs" />
     <Compile Include="PowerModel\OldModel\ACGraph\CircuitModelAC.cs" />
     <Compile Include="PowerModel\OldModel\ACGraph\ElementsAC.cs" />
@@ -108,18 +154,16 @@
       <DependentUpon>HelpWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Equations\DAE\ASTNode.cs" />
-    <Compile Include="Equations\DAE\DAECompiler.cs" />
-    <Compile Include="Equations\DAE\DAEDefinition.cs" />
+    <Compile Include="Equations\DAE\Compiler.cs" />
+    <Compile Include="Equations\DAE\Implicit\DAEIDescription.cs" />
     <Compile Include="Equations\DAE\DAEGrammarVisitor.cs" />
     <Compile Include="Equations\DAE\DAEImplicitGrammar.g4.lexer.cs" />
     <Compile Include="Equations\DAE\DAEImplicitGrammar.g4.parser.cs" />
-    <Compile Include="Equations\DAE\OLD\DAESimplifier.cs" />
-    <Compile Include="Equations\DAE\DAESolution.cs" />
-    <Compile Include="Equations\DAE\OLD\DAEValidator.cs" />
+    <Compile Include="Equations\DAE\Solution.cs" />
     <Compile Include="Equations\Expression\Expression.cs" />
     <Compile Include="Equations\Nonlinear\ASTNode.cs" />
     <Compile Include="Equations\CompilerException.cs" />
-    <Compile Include="PowerModel\NewModel\ASTNode.cs" />
+    <Compile Include="PowerModel\NewModel\Grammar\Node.cs" />
     <Compile Include="GUI\ModelEditor\MvvmTextEditor.cs" />
     <Compile Include="PowerModel\NewModel\Elements\LinePi.cs" />
     <Compile Include="PowerModel\NewModel\Elements\Capacitor.cs" />
@@ -153,9 +197,9 @@
     <Compile Include="PowerModel\OldModel\ASTVisitor.cs" />
     <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.lexer.cs" />
     <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.parser.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\Visitor.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\Node.cs" />
     <Compile Include="PowerModel\NewModel\SteadyStateModel.cs" />
-    <Compile Include="PowerModel\NewModel\TransientModel.cs" />
+    <Compile Include="PowerModel\NewModel\Transient\TransientModel.cs" />
     <Compile Include="PowerModel\NewModel\SteadyStateSolvers.cs" />
     <Compile Include="MathUtils\SparseMatrix.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphAutotransformer.cs" />
@@ -176,13 +220,11 @@
       <DependentUpon>EquationGrammar.g4</DependentUpon>
     </Compile>
     <Compile Include="Equations\Expression\DifferentiationVisitor.cs" />
-    <Compile Include="Equations\Nonlinear\EquationCompiler.cs" />
+    <Compile Include="Equations\Nonlinear\Compiler.cs" />
     <Compile Include="Equations\Expression\FunctionTable.cs" />
-    <Compile Include="Equations\Nonlinear\EquationGrammarVisitor.cs" />
-    <Compile Include="Equations\Expression\ExpressionCompiler.cs" />
+    <Compile Include="Equations\Nonlinear\GrammarVisitor.cs" />
+    <Compile Include="Equations\Expression\Compiler.cs" />
     <Compile Include="Equations\Expression\RPNExpression.cs" />
-    <Compile Include="Equations\Nonlinear\Simplifier.cs" />
-    <Compile Include="Equations\Nonlinear\Validator.cs" />
     <Compile Include="GUI\Graph\GraphViewer.xaml.cs">
       <DependentUpon>GraphViewer.xaml</DependentUpon>
     </Compile>
@@ -222,14 +264,18 @@
     <Compile Include="PowerModel\OldModel\PowerGraph\PowerElementScheme.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\PowerGraphManager.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphTransformer2w.cs" />
-    <Compile Include="PowerModel\NewModel\ASTVisitor.cs" />
+    <Compile Include="PowerModel\NewModel\Grammar\Visitor.cs" />
     <Compile Include="PowerModel\OldModel\ObjectSystem.cs" />
     <Compile Include="PowerModel\Interpreter.cs" />
     <Compile Include="GUI\ModelEditor\TabStyleSelector.cs" />
     <Compile Include="GUI\ModelEditor\TabTemplateSelector.cs" />
     <Compile Include="Test\Test.cs" />
-    <Compile Include="MathUtils\DAESystem.cs" />
-    <Compile Include="MathUtils\DAESolver.cs" />
+    <Compile Include="Equations\DAE\Implicit\DAEISystem.cs" />
+    <Compile Include="Equations\DAE\Implicit\DAEISolver.cs" />
+    <Page Include="GUI\ModelEditor\Windows\DAESolverDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="GUI\ModelEditor\Windows\HelpWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -306,9 +352,14 @@
       <Generator>MSBuild:Compile</Generator>
       <CustomToolNamespace>ElectricalPowerSystems.PowerModel.OldModel</CustomToolNamespace>
     </Antlr4>
+    <EmbeddedResource Include="GUI\ModelEditor\SyntaxHighlightingRecloserLanguage.xshd" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <Antlr4 Include="PowerModel\NewModel\Recloser\RecloserGrammar.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <CustomToolNamespace>ElectricalPowerSystems.PowerModel.NewModel.Recloser</CustomToolNamespace>
+    </Antlr4>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -317,7 +368,7 @@
       <Generator>MSBuild:Compile</Generator>
       <CustomToolNamespace>ElectricalPowerSystems.Equations.DAE</CustomToolNamespace>
     </Antlr4>
-    <EmbeddedResource Include="GUI\ModelEditor\SyntaxHighlighting.xshd" />
+    <EmbeddedResource Include="GUI\ModelEditor\SyntaxHighlightingModelLanguage.xshd" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -364,9 +415,11 @@
     <Resource Include="Resources\Icons\play-button.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\Icons\app.ico" />
     <Resource Include="Docs\SteadyState.txt" />
     <Resource Include="Examples\SteadyStateExample1.txt" />
     <Resource Include="Examples\SteadyStateExample2.txt" />
+    <Resource Include="Examples\TransientExample1.txt" />
     <Content Include="Help\help.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

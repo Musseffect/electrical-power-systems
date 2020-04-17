@@ -1,19 +1,63 @@
-﻿Icons: done
+﻿DONE:
+Icons: done
 UI commands: done
 Do something with tabs: done
 Improve expander placement: done
 Read about DAE : done
-Transient MNA : in progress
-Nonlinear equations : more or less done
-Add nonlinear models for elements :
-DAE index reduction : not important
-Variable step dae solver: 
-Fault analysis:
+Nonlinear equations : done
 Check DAE: done
 New language: done
-Transiet:
-Transiet with reclosers:
-Transiet with faults:
-Recloser dynamic algorithm:
 Some basic inapp help: done
-Make UML:
+Recloser native dynamic algorithm: done
+
+IN PROGRESS:
+Transient: IN PROGRESS
+
+NOT DONE:
+Dark theme : 
+Tab design :
+Vector diagrams :
+Add nonlinear models for elements :
+Fault analysis:
+Transient with reclosers: TODO
+Transient with faults: TODO
+Recloser dynamic algorithm: TODO
+Make UML: TODO
+
+DAE index reduction : not important
+Variable step dae solver: NOT GONNA HAPPEN
+
+ELEMENTS
+STEADY_STATE:
+Resistor : done
+Capacitor : done
+Inductor : done
+VoltageSource : done
+Transformer : done
+Ground : done
+GeneratorY : done
+GeneratorD : done
+LoadD : done
+LoadY : done
+TransformerDd
+TransformerYd
+TransformerDy
+TransformerYy
+Connection3P1P : done
+LinePi : done
+LineRL : done
+Switch3P : done
+Scope1P : done
+Scope3P : done
+Recloser3PNative : done
+Break3P : done
+Break1P : done
+FaultOpenCircuit
+FaultShortCircuit
+DynamicFault
+Break3P : done
+Break1P : done
+Switch2Way : 
+Recloser3P : done
+
+Recloser language

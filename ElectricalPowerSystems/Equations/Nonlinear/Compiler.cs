@@ -23,9 +23,8 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
         {
             return values[variableIndicies[name]];
         }
-
     }
-    public class NonlinearEquationDefinition
+    public class NonlinearEquationDescription
     {
         private double[] initialValues;
         private string[] variableNames;
@@ -36,14 +35,14 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
         public string[] VariableNames { get { return variableNames; } }
         public List<RPNExpression> Equations { get { return equations; } }
         public RPNExpression[,] JacobiMatrix { get { return jacobiMatrix; } }
-        private NonlinearEquationDefinition()
+        private NonlinearEquationDescription()
         {
         }
         public NonlinearSystemSolution GetSolution(Vector<double> values)
         {
             return new NonlinearSystemSolution(variableMap, values);
         }
-        public NonlinearEquationDefinition(double[] initialValues, string[] variableNames, List<RPNExpression> equations, RPNExpression[,] jacobiMatrix)
+        public NonlinearEquationDescription(double[] initialValues, string[] variableNames, List<RPNExpression> equations, RPNExpression[,] jacobiMatrix)
         {
             this.initialValues = initialValues;
             this.variableNames = variableNames;
@@ -101,21 +100,21 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
             return result;
         }
     }
-    public partial class EquationCompiler
+    public partial class Compiler
     {
         Dictionary<string, double> constants;
         Dictionary<string, int> variables;
         List<double> initialValues;
         List<string> variableNames;
         List<ErrorMessage> compilerErrors;
-        public EquationCompiler()
+        public Compiler()
         {
         }
         public List<ErrorMessage> GetErrors()
         {
             return compilerErrors;
         }
-        public NonlinearEquationDefinition CompileEquations(string text)
+        public NonlinearEquationDescription CompileEquations(string text)
         {
             compilerErrors = new List<ErrorMessage>();
             constants = new Dictionary<string, double>();
@@ -138,14 +137,16 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
             compilerErrors = lexerListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
+                throw new CompilerException(compilerErrors, "Lexer error");
                 throw new Exception("Lexer Error");
             }
             compilerErrors = parserListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
+                throw new CompilerException(compilerErrors, "Parser error");
                 throw new Exception("Parser error");
             }
-            EquationGrammarVisitor visitor = new EquationGrammarVisitor();
+            GrammarVisitor visitor = new GrammarVisitor();
             ASTNode root = visitor.VisitCompileUnit(eqContext);
             /*EquationGrammarVisitor visitor = new EquationGrammarVisitor();
             ASTNode root = visitor.VisitCompileUnit(expContext);
@@ -154,7 +155,7 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
             return compileASTExpression(rootSimple);*/
             return CompileEquations((RootNode)root);
         }
-        private NonlinearEquationDefinition CompileEquations(RootNode root)
+        private NonlinearEquationDescription CompileEquations(RootNode root)
         {
             List<RPNExpression> rpnEquations = new List<RPNExpression>();
             List<Expression.Expression> equations = new List<Expression.Expression>();
@@ -225,7 +226,7 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
                 //throw new Exception("Equation definition errors");
                 //fall back;
             }
-            ExpressionCompiler expCompiler = new ExpressionCompiler(variables);
+            Expression.Compiler expCompiler = new Expression.Compiler(variables);
             for (int i = 0; i < equations.Count; i++)
             {
                 rpnEquations.Add(expCompiler.Compile(equations[i]));
@@ -247,7 +248,7 @@ namespace ElectricalPowerSystems.Equations.Nonlinear
                 }
                 j++;
             }
-            NonlinearEquationDefinition ned = new NonlinearEquationDefinition(initialValues.ToArray(),variableNames.ToArray(),
+            NonlinearEquationDescription ned = new NonlinearEquationDescription(initialValues.ToArray(),variableNames.ToArray(),
                 rpnEquations,jacobiMatrix);
             return ned;
         }

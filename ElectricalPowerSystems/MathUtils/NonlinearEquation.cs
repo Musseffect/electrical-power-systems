@@ -39,7 +39,7 @@ namespace ElectricalPowerSystems.MathUtils
         private List<RPNExpression> equations;
         //private SparseMatrix<RPNExpression> equations;
         private RPNExpression [,]derivatives;
-        public NonlinearSystemSymbolicAnalytic(NonlinearEquationDefinition system)
+        public NonlinearSystemSymbolicAnalytic(NonlinearEquationDescription system)
         {
             this.equations = system.Equations;
             this.derivatives = system.JacobiMatrix;
@@ -75,7 +75,7 @@ namespace ElectricalPowerSystems.MathUtils
     public class NonlinearSystemSymbolicNumerical : NonlinearSystemNumericCentralDifference
     {
         private List<RPNExpression> equations;
-        public NonlinearSystemSymbolicNumerical(NonlinearEquationDefinition system)
+        public NonlinearSystemSymbolicNumerical(NonlinearEquationDescription system)
         {
             this.equations = system.Equations;
             this.Size = this.equations.Count;

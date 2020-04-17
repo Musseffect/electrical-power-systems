@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics;
+﻿using ElectricalPowerSystems.PowerModel.NewModel.Transient;
+using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -249,7 +250,6 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
         Pin3Phase out_pin;
         double startTime;
         double endTime;
-        bool state;
         public string I1A { get { return $"I_{ID}1a"; } }
         public string I1B { get { return $"I_{ID}1b"; } }
         public string I1C { get { return $"I_{ID}1c"; } }
@@ -268,12 +268,11 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             this.a_pin = a_pin;
             this.b_pin = b_pin;
             this.c_pin = c_pin;
-            state = false;
         }
         List<EquationBlock> ITransientElement.GenerateParameters()
         {
             List<EquationBlock> equations = new List<EquationBlock>();
-            double stateValue = state ? 1.0 : 0.0;
+            double stateValue = 0.0;
             equations.Add(new EquationBlock
             {
                 Equation = $"parameter fault_state_{ID} = {stateValue.ToString(new CultureInfo("en-US"))};"

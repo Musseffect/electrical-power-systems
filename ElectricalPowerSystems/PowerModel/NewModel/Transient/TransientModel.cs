@@ -1,4 +1,5 @@
-﻿#define MODELINTERPRETER
+﻿using ElectricalPowerSystems.Equations.DAE;
+using ElectricalPowerSystems.MathUtils;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
@@ -6,57 +7,58 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectricalPowerSystems.PowerModel.NewModel
+namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
 {
-#if MODELINTERPRETER
-    public class Parameter
+    public interface ITransientEventGenerator
     {
-        string name;
-        public string Name { get { return name; } }
-        double value;
-        public double Value { get { return value; } }
-        public Parameter(string name, double value)
-        {
-            this.name = name;
-            this.value = value;
-        }
-    }
-    public class TransientSystem
-    {
-        double[] parameters;
-        Dictionary<string, int> parameterIndicies;
-        public void UpdateParameters(List<Parameter> parameters)
-        {
-            foreach (var parameter in parameters)
-            {
-                int index = parameterIndicies[parameter.Name];
-                this.parameters[index] = parameter.Value;
-            }
-        }
-    }
-
-    public interface ITransientSolver
-    {
-        Vector<double> Step(TransientSystem system, Vector<double> x);
+        List<TransientEvent> GenerateEvents(double t0, double t1);
     }
     public class TransientSolution
     {
         List<double[]> values;
-        List<double> time;
-        string[] variables;
+        List<double> timeArray;
+        string[] variableNames;
+        int stateChangedCount;
         public void Plot()
         {
-            ChartWindow window = new ChartWindow();
-            window.Plot(values, time, variables);
+            GUI.ModelEditor.Windows.ChartWindow window = new GUI.ModelEditor.Windows.ChartWindow();
+            window.Plot(values, timeArray, variableNames);
             window.Show();
+        }
+        public int GetPointCount()
+        {
+            return values.Count;
+        }
+        public TransientSolution(string[] variableNames)
+        {
+            this.values = new List<double[]>();
+            this.timeArray = new List<double>();
+            this.variableNames = variableNames;
+        }
+        public void AddPoint(double[] point, double time)
+        {
+            this.values.Add(point);
+            this.timeArray.Add(time);
+        }
+        public void SetStateChangedCount(int stateChangedCount)
+        {
+            this.stateChangedCount = stateChangedCount;
+        }
+        public override string ToString()
+        {
+            return $"Transient solution: {{steps: {timeArray.Count}, changes of state: {stateChangedCount}}}";
         }
     }
     public abstract class TransientEvent
     {
         double time;
         public double Time { get { return time; } }
-        public abstract bool Execute(Vector<double> x);
-        public abstract List<Parameter> GetParameters();
+        public TransientEvent(double time)
+        {
+            this.time = time;
+        }
+        public abstract bool Execute(TransientState stateValues);
+        public abstract List<Equations.DAE.Parameter> GetParameters();
     }
     public class TransientModel : IModel
     {
@@ -64,8 +66,16 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
         List<TransientEvent> events;
         double t0;
         double t1;
-        ITransientSolver solver;
+        Equations.DAE.Implicit.DAEISolver solver;
         List<Pin> nodeList;
+        int stateChangedCount;
+        int maxPoints = 1024 * 1024;//8MB
+        public TransientModel()
+        {
+            elements = new List<ITransientElement>();
+            events = new List<TransientEvent>();
+            nodeList = new List<Pin>();
+        }
         private string GenerateEquations()
         {
             string equations = "";
@@ -144,9 +154,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             return equations;
         }
-        private double UpdateState(double tPrev, double t,Vector<double> xPrev,Vector<double> x, ref TransientSystem system)
+        private double UpdateState(
+            double tPrev,
+            double t,
+            Vector<double> xPrev,
+            Vector<double> x,
+            Dictionary<string, int> variableMap,
+            ref Equations.DAE.Implicit.DAEIAnalytic system)
         {
-            throw new NotImplementedException();
             double dt = t - tPrev;
             //for each event interpolate values and update stuff
             while (events.Count>0)
@@ -162,49 +177,107 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
 #endif
                 events.RemoveAt(0);
                 Vector<double> xCurrent = MathUtils.MathUtils.Interpolate(xPrev, x, (_event.Time - tPrev) / dt);
-                if (_event.Execute(xCurrent)) ;
+                TransientState currentState = new TransientState(xCurrent,variableMap);
+                if (_event.Execute(currentState)) 
                 {
                     system.UpdateParameters(_event.GetParameters());
                     double eventTime = _event.Time;
-                    while (true)
+                    while (events.Count>0)
                     {
                         _event = events.First<TransientEvent>();
                         if (_event.Time > eventTime)
                             break;
                         events.RemoveAt(0);
-                        if (_event.Execute(xCurrent))
+                        if (_event.Execute(currentState))
                         {
                             system.UpdateParameters(_event.GetParameters());
                         }
                     }
+                    stateChangedCount++;
                     return eventTime;
                 }
             }
             return t;
         }
-        private void InitEvents()
+        private void InitEvents(ref Equations.DAE.Implicit.DAEIAnalytic system)
         {
+            foreach (var element in elements)
+            {
+                if (element is ITransientEventGenerator)
+                {
+                    events.AddRange((element as ITransientEventGenerator).GenerateEvents(t0,t1));
+                }
+            }
             //sort events by time
-            events.Sort();
+            events.OrderBy(x=>x.Time);
+            while (events.Count > 0)
+            {
+                var _event = events.First();
+                if (_event.Time >= t0)
+                    break;
+                system.UpdateParameters(_event.GetParameters());
+            }
         }
         private TransientSolution Solve(string equations)
         {
-            throw new NotImplementedException();
-            double t = t0;
-            InitEvents();
-            TransientSystem system = null;
-            Vector<double> x;
-            while (t < t1)
+            stateChangedCount = 0;
+            List<IScopeElement> scopeElements = new List<IScopeElement>();
+            foreach (var element in elements)
             {
+                if (element is IScopeElement)
+                {
+                    scopeElements.Add(element as IScopeElement);
+                }
+            }
+            Equations.DAE.Compiler compiler = new Equations.DAE.Compiler();
+            Equations.DAE.Implicit.DAEIDescription compiledEquation = compiler.CompileDAEImplicit(equations);
+            double t = t0;
+            Equations.DAE.Implicit.DAEIAnalytic system = new Equations.DAE.Implicit.DAEIAnalytic(compiledEquation);
+            Vector<double> x = Vector<double>.Build.SparseOfArray(compiledEquation.InitialValues);
+            List<string> variableNames = new List<string>();
+            foreach (var scope in scopeElements)
+            {
+                variableNames.AddRange(scope.GetTransientVariableNames());
+            }
+            //generate events
+            InitEvents(ref system);
+            TransientSolution result = new TransientSolution(variableNames.ToArray());
+            int scopeVariableCount = variableNames.Count;
+            Dictionary<string, int> variableMap = compiledEquation.GetVariableDictionary();
+
+            {
+                TransientState currentState = new TransientState(x, variableMap);
+                List<double> currentValues = new List<double>();
+                foreach (var scopeElement in scopeElements)
+                {
+                    currentValues.AddRange(scopeElement.GetReading(currentState));
+                }
+                result.AddPoint(currentValues.ToArray(), t);
+            }
+            while (t < t1 && maxPoints>(scopeVariableCount+1)*result.GetPointCount())
+            {
+                Vector<double> xPrev = x;
                 double tPrev = t;
                 //make step
-                Vector<double> xNew = solver.Step( system ,x);
-                double dt = t - tPrev;
+                x = solver.IntegrateStep( system ,x, t);
+                t += solver.Step;
                 //update t
-                //if state happened during [tprev,tcurr]
-                t = UpdateState(tPrev, t, x, xNew, ref system);
-                x = MathUtils.MathUtils.Interpolate(x,xNew,(t-tPrev)/dt);
+                if (events.Count !=0)
+                {
+                    //if state happened during [tprev,tcurr]
+                    t = UpdateState(tPrev, t, xPrev, x, variableMap, ref system);
+                    x = MathUtils.MathUtils.Interpolate(xPrev, x, (t - tPrev) / solver.Step);
+                }
+                TransientState currentState = new TransientState(x, variableMap);
+                List<double> currentValues = new List<double>();
+                foreach (var scopeElement in scopeElements)
+                {
+                    currentValues.AddRange(scopeElement.GetReading(currentState));
+                }
+                result.AddPoint(currentValues.ToArray(),t);
             }
+            result.SetStateChangedCount(stateChangedCount);
+            return result;
         }
         public string Solve()
         {
@@ -225,6 +298,10 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
         {
             nodeList.Add(pin);
         }
+        public void SetSolver(Equations.DAE.Implicit.DAEISolver solver)
+        {
+            this.solver = solver;
+        }
         public void AddElement(ITransientElement element)
         {
             (element as Element).SetIndex(elements.Count);
@@ -235,5 +312,20 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             return GenerateEquations();
         }
     }
-#endif
+
+    public class TransientState
+    {
+        private Vector<double> x;
+        private Dictionary<string, int> variablesMap;
+
+        public TransientState(Vector<double> x, Dictionary<string, int> variablesMap)
+        {
+            this.x = x;
+            this.variablesMap = variablesMap;
+        }
+        public double GetValue(string name)
+        {
+            return x[variablesMap[name]];
+        }
+    }
 }

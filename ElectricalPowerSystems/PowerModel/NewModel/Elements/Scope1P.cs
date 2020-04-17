@@ -1,4 +1,5 @@
 ﻿using ElectricalPowerSystems.Equations.Nonlinear;
+using ElectricalPowerSystems.PowerModel.NewModel.Transient;
 using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
@@ -107,6 +108,22 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
                 new Complex32((float)solution.GetValue(Ire), (float)solution.GetValue(Iim))
                 );
         }
+
+        public List<string> GetTransientVariableNames()
+        {
+            return new List<string> {
+            $"{label}.voltage",
+            $"{label}.current"
+            };
+        }
+
+        List<double> IScopeElement.GetReading(TransientState solution)
+        {
+            return new List<double> {
+                solution.GetValue(in_pin.V),
+                solution.GetValue(I)
+            };
+        }
     }
     public class SteadyStateScope1PModel : ISteadyStateElementModel
     {
@@ -114,6 +131,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
         {
             string label = (elementObject.GetValue("Label") as StringValue).Value;
             return new Scope1P(elementNodes["in"] as Pin1Phase, elementNodes["out"] as Pin1Phase,label);
+        }
+    }
+    public class TransienteScope1PModel : ITransientElementModel
+    {
+        ITransientElement ITransientElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            string label = (elementObject.GetValue("Label") as StringValue).Value;
+            return new Scope1P(elementNodes["in"] as Pin1Phase, elementNodes["out"] as Pin1Phase, label);
         }
     }
     public class ScopeReading1P: IScopeReading

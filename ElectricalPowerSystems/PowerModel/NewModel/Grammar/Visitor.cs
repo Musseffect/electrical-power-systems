@@ -1,5 +1,4 @@
-﻿#define MODELINTERPRETER
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,42 +6,41 @@ using System.Text;
 using System.Threading.Tasks;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
-using static ElectricalPowerSystems.PowerModel.NewModel.ASTNode;
 
-namespace ElectricalPowerSystems.PowerModel.NewModel
+namespace ElectricalPowerSystems.PowerModel.NewModel.Grammar
 {
-    public class ModelGrammarVisitor : ModelGrammarBaseVisitor<ASTNode>
+    public class Visitor : ModelGrammarBaseVisitor<Node>
     {
-        public override ASTNode VisitArguments([NotNull] ModelGrammarParser.ArgumentsContext context)
+        public override Node VisitArguments([NotNull] ModelGrammarParser.ArgumentsContext context)
         {
             return base.VisitArguments(context);
         }
 
-        public override ASTNode VisitArray([NotNull] ModelGrammarParser.ArrayContext context)
+        public override Node VisitArray([NotNull] ModelGrammarParser.ArrayContext context)
         {
             List<ExpressionNode> elements = new List<ExpressionNode>();
             foreach (var expression in context.arrayValues().expression())
             {
-                ASTNode node = VisitExpression(expression);
+                Node node = VisitExpression(expression);
                 elements.Add((ExpressionNode)node);
             }
-            NodeType type;
+            Node.NodeType type;
             switch (context.type.type.Type)
             {
                 case ModelGrammarLexer.BOOLEAN_TYPE:
-                    type = NodeType.Boolean;
+                    type = Node.NodeType.Boolean;
                     break;
                 case ModelGrammarLexer.STRING_TYPE:
-                    type = NodeType.String;
+                    type = Node.NodeType.String;
                     break;
                 case ModelGrammarLexer.INTEGER_TYPE:
-                    type = NodeType.Integer;
+                    type = Node.NodeType.Integer;
                     break;
                 case ModelGrammarLexer.OBJECT_TYPE:
-                    type = NodeType.Object;
+                    type = Node.NodeType.Object;
                     break;
                 case ModelGrammarLexer.FLOAT_TYPE:
-                    type = NodeType.Float;
+                    type = Node.NodeType.Float;
                     break;
                 default:
                     throw new Exception("Invalid NodeType");
@@ -55,22 +53,22 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             };
         }
 
-        public override ASTNode VisitArrayExpression([NotNull] ModelGrammarParser.ArrayExpressionContext context)
+        public override Node VisitArrayExpression([NotNull] ModelGrammarParser.ArrayExpressionContext context)
         {
             return base.VisitArrayExpression(context);
         }
 
-        public override ASTNode VisitArrayValues([NotNull] ModelGrammarParser.ArrayValuesContext context)
+        public override Node VisitArrayValues([NotNull] ModelGrammarParser.ArrayValuesContext context)
         {
             return base.VisitArrayValues(context);
         }
 
-        public override ASTNode VisitAssignmentExpression([NotNull] ModelGrammarParser.AssignmentExpressionContext context)
+        public override Node VisitAssignmentExpression([NotNull] ModelGrammarParser.AssignmentExpressionContext context)
         {
             return base.VisitAssignmentExpression(context);
         }
 
-        public override ASTNode VisitBinaryOperatorExpression([NotNull] ModelGrammarParser.BinaryOperatorExpressionContext context)
+        public override Node VisitBinaryOperatorExpression([NotNull] ModelGrammarParser.BinaryOperatorExpressionContext context)
         {
             BinaryExpressionNode node;
             switch (context.op.Type)
@@ -103,7 +101,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             return node;
         }
 
-        public override ASTNode VisitBoolean([NotNull] ModelGrammarParser.BooleanContext context)
+        public override Node VisitBoolean([NotNull] ModelGrammarParser.BooleanContext context)
         {
             return new BooleanNode
             {
@@ -112,11 +110,11 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Position = context.value.Column
             };
         }
-        public override ASTNode VisitBracketExpression([NotNull] ModelGrammarParser.BracketExpressionContext context)
+        public override Node VisitBracketExpression([NotNull] ModelGrammarParser.BracketExpressionContext context)
         {
             return Visit(context.expression());
         }
-        public override ASTNode VisitComplex([NotNull] ModelGrammarParser.ComplexContext context)
+        public override Node VisitComplex([NotNull] ModelGrammarParser.ComplexContext context)
         {
             return new ComplexNode
             {
@@ -126,7 +124,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Position = context.im.Column
             };
         }
-        public override ASTNode VisitComplexExp([NotNull] ModelGrammarParser.ComplexExpContext context)
+        public override Node VisitComplexExp([NotNull] ModelGrammarParser.ComplexExpContext context)
         {
             switch (context.type.Type)
             {
@@ -150,7 +148,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     throw new NotSupportedException();
             }
         }
-        public override ASTNode VisitConnectionStatement([NotNull] ModelGrammarParser.ConnectionStatementContext context)
+        public override Node VisitConnectionStatement([NotNull] ModelGrammarParser.ConnectionStatementContext context)
         {
             return new ConnectionNode {
                 Element1 = context.elementID1.Text ,
@@ -162,16 +160,16 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             };
         }
 
-        public override ASTNode VisitConstant([NotNull] ModelGrammarParser.ConstantContext context)
+        public override Node VisitConstant([NotNull] ModelGrammarParser.ConstantContext context)
         {
             return base.VisitConstant(context);
         }
 
-        public override ASTNode VisitConstantExpression([NotNull] ModelGrammarParser.ConstantExpressionContext context)
+        public override Node VisitConstantExpression([NotNull] ModelGrammarParser.ConstantExpressionContext context)
         {
             return base.VisitConstantExpression(context);
         }
-        public override ASTNode VisitElementStatement([NotNull] ModelGrammarParser.ElementStatementContext context)
+        public override Node VisitElementStatement([NotNull] ModelGrammarParser.ElementStatementContext context)
         {
             return new ElementNode {
                 Id = context.element.Text,
@@ -179,15 +177,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Line = context.element.Line,
                 Position = context.element.Column };
         }
-        public override ASTNode VisitExpression([NotNull] ModelGrammarParser.ExpressionContext context)
+        public override Node VisitExpression([NotNull] ModelGrammarParser.ExpressionContext context)
         {
             return Visit(context);
         }
-        public override ASTNode VisitFieldExpression([NotNull] ModelGrammarParser.FieldExpressionContext context)
+        public override Node VisitFieldExpression([NotNull] ModelGrammarParser.FieldExpressionContext context)
         {
             return base.VisitFieldExpression(context);
         }
-        public override ASTNode VisitFloat([NotNull] ModelGrammarParser.FloatContext context)
+        public override Node VisitFloat([NotNull] ModelGrammarParser.FloatContext context)
         {
             return new FloatNode
             {
@@ -196,7 +194,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Position = context.value.Column
             };
         }
-        public override ASTNode VisitString([NotNull] ModelGrammarParser.StringContext context)
+        public override Node VisitString([NotNull] ModelGrammarParser.StringContext context)
         {
             return new StringNode
             {
@@ -205,12 +203,12 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Position = context.value.Column
             };
         }
-        public override ASTNode VisitFunctionArguments([NotNull] ModelGrammarParser.FunctionArgumentsContext context)
+        public override Node VisitFunctionArguments([NotNull] ModelGrammarParser.FunctionArgumentsContext context)
         {
             return base.VisitFunctionArguments(context);
         }
 
-        public override ASTNode VisitFunctionExpression([NotNull] ModelGrammarParser.FunctionExpressionContext context)
+        public override Node VisitFunctionExpression([NotNull] ModelGrammarParser.FunctionExpressionContext context)
         {
             var functionName = context.func.Text;
             List<ExpressionNode> arguments = new List<ExpressionNode>();
@@ -228,7 +226,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             };
         }
 
-        public override ASTNode VisitIdentifierExpression([NotNull] ModelGrammarParser.IdentifierExpressionContext context)
+        public override Node VisitIdentifierExpression([NotNull] ModelGrammarParser.IdentifierExpressionContext context)
         {
             return new IdentifierNode
             {
@@ -238,7 +236,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             };
         }
 
-        public override ASTNode VisitInteger([NotNull] ModelGrammarParser.IntegerContext context)
+        public override Node VisitInteger([NotNull] ModelGrammarParser.IntegerContext context)
         {
             return new IntNode
             {
@@ -247,7 +245,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Position = context.value.Column
             };
         }
-        public override ASTNode VisitKeyValue([NotNull] ModelGrammarParser.KeyValueContext context)
+        public override Node VisitKeyValue([NotNull] ModelGrammarParser.KeyValueContext context)
         {
             return new KeyValueNode
             {
@@ -257,12 +255,12 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Position = context.key.Column
             };
         }
-        public override ASTNode VisitModel([NotNull] ModelGrammarParser.ModelContext context)
+        public override Node VisitModel([NotNull] ModelGrammarParser.ModelContext context)
         {
             List<ExpressionNode> statements = new List<ExpressionNode>();
             foreach (var statement in context.statement())
             {
-                ASTNode node = VisitStatement(statement);
+                Node node = VisitStatement(statement);
             }
             List<ElementNode> elements = new List<ElementNode>();
             foreach (var element in context.elementStatement())
@@ -285,7 +283,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Position = context.start.Column
             };
         }
-        public override ASTNode VisitObject([NotNull] ModelGrammarParser.ObjectContext context)
+        public override Node VisitObject([NotNull] ModelGrammarParser.ObjectContext context)
         {
             List<KeyValueNode> arguments = new List<KeyValueNode>();
             foreach (var argument in context.arguments().keyValue())
@@ -300,16 +298,16 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             };
         }
 
-        public override ASTNode VisitObjectExpression([NotNull] ModelGrammarParser.ObjectExpressionContext context)
+        public override Node VisitObjectExpression([NotNull] ModelGrammarParser.ObjectExpressionContext context)
         {
             return VisitObject(context.obj);
         }
 
-        public override ASTNode VisitStatement([NotNull] ModelGrammarParser.StatementContext context)
+        public override Node VisitStatement([NotNull] ModelGrammarParser.StatementContext context)
         {
             return Visit(context.expression());
         }
-        public override ASTNode VisitUnaryOperatorExpression([NotNull] ModelGrammarParser.UnaryOperatorExpressionContext context)
+        public override Node VisitUnaryOperatorExpression([NotNull] ModelGrammarParser.UnaryOperatorExpressionContext context)
         {
             UnaryExpressionNode node;
             switch (context.op.Type)

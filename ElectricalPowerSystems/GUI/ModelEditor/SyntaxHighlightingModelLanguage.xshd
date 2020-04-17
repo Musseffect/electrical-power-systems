@@ -17,13 +17,51 @@
         <Span begin="\\" end="." />
       </RuleSet>
     </Span>
+    <Span color="String">
+      <Begin>'</Begin>
+      <End>'</End>
+      <RuleSet>
+        <!-- nested span for escape sequences -->
+        <Span begin="\\" end="." />
+      </RuleSet>
+    </Span>
 
+    <!--constants-->
+    <Keywords fontWeight="bold" foreground="Yellow">
+      <Word>Dd0</Word>
+      <Word>Dd2</Word>
+      <Word>Dd4</Word>
+      <Word>Dd6</Word>
+      <Word>Dd8</Word>
+      <Word>Dd10</Word>
+      <Word>Yy0</Word>
+      <Word>Yy2</Word>
+      <Word>Yy4</Word>
+      <Word>Yy6</Word>
+      <Word>Yy8</Word>
+      <Word>Yy10</Word>
+      <Word>Yd1</Word>
+      <Word>Yd3</Word>
+      <Word>Yd5</Word>
+      <Word>Yd7</Word>
+      <Word>Yd9</Word>
+      <Word>Yd11</Word>
+      <Word>Dy1</Word>
+      <Word>Dy3</Word>
+      <Word>Dy5</Word>
+      <Word>Dy7</Word>
+      <Word>Dy9</Word>
+      <Word>Dy11</Word>
+      <Word>PI</Word>
+    </Keywords>
+    <!--segments-->
     <Keywords fontWeight="bold" foreground="Red">
       <Word>model</Word>
       <Word>connections</Word>
       <Word>elements</Word>
     </Keywords>
 
+    <!--bool constant-->
     <Keywords fontWeight="bold" foreground="Blue">
       <Word>true</Word>
       <Word>false</Word>
@@ -44,6 +82,8 @@
       <Word>currentSource</Word>
     </Keywords>-->
 
+
+    <!--functions-->
     <Keywords fontWeight="bold" foreground="DarkTurquoise">
       <!--
       <Word>voltage</Word>
@@ -59,9 +99,11 @@
       <Word>complex</Word>
       <Word>complexExp</Word>
     </Keywords>
+    <!-- Object -->
     <Rule color="Object">
       \b[a-zA-Z_][\w_]*(?=\s*\{)
     </Rule>
+    
     <!--
 		<Rule color="MethodCall">
 		\b
@@ -71,6 +113,7 @@
     <!--<Keywords fontWeight="bold" fontStyle="italic" foreground="Red">
       <Word>AvalonEdit</Word>
     </Keywords>-->
+    
     <Rule foreground="Black">
       \b[_]*([A-Za-z])[A-Za-z0-9_]*
     </Rule>

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace ElectricalPowerSystems.Equations.Nonlinear
 {
     
-    class EquationGrammarVisitor : EquationGrammarBaseVisitor<ASTNode>
+    class GrammarVisitor : EquationGrammarBaseVisitor<ASTNode>
     {
         public override ASTNode VisitConstantRule(EquationGrammarParser.ConstantRuleContext context)
         {

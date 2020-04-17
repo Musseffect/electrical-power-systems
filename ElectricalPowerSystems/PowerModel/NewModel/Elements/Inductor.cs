@@ -44,7 +44,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             List<EquationBlock> equations = new List<EquationBlock>();
             equations.Add(new EquationBlock
             {
-                Equation = $"set L_{ID} = {inductance.ToString(new CultureInfo("en-US"))};"
+                Equation = $"constant L_{ID} = {inductance.ToString(new CultureInfo("en-US"))};"
             });
             return equations;
         }
@@ -87,6 +87,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
     public class SteadyStateInductorModel : ISteadyStateElementModel
     {
         ISteadyStateElement ISteadyStateElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            double inductance = (elementObject.GetValue("L") as FloatValue).Value;
+            return new Inductor((float)inductance, elementNodes["in"] as Pin1Phase, elementNodes["out"] as Pin1Phase);
+        }
+    }
+    public class TransientInductorModel : ITransientElementModel
+    {
+        ITransientElement ITransientElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
         {
             double inductance = (elementObject.GetValue("L") as FloatValue).Value;
             return new Inductor((float)inductance, elementNodes["in"] as Pin1Phase, elementNodes["out"] as Pin1Phase);

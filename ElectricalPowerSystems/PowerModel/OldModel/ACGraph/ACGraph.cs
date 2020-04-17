@@ -363,8 +363,8 @@ namespace ElectricalPowerSystems.PowerModel.OldModel.ACGraph
         {
             string equations = EquationGeneration(frequency);
             //create solver
-            EquationCompiler compiler = new EquationCompiler();
-            NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equations);
+            Compiler compiler = new Compiler();
+            NonlinearEquationDescription compiledEquation = compiler.CompileEquations(equations);
             MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
             //calc solution
             Vector<double> values = MathUtils.NewtonRaphsonSolver.Solve(

@@ -236,8 +236,8 @@ namespace ElectricalPowerSystems.PowerModel.OldModel.PowerGraph
             string result = equations + Environment.NewLine;
             if (useCompiledEquation)
             {
-                EquationCompiler compiler = new EquationCompiler();
-                NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equations);
+                Compiler compiler = new Compiler();
+                NonlinearEquationDescription compiledEquation = compiler.CompileEquations(equations);
                 result += compiledEquation.PrintVariables() + Environment.NewLine;
                 result += compiledEquation.PrintEquations() + Environment.NewLine;
                 result += compiledEquation.PrintJacobiMatrix() + Environment.NewLine;

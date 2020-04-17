@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.Equations.Expression
 {
-    class ExpressionCompiler
+    class Compiler
     {
         List<StackElement> rpnStack;
         Dictionary<string, int> variableIndicies;
-        public ExpressionCompiler(Dictionary<string, int> variableIndicies)
+        public Compiler(Dictionary<string, int> variableIndicies)
         {
             this.variableIndicies = variableIndicies;
         }

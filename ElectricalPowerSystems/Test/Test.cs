@@ -48,13 +48,14 @@ namespace ElectricalPowerSystems.Test
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             try
             {
-                TestNewModelLanguage();
+                //TestNewModelLanguage();
+                PowerModel.NewModel.Recloser.VirtualMachine.Test();
                 //TestNonlinearEquationParser();
                 //TestNonlinearEquationSolver();
                 //TestCircuitEquationGeneration();
                 //TestCircuitModel2();
                 //TestPowerModelSimple();
-                TestPowerModel();
+                //TestPowerModel();
 
             } catch (Exception exc)
             {
@@ -626,7 +627,7 @@ connections:
             6x^5+-3x^4+7x^3+2x^2+-5x+7.13=0.
             1 root at -0.963
              */
-            string equation1 = @"set a = 2;x*x+a=e()^x*sin(x);x(0)=0;";
+            string equation1 = @"constant a = 2;x*x+a=e()^x*sin(x);x(0)=0;";
             string equation2 = @"x*x+2=e()^x*sin(x);x(0)=2;";
             string equation3 = @"x*x+2=e()^x*sin(x);x(0)=5;";
             string equation4 = @"6*x^5+-3*x^4+7*x^3+2*x^2+-5*x+7.13=0.;x(0)=0;";
@@ -636,8 +637,8 @@ connections:
             Stdout.WriteLine("\tTest nonlinear equation parser");
             try
             {
-                EquationCompiler compiler = new EquationCompiler();
-                NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equation1);
+                Equations.Nonlinear.Compiler compiler = new Equations.Nonlinear.Compiler();
+                NonlinearEquationDescription compiledEquation = compiler.CompileEquations(equation1);
                 Stdout.WriteLine("Equation 1: x=0");
                 Stdout.WriteLine("x*x+2-e^x*sin(x)");
                 Stdout.WriteLine("Derivative: 2x-e^x*sin(x)-e^x*cos(x)");
@@ -676,7 +677,7 @@ connections:
             Stdout.Flush();
             Stdout.Close();
         }
-        static public string PrintSolution(Vector<double> solution, string[] variables, NonlinearEquationDefinition system)
+        static public string PrintSolution(Vector<double> solution, string[] variables, NonlinearEquationDescription system)
         {
             string result="";
             for (int i = 0; i < solution.Count; i++)
@@ -695,15 +696,15 @@ connections:
             Stream StdoutStream = Console.OpenStandardOutput();
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             Stdout.WriteLine("\tTest nonlinear equation solver");
-            EquationCompiler compiler = new EquationCompiler();
-            string equation1 = @"set a = 2;x*x+a=e()^x*sin(x);x(0)=0;";
+            Equations.Nonlinear.Compiler compiler = new Equations.Nonlinear.Compiler();
+            string equation1 = @"constant a = 2;x*x+a=e()^x*sin(x);x(0)=0;";
             string equation2 = @"x*x+2=e()^x*sin(x);x(0)=2;";
             string equation3 = @"x*x+2=e()^x*sin(x);x(0)=5;";
             string equation4 = @"6*x^5+-3*x^4+7*x^3+2*x^2+-5*x+7.13=0.;x(0)=-0.8;";
             try
             {
                 {
-                    NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equation1);
+                    NonlinearEquationDescription compiledEquation = compiler.CompileEquations(equation1);
                     MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                     //calc solution
                     Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(
@@ -718,7 +719,7 @@ connections:
                     Stdout.WriteLine(PrintSolution(solution, compiledEquation.VariableNames, compiledEquation));
                 }
                 {
-                    NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equation2);
+                    NonlinearEquationDescription compiledEquation = compiler.CompileEquations(equation2);
                     MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                     //calc solution
                     Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(
@@ -733,7 +734,7 @@ connections:
                     Stdout.WriteLine(PrintSolution(solution, compiledEquation.VariableNames, compiledEquation));
                 }
                 {
-                    NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equation3);
+                    NonlinearEquationDescription compiledEquation = compiler.CompileEquations(equation3);
                     MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                     //calc solution
                     Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(
@@ -748,7 +749,7 @@ connections:
                     Stdout.WriteLine(PrintSolution(solution, compiledEquation.VariableNames, compiledEquation));
                 }
                 {
-                    NonlinearEquationDefinition compiledEquation = compiler.CompileEquations(equation4);
+                    NonlinearEquationDescription compiledEquation = compiler.CompileEquations(equation4);
                     MathUtils.NonlinearSystemSymbolicAnalytic system = new MathUtils.NonlinearSystemSymbolicAnalytic(compiledEquation);
                     //calc solution
                     Vector<double> solution = MathUtils.NewtonRaphsonSolver.Solve(

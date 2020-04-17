@@ -1,1 +1,11 @@
-﻿
+﻿model:
+	steadystate{
+		solver = {
+			iterations = 20,
+			fAbsTol = 0.01,
+			alpha = 1
+		}
+		baseFrequency = 60
+	};
+elements:
+connections:

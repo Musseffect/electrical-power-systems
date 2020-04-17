@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ElectricalPowerSystems.PowerModel.NewModel.Grammar;
 
 namespace ElectricalPowerSystems.PowerModel.NewModel
 {
@@ -365,7 +366,18 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             public override StringValue CastToString()
             {
-                return new StringValue("object "+Name);
+                string result = $"{Name}{{";
+                int i = 1;
+                foreach (var value in Values)
+                {
+                    result += $"{value.Key} = {value.Value.CastToString()}";
+                    if (i != Values.Count)
+                    {
+                        result += ", ";
+                    }
+                }
+                result += "}";
+                return new StringValue(result);
             }
         }
         public class Array : Constant
@@ -377,15 +389,36 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             public override StringValue CastToString()
             {
-                return new StringValue("array");
+                string result = $"Array<{arrayType.ToString()}>[";
+                int i = 1;
+                foreach (var value in Values)
+                {
+                    result += $"{value.CastToString()}";
+                    if (i != Values.Length)
+                    {
+                        result += ", ";
+                    }
+                }
+                result += "]";
+                return new StringValue(result);
             }
         }
         static public Constant.Type Max(Constant.Type a, Constant.Type b)
         {
             if (a == b)
                 return a;
-            if (a == Constant.Type.Object || a == Constant.Type.Array || b == Constant.Type.Object || b == Constant.Type.Array)
+            if (a == Constant.Type.Object || a == Constant.Type.Array)
+            {
+                if (b == Constant.Type.String)
+                    return b;
                 throw new Exception("Invalid type conversion.");
+            }
+            else if (b == Constant.Type.Object || b == Constant.Type.Array)
+            {
+                if (a == Constant.Type.String)
+                    return b;
+                throw new Exception("Invalid type conversion.");
+            }
             switch (a)
             {
                 case Constant.Type.Complex:
@@ -818,19 +851,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             Constant.Type type;
             switch (node.Type)
             {
-                case ASTNode.NodeType.Boolean:
+                case Node.NodeType.Boolean:
                     type = Constant.Type.Bool;
                     break;
-                case ASTNode.NodeType.Integer:
+                case Node.NodeType.Integer:
                     type = Constant.Type.Int;
                     break;
-                case ASTNode.NodeType.Object:
+                case Node.NodeType.Object:
                     type = Constant.Type.Object;
                     break;
-                case ASTNode.NodeType.Float:
+                case Node.NodeType.Float:
                     type = Constant.Type.Float;
                     break;
-                case ASTNode.NodeType.String:
+                case Node.NodeType.String:
                     type = Constant.Type.String;
                     break;
                 default:
@@ -890,44 +923,44 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
         {
             switch (exp.Type)
             {
-                case ASTNode.NodeType.Assignment:
+                case Node.NodeType.Assignment:
                     return Assignment((AssignmentNode)exp);
-                case ASTNode.NodeType.Negation:
+                case Node.NodeType.Negation:
                     return Negation((NegationNode)exp);
-                case ASTNode.NodeType.Addition:
+                case Node.NodeType.Addition:
                     return Addition((AdditionNode)exp);
-                case ASTNode.NodeType.Subtraction:
+                case Node.NodeType.Subtraction:
                     return Subtraction((SubtractionNode)exp);
-                case ASTNode.NodeType.Multiplication:
+                case Node.NodeType.Multiplication:
                     return Multiplication((MultiplicationNode)exp);
-                case ASTNode.NodeType.Division:
+                case Node.NodeType.Division:
                     return Division((DivisionNode)exp);
-                case ASTNode.NodeType.Not:
+                case Node.NodeType.Not:
                     return Not((NotNode)exp);
-                case ASTNode.NodeType.And:
+                case Node.NodeType.And:
                     return And((AndNode)exp);
-                case ASTNode.NodeType.Or:
+                case Node.NodeType.Or:
                     return Or((OrNode)exp);
-                case ASTNode.NodeType.Function:
+                case Node.NodeType.Function:
                     return Function((FunctionNode)exp);
                 /*case ASTNode.NodeType.Member:
                     return Member(exp);*/
-                case ASTNode.NodeType.String:
+                case Node.NodeType.String:
                     return new StringValue()
                     {
                         Value = (exp as StringNode).Value
                     };
-                case ASTNode.NodeType.Float:
+                case Node.NodeType.Float:
                     return new FloatValue()
                     {
                         Value = (exp as FloatNode).Value
                     };
-                case ASTNode.NodeType.Integer:
+                case Node.NodeType.Integer:
                     return new IntValue()
                     {
                         Value = ((IntNode)exp).Value
                     };
-                case ASTNode.NodeType.Complex:
+                case Node.NodeType.Complex:
                     {
                         ComplexNode node = (ComplexNode)exp;
                         return new ComplexValue()
@@ -936,7 +969,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                             Im = node.Im
                         };
                     }
-                case ASTNode.NodeType.ComplexPhase:
+                case Node.NodeType.ComplexPhase:
                     {
                         ComplexPhaseNode node = (ComplexPhaseNode)exp;
                         return new ComplexValue()
@@ -946,22 +979,22 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                         };
                     }
 
-                case ASTNode.NodeType.Boolean:
+                case Node.NodeType.Boolean:
                     {
                         BooleanNode node = exp as BooleanNode;
                         return new BoolValue(node.Value);
                     }
-                case ASTNode.NodeType.Identifier:
+                case Node.NodeType.Identifier:
                     {
                         IdentifierNode node = (IdentifierNode)exp;
                         LValueIdentifier val = new LValueIdentifier(node.Value);
                         return val;
                     }
-                case ASTNode.NodeType.Array:
+                case Node.NodeType.Array:
                     {
                         return BuildArray(exp as ArrayNode);
                     }
-                case ASTNode.NodeType.Object:
+                case Node.NodeType.Object:
                     {
                         return BuildObject(exp as ObjectNode);
                     }

@@ -1,9 +1,11 @@
 ﻿
+using ElectricalPowerSystems.MathUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ElectricalPowerSystems.PowerModel.NewModel.Grammar;
 
 namespace ElectricalPowerSystems.PowerModel.NewModel
 {
@@ -178,16 +180,24 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             return result;
         }
-        private TransientModel GetTransientModel(List<ElementNode> elements, List<ConnectionNode> rootConnections, Object modelParameters, ref List<ErrorMessage> errorList, ref List<string> output)
+        private Transient.TransientModel GetTransientModel(
+            List<ElementNode> elements,
+            List<ConnectionNode> rootConnections,
+            Object modelParameters)
         {
             Dictionary<string, ElementEntry> elementEntries = new Dictionary<string, ElementEntry>();
             int nodeIndicies = 0;
-            TransientModel model = new TransientModel();
+            Transient.TransientModel model = new Transient.TransientModel();
             foreach (var element in elements)
             {
                 //get Object from element.Definition
                 Object obj = BuildObject(element.Definition);
 
+                if (!elementsMap.ContainsKey(obj.Name))
+                {
+                    errors.Add(new ErrorMessage($"Не существует элемента {obj.Name}", element.Line, element.Position));
+                    continue;
+                }
                 //get Element description( nodes and parameters)
                 ElementDescription description = elementsMap[obj.Name];
 
@@ -213,7 +223,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                             ITransientElement modelElement = description.CreateTransientElement(obj, elementPins);
                             if (modelElement is null)
                             {
-                                errors.Add(new ErrorMessage($"Element {obj.Name} cannot be used in steady state model", element.Line, element.Position));
+                                errors.Add(new ErrorMessage($"Элемент {obj.Name} не может использоваться для расчёта переходных процессов", element.Line, element.Position));
                             }
                             else
                             {
@@ -223,11 +233,11 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     }
                     catch (MissingValueException exc)
                     {
-                        errors.Add(new ErrorMessage($"Missing parameter {exc.Key} in element {obj.Name}", element.Line, element.Position));
+                        errors.Add(new ErrorMessage($"Отсутствует параметр {exc.Key} в элементе {obj.Name}", element.Line, element.Position));
                     }
                     catch (Exception)
                     {
-                        errors.Add(new ErrorMessage($"Error during element {obj.Name} creation", element.Line, element.Position));
+                        errors.Add(new ErrorMessage($"Ошибка при создании элемента {obj.Name}", element.Line, element.Position));
                     }
                 }
             }
@@ -285,11 +295,31 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 switch (solver.Name)
                 {
                     case "radauIIA5":
-                        FloatValue fAbsTol = Convert(solver.GetValue("fAbsTol"), Constant.Type.Float) as FloatValue;
-                        IntValue iterations = Convert(solver.GetValue("iterations"), Constant.Type.Int) as IntValue;
-                        FloatValue alpha = Convert(solver.GetValue("alpha"), Constant.Type.Float) as FloatValue;
-                        FloatValue step = Convert(solver.GetValue("step"), Constant.Type.Float) as FloatValue;
-                        //model.SetSolver(new Radau(fAbsTol.Value, iterations.Value, alpha.Value));
+                        {
+                            FloatValue fAbsTol = Convert(solver.GetValue("fAbsTol"), Constant.Type.Float) as FloatValue;
+                            IntValue iterations = Convert(solver.GetValue("iterations"), Constant.Type.Int) as IntValue;
+                            FloatValue alpha = Convert(solver.GetValue("alpha"), Constant.Type.Float) as FloatValue;
+                            FloatValue step = Convert(solver.GetValue("step"), Constant.Type.Float) as FloatValue;
+                            model.SetSolver(new Equations.DAE.Implicit.RADAUIIA5(fAbsTol.Value, iterations.Value, alpha.Value, step.Value));
+                        }
+                        break;
+                    case "radauIIA3":
+                        {
+                            FloatValue fAbsTol = Convert(solver.GetValue("fAbsTol"), Constant.Type.Float) as FloatValue;
+                            IntValue iterations = Convert(solver.GetValue("iterations"), Constant.Type.Int) as IntValue;
+                            FloatValue alpha = Convert(solver.GetValue("alpha"), Constant.Type.Float) as FloatValue;
+                            FloatValue step = Convert(solver.GetValue("step"), Constant.Type.Float) as FloatValue;
+                            model.SetSolver(new Equations.DAE.Implicit.RADAUIIA3(fAbsTol.Value, iterations.Value, alpha.Value, step.Value));
+                        }
+                        break;
+                    case "bdf1":
+                        { 
+                            FloatValue fAbsTol = Convert(solver.GetValue("fAbsTol"), Constant.Type.Float) as FloatValue;
+                            IntValue iterations = Convert(solver.GetValue("iterations"), Constant.Type.Int) as IntValue;
+                            FloatValue alpha = Convert(solver.GetValue("alpha"), Constant.Type.Float) as FloatValue;
+                            FloatValue step = Convert(solver.GetValue("step"), Constant.Type.Float) as FloatValue;
+                            model.SetSolver(new Equations.DAE.Implicit.BDF1(fAbsTol.Value, iterations.Value, alpha.Value, step.Value));
+                        }
                         break;
                     default:
                         errors.Add(new ErrorMessage("Unknown solver in transient model"));
@@ -312,7 +342,10 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             return model;
         }
-        private SteadyStateModel GetSteadyStateModel(List<ElementNode> elements,List<ConnectionNode> rootConnections, Object modelParameters, ref List<ErrorMessage> errorList, ref List<string> output)
+        private SteadyStateModel GetSteadyStateModel(
+            List<ElementNode> elements,
+            List<ConnectionNode> rootConnections,
+            Object modelParameters)
         {
             Dictionary<string, ElementEntry> elementEntries = new Dictionary<string, ElementEntry>();
             int nodeIndicies = 0;
@@ -366,7 +399,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     }
                     catch (Exception exc)
                     {
-                        errors.Add(new ErrorMessage($"Error during element {obj.Name} creation: {exc.Message}", element.Line, element.Position));
+                        errors.Add(new ErrorMessage($"Ошибка при создании элемента {obj.Name}: {exc.Message}", element.Line, element.Position));
                     }
                 }
             }
@@ -449,6 +482,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             return model;
         }
         List<ErrorMessage> errors;
+        List<string> output;
         private void InitElements()
         {
             variableTable = new Dictionary<string, Constant>();
@@ -492,7 +526,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 new Dictionary<string, IType>()
                 {
                     { "Label",new StringType() }
-                }, null, new Elements.SteadyStateScope1PModel())
+                }, new Elements.TransienteScope1PModel(), new Elements.SteadyStateScope1PModel())
                 );
             elementsMap.Add("Resistor", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>{
@@ -501,31 +535,52 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 },
                 new Dictionary<string, IType>{
                         { "R",new FloatType()}
-                }, null, new Elements.SteadyStateResistorModel())
+                }, new Elements.TransientResistorModel(), new Elements.SteadyStateResistorModel())
             );
             elementsMap.Add("Ground", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>{
                     { "in", ElementDescription.NodeType.OnePhase}
                 },
-                new Dictionary<string, IType>(), null, new Elements.SteadyStateGroundModel())
+                new Dictionary<string, IType>()
+                , new Elements.TransientGroundModel(), new Elements.SteadyStateGroundModel())
             );
             elementsMap.Add("Capacitor", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>{
-                    { "in", ElementDescription.NodeType.OnePhase },
+                    { "in", ElementDescription.NodeType.OnePhase},
                     { "out", ElementDescription.NodeType.OnePhase}
                 },
                 new Dictionary<string, IType>{
                         { "C", new FloatType()}
-                }, null, new Elements.SteadyStateCapacitorModel())
+                }, new Elements.TransientCapacitorModel(), new Elements.SteadyStateCapacitorModel())
             );
             elementsMap.Add("Inductor", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>{
-                    { "in", ElementDescription.NodeType.OnePhase },
+                    { "in", ElementDescription.NodeType.OnePhase},
                     { "out", ElementDescription.NodeType.OnePhase}
                 },
                 new Dictionary<string, IType>{
                         { "L", new FloatType()}
-                }, null, new Elements.SteadyStateInductorModel())
+                }, new Elements.TransientInductorModel(), new Elements.SteadyStateInductorModel())
+            );
+            elementsMap.Add("Break1p", new ElementDescription(
+                new Dictionary<string, ElementDescription.NodeType>{
+                    { "in", ElementDescription.NodeType.OnePhase},
+                    { "out", ElementDescription.NodeType.OnePhase}
+                },
+                new Dictionary<string, IType>{
+                        { "InitialState", new BoolType()},
+                        { "SwitchTime", new FloatType()}
+                }, new Elements.TransientBreak1PModel(), null)
+            );
+            elementsMap.Add("Switch2Way1P", new ElementDescription(
+                new Dictionary<string, ElementDescription.NodeType>{
+                    { "in", ElementDescription.NodeType.OnePhase},
+                    { "out1", ElementDescription.NodeType.OnePhase},
+                    { "out2", ElementDescription.NodeType.OnePhase}
+                },
+                new Dictionary<string, IType>{
+                        { "State", new FloatType()}
+                }, new Elements.TransientSwitch2Way1PModel(), new Elements.SteadyStateSwitch2Way1PModel())
             );
             elementsMap.Add("Transformer", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -543,7 +598,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Rc",new FloatType() },
                     { "K",new FloatType() },
                     { "Group",new IntType() }
-                }, null, new Elements.SteadyStateTransformerDdModel())
+                }, new Elements.TransientTransformerModel(), new Elements.SteadyStateTransformerModel())
             );
             elementsMap.Add("VoltageSource", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>{
@@ -554,7 +609,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Peak", new FloatType()},
                     { "Phase", new FloatType()},
                     { "Frequency", new FloatType()}
-                }, null, new Elements.SteadyStateVoltageSourceModel())
+                }, new Elements.TransienteVoltageSourceModel(), new Elements.SteadyStateVoltageSourceModel())
             );
             elementsMap.Add("Scope3p", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -565,7 +620,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 new Dictionary<string, IType>()
                 {
                     { "Label",new StringType() }
-                }, null, new Elements.SteadyStateScope3PModel())
+                }, new Elements.TransienteScope3PModel(), new Elements.SteadyStateScope3PModel())
             );
             elementsMap.Add("TransformerDd", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -598,7 +653,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Rc",new FloatType() },
                     { "K",new FloatType() },
                     { "Group",new IntType() }
-                }, null, new Elements.SteadyStateTransformerDdModel())
+                }, null, new Elements.SteadyStateTransformerYdModel())
             );
             elementsMap.Add("TransformerDy", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -615,7 +670,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Rc",new FloatType() },
                     { "K",new FloatType() },
                     { "Group",new IntType() }
-                }, null, new Elements.SteadyStateTransformerDdModel())
+                }, null, new Elements.SteadyStateTransformerDyModel())
             );
             elementsMap.Add("TransformerYy", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -633,7 +688,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Rc",new FloatType() },
                     { "K",new FloatType() },
                     { "Group",new IntType() }
-                }, null, new Elements.SteadyStateTransformerDdModel())
+                }, null, new Elements.SteadyStateTransformerYyModel())
             );
             elementsMap.Add("LoadY", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -683,7 +738,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 new Dictionary<string, IType>()
                 {
                     { "State",new BoolType() }
-                }, null, new Elements.SteadyStateSwitch3PModel())
+                }, new Elements.TransientSwitch3PModel(), new Elements.SteadyStateSwitch3PModel())
             );
             elementsMap.Add("Connection3P1P", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -695,7 +750,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 },
                 new Dictionary<string, IType>()
                 {
-                }, null, new Elements.SteadyStateSwitch3PModel())
+                }, new Elements.TransienteConnection3P1PModel(), new Elements.SteadyStateSwitch3PModel())
             );
             elementsMap.Add("LinePiSection", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -712,6 +767,24 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Bp",new FloatType() }
                 }, null, new Elements.SteadyStateLinePiModel())
             );
+            elementsMap.Add("RecloserNative", new ElementDescription(
+                new Dictionary<string, ElementDescription.NodeType>
+                {
+                    { "in", ElementDescription.NodeType.ThreePhase},
+                    { "out", ElementDescription.NodeType.ThreePhase}
+                },
+                new Dictionary<string, IType>()
+                {
+                    { "Frequency",new FloatType() },
+                    { "InitialState",new BoolType() },
+                    { "T0",new FloatType() },
+                    { "CurrentPeakMax",new FloatType() },
+                    { "PowerPeakMax",new FloatType() },
+                    { "Tries",new IntType() },
+                    { "WaitTime",new FloatType() },
+                    { "RestoreTriesTime",new FloatType() }
+                }, new Elements.TransientRecloserNative3PModel(), null)
+            );
         }
         //Done
         private void ResolveStatements(List<ExpressionNode> statements)
@@ -725,20 +798,25 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
         public IModel Generate(ModelNode root, ref List<ErrorMessage> errorList, ref List<string> output)
         {
             this.errors = errorList;
+            this.output = output;
             ResolveStatements(root.Statements);
             Object modelParameters = BuildObject(root.ModelParameters);
             switch (modelParameters.Name)
             {
                 case "steadystate":
-                    return GetSteadyStateModel(root.Elements, root.Connections, modelParameters, ref errorList, ref output);
+                    return GetSteadyStateModel(root.Elements, root.Connections, modelParameters);
                 case "transient":
-                    return GetTransientModel(root.Elements, root.Connections, modelParameters, ref errorList, ref output);
+                    return GetTransientModel(root.Elements, root.Connections, modelParameters);
                 default:
                     errorList.Add(new ErrorMessage("Incorrect model type", root.Line, root.Position));
                     return null;
             }
         }
         //Done
+        public void AddOutput(string line)
+        {
+            output.Add(line);
+        }
         private ModelInterpreter()
         {
             InitElements();

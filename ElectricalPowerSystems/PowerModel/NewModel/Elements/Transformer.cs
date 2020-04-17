@@ -119,12 +119,20 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             return equations;
         }
     }
-    public class SteadyStateTransofmrerModel : ISteadyStateElementModel
+    public class SteadyStateTransformerModel : ISteadyStateElementModel
     {
         public ISteadyStateElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
         {
             double k = (elementObject.GetValue("K") as FloatValue).Value;
             return new Transformer((float) k, elementNodes["in_p"] as Pin1Phase, elementNodes["in_s"] as Pin1Phase, elementNodes["out_p"] as Pin1Phase, elementNodes["out_s"] as Pin1Phase);
+        }
+    }
+    public class TransientTransformerModel : ITransientElementModel
+    {
+        ITransientElement ITransientElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            double k = (elementObject.GetValue("K") as FloatValue).Value;
+            return new Transformer((float)k, elementNodes["in_p"] as Pin1Phase, elementNodes["in_s"] as Pin1Phase, elementNodes["out_p"] as Pin1Phase, elementNodes["out_s"] as Pin1Phase);
         }
     }
 }

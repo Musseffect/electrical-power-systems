@@ -1,5 +1,4 @@
-﻿#define MODELINTERPRETER
-using ElectricalPowerSystems.Equations.Nonlinear;
+﻿using ElectricalPowerSystems.Equations.Nonlinear;
 using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.PowerModel.NewModel
 {
-#if MODELINTERPRETER
     /*
         Elements:
         Resistor
@@ -80,12 +78,13 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
     }
     public interface IScopeElement
     {
+        List<string> GetTransientVariableNames();
         IScopeReading GetReading(NonlinearSystemSolution solution);
-        string FormatReadings(IScopeReading[] readings,double[] frequencies);
+        List<double> GetReading(Transient.TransientState solution);
+        string FormatReadings(IScopeReading[] readings, double[] frequencies);
     }
     public interface IACSourceElement
     {
         double[] GetFrequencies();
     }
-#endif
 }

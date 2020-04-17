@@ -1,0 +1,50 @@
+﻿model:
+	transient{
+		solver = radauIIA{
+			step = 0.01,
+			iterations = 25,
+			fAbsTol = 0.01,
+			alpha = 1
+		},
+		t0 = 0,
+		t1 = 1,
+		baseFrequency = 60
+	};
+elements:
+	generator = GeneratorY{
+		Peak = 10,
+		Phase = 0,
+		Frequency = 60
+	};
+	load = LoadD{
+		ZAB = 1,
+		ZBC = 1,
+		ZCA = 1
+	};
+	scopeGen = Scope3P{
+		Label = "Generator"
+	};
+	scopeLoad = Scope3P{
+		Label = "Load"
+	};
+	scopeFault = Scope1P{
+		Label = "LineToGround"
+	}
+	fault = Fault{
+		TimeStart = 0.2
+		TimeEnd = 10e8
+	};
+	ground = Ground{
+	};
+	faultResistorA = Resistor{
+		R = 100
+	};
+connections:
+	connect(generator.n,ground.in);
+	connect(generator.out,scopeGen.in);
+	connect(scopeGen.out,fault.in);
+	connect(fault.out,scopeLoad.in);
+	connect(scopeLoad.out,load.in);
+	connect(fault.a,scopeFault.in);
+	connect(scopeFault.out,faultResistorA.in);
+	connect(faultResistorA.out,ground.in);

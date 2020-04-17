@@ -1,4 +1,4 @@
-﻿<Window x:Class="ElectricalPowerSystems.MainWindow"
+﻿<Window x:Class="ElectricalPowerSystems.GUI.ModelEditor.Windows.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -30,12 +30,26 @@
         <Grid.Resources>
             <Style x:Key="itemStyle" TargetType="TabItem">
                 <Setter Property="Width" Value="Auto" />
-                <Setter Property="Padding" Value="5,0,5,0" />
+                <Setter Property="Padding" Value="0,0,0,0" />
                 <Setter Property="HorizontalAlignment" Value="Stretch" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             </Style>
             <DataTemplate x:Key="itemHeader">
-                <Grid Name="Panel" Width="Auto" HorizontalAlignment="Left">
+                <Border x:Name="Panel" Background="{x:Null}" BorderBrush="Black" Padding="5,0,5,0">
+                    <Border.ToolTip>
+                        <ToolTip Content="{Binding Path=ToolTip, Mode=OneWay}"/>
+                    </Border.ToolTip>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Grid.Column="0" HorizontalAlignment="Left" Text="{Binding Path=Header, Mode=OneWay}"/>
+                        <Button Grid.Column="1" Margin="5,0,0,0" 
+                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.DeleteCommand}"
+                        CommandParameter="{Binding}" BorderThickness="0" BorderBrush="{x:Null}"
+                        HorizontalAlignment="Right">
+                            <Image Source="../../../Resources/Icons/016-cross.png" Width="10" Height="10"/>
+                        </Button>
+                    </StackPanel>
+                </Border>
+                <!-- <Grid Name="Panel" Width="Auto" HorizontalAlignment="Left">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -66,7 +80,7 @@
                         Path=IsSelected}" Value="False">
                         <Setter TargetName="Panel" Property="Background" Value="GhostWhite" />
                     </DataTrigger>
-                </DataTemplate.Triggers>
+                </DataTemplate.Triggers>-->
             </DataTemplate>
             <DataTemplate x:Key="itemContent">
                 <!--="{Binding Content, Mode=TwoWay}"-->
@@ -76,7 +90,7 @@
                          HorizontalScrollBarVisibility="Auto"
                          VerticalScrollBarVisibility="Auto"
 				         FontFamily="Consolas"
-				         FontSize="10pt"
+				         FontSize="11pt"
                          ScrollViewer.CanContentScroll="True"
                          IsModified = "{Binding Path=Changed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 				         SyntaxHighlighting="Model language">
@@ -175,7 +189,11 @@
             </MenuItem>
             <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" Click="RunMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}">
             </MenuItem>
-            <MenuItem x:Name="RunOldMenuButton" Header="Запуск(old)" Click="RunOldMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}">
+            <MenuItem Header="Запуск(old)" IsEnabled="{Binding Path = UIEnabled}">
+                <MenuItem x:Name="RunOldMenuButton" Header="Уст. режим" Click="RunOldMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}">
+                </MenuItem>
+                <MenuItem x:Name="RunOldTransentMenuButton" Header="Перех. проц." Click="RunOldTransientMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}">
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="Тесты" IsEnabled="True">
                 <MenuItem Header="Схемы">
@@ -184,13 +202,15 @@
                     <MenuItem x:Name="PowerSystemExample" Header="Схема трёхфазной сети" IsEnabled="True" Click="PowerSystemExample_Click"/>
                 </MenuItem>
                 <MenuItem Header="Уравнения">
-                    <MenuItem x:Name="RunNonlinearTestButton" Header="Тестирование решения алгебраических уравнений" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIEnabled}"/>
-                    <MenuItem x:Name="RunNonlinearExpressionTestButton" Header="Тестирование разбора и упрощения алгебраических уравнений" IsEnabled="{Binding Path = UIEnabled}" Click="RunNonlinearExpressionTest_Click"/>
-                    <MenuItem x:Name="GenerateEquationsACButton" Header="Генерация уравнений установившегося режима" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="RunNonlinearTestButton" Header="Решение АУ" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="RunNonlinearExpressionTestButton" Header="Разбор и упрощения АУ" IsEnabled="{Binding Path = UIEnabled}" Click="RunNonlinearExpressionTest_Click"/>
+                    <MenuItem x:Name="GenerateEquationsACButton" Header="Генерация уравнений установившегося режима(Old)" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="GenerateEquationsACButtonNew" Header="Генерация уравнений установившегося режима" IsEnabled="False"/>
                     <Separator />
-                    <MenuItem x:Name="GenerateDAEButton" Header="Генерация ДАУ уравнений" Click="RungGenerateDAE_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="GenerateDAEButton" Header="Генерация ДАУ уравнений(Old)" Click="RungGenerateDAE_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="GenerateDAEButtonNew" Header="Генерация ДАУ уравнений" IsEnabled="False"/>
                     <MenuItem x:Name="RunDAEExpressionTestButton" Header="Тестирование разбора и упрощения ДАУ" IsEnabled="{Binding Path = UIEnabled}" Click="RunDAEExpressionTest_Click"/>
-                    <MenuItem x:Name="RunDAETestButton" Header="Тестирование решения ДАУ системы" Click="RunDAETest_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
+                    <MenuItem x:Name="RunDAETestButton" Header="Решение ДАУ системы" Click="RunDAETest_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="{DynamicResource m_menu_Help}" IsEnabled="True" Command="ApplicationCommands.Help"></MenuItem>
@@ -198,11 +218,11 @@
         <ToolBar Grid.Row="1" Height="36" VerticalAlignment="Top" Width="Auto">
             <ToolBar.Resources>
                 <Style x:Key="ToolBarButtonStyle" TargetType="{x:Type Button}">
-                <Style.Triggers>
-                    <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Opacity" Value="0.25"/>
-                    </Trigger>
-                </Style.Triggers>
+                    <Style.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.25"/>
+                        </Trigger>
+                    </Style.Triggers>
                 </Style>
             </ToolBar.Resources>
             <Button x:Name="CreateFileButton" Command="New" Style="{StaticResource ToolBarButtonStyle}">
@@ -344,7 +364,7 @@
                 <Grid>
                     <TabControl Height="Auto" Grid.ColumnSpan="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
                         <TabItem Header="{DynamicResource m_Output_Header}" >
-                            <TextBox Text="{Binding Path=OutputText, Mode=OneWay}"  Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
+                            <TextBox Text="{Binding Path=OutputText, Mode=OneWay}"  Height="Auto" Width="Auto" Margin="10" x:Name="OutputTextBox" VerticalScrollBarVisibility="Auto" IsReadOnly="True" TextWrapping="Wrap">
                             </TextBox>
                         </TabItem>
                         <TabItem Header="{DynamicResource m_Errors_Header}">
@@ -388,7 +408,7 @@
                             </ListView>
                         </TabItem>
                     </TabControl>
-                    </Grid>
+                </Grid>
             </Expander.Content>
         </Expander>
         <GridSplitter Grid.Row="3" ShowsPreview="False" Height="3"

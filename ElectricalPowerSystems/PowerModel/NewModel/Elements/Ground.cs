@@ -73,4 +73,11 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             return new Ground(elementNodes["in"] as Pin1Phase);
         }
     }
+    public class TransientGroundModel : ITransientElementModel
+    {
+        ITransientElement ITransientElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            return new Ground(elementNodes["in"] as Pin1Phase);
+        }
+    }
 }

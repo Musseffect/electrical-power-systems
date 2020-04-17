@@ -1,5 +1,4 @@
-﻿#define MODELINTERPRETER
-using MathNet.Numerics;
+﻿using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -36,7 +35,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{out_pin.V} - {in_pin.V} = E_{ID} * cos(w_{ID} * t + ph_{ID});",
+                Equation = $"{out_pin.V} - {in_pin.V} = E_{ID} * sin(w_{ID} * t  + ph_{ID});",
             });
             return equations;
         }
@@ -45,15 +44,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             List<EquationBlock> equations = new List<EquationBlock>();
             equations.Add(new EquationBlock
             {
-                Equation = $"set E_{ID} = {(amp).ToString(new CultureInfo("en-US"))};"
+                Equation = $"constant E_{ID} = {(amp).ToString(new CultureInfo("en-US"))};"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"set w_{ID} = {frequency.ToString(new CultureInfo("en-US"))};"
+                Equation = $"constant w_{ID} = {frequency.ToString(new CultureInfo("en-US"))}* 2.0 * pi();"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"set ph_{ID} = {phase.ToString(new CultureInfo("en-US"))};"
+                Equation = $"constant ph_{ID} = {phase.ToString(new CultureInfo("en-US"))};"
             });
             return equations;
         }
@@ -105,6 +104,16 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
     public class SteadyStateVoltageSourceModel : ISteadyStateElementModel
     {
         public ISteadyStateElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            double amp = (elementObject.GetValue("Peak") as FloatValue).Value;
+            double phase = (elementObject.GetValue("Phase") as FloatValue).Value;
+            double frequency = (elementObject.GetValue("Frequency") as FloatValue).Value;
+            return new VoltageSource((float)amp, (float)phase, (float)frequency, elementNodes["in"] as Pin1Phase, elementNodes["out"] as Pin1Phase);
+        }
+    }
+    public class TransienteVoltageSourceModel : ITransientElementModel
+    {
+        ITransientElement ITransientElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
         {
             double amp = (elementObject.GetValue("Peak") as FloatValue).Value;
             double phase = (elementObject.GetValue("Phase") as FloatValue).Value;

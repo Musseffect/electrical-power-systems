@@ -1,4 +1,5 @@
 ﻿using ElectricalPowerSystems.Equations.Nonlinear;
+using ElectricalPowerSystems.PowerModel.NewModel.Transient;
 using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
@@ -222,6 +223,29 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
                 new Complex32((float)solution.GetValue(ICre), (float)solution.GetValue(ICim))
                 );
         }
+
+        List<string> IScopeElement.GetTransientVariableNames()
+        {
+            return new List<string> {
+            $"{label}.voltageA",
+            $"{label}.voltageB",
+            $"{label}.voltageC",
+            $"{label}.currentA",
+            $"{label}.currentB",
+            $"{label}.currentC"
+            };
+        }
+        List<double> IScopeElement.GetReading(TransientState solution)
+        {
+            return new List<double> {
+                solution.GetValue(in_pin.VA),
+                solution.GetValue(in_pin.VB),
+                solution.GetValue(in_pin.VC),
+                solution.GetValue(IA),
+                solution.GetValue(IB),
+                solution.GetValue(IC)
+            };
+        }
     }
     public class SteadyStateScope3PModel : ISteadyStateElementModel
     {
@@ -229,6 +253,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
         {
             string label = (elementObject.GetValue("Label") as StringValue).Value;
             return new Scope3P(elementNodes["in"] as Pin3Phase, elementNodes["out"] as Pin3Phase,label);
+        }
+    }
+    public class TransienteScope3PModel : ITransientElementModel
+    {
+        ITransientElement ITransientElementModel.CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            string label = (elementObject.GetValue("Label") as StringValue).Value;
+            return new Scope3P(elementNodes["in"] as Pin3Phase, elementNodes["out"] as Pin3Phase, label);
         }
     }
     public class ScopeReading3P:IScopeReading

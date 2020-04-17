@@ -15,7 +15,7 @@ using ElectricalPowerSystems.MathUtils;
 namespace ElectricalPowerSystems.Equations.DAE
 {
 #if DAE
-    public partial class DAECompiler
+    public partial class Compiler
     {
         class Variable
         {
@@ -34,7 +34,7 @@ namespace ElectricalPowerSystems.Equations.DAE
         Dictionary<string, double> parameters;
         Dictionary<string, double> constants;
         Dictionary<string, Variable> variables;
-        public DAEImplicitDefinition CompileDAEImplicit(string text)
+        public Implicit.DAEIDescription CompileDAEImplicit(string text)
         {
             compilerErrors = new List<ErrorMessage>();
             parameters = new Dictionary<string, double>();
@@ -57,12 +57,12 @@ namespace ElectricalPowerSystems.Equations.DAE
             compilerErrors = lexerListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
-                throw new Exception("Lexer Error");
+                throw new CompilerException(compilerErrors, "Lexer Error");
             }
             compilerErrors = parserListener.GetErrors();
             if (compilerErrors.Count > 0)
             {
-                throw new Exception("Parser error");
+                throw new CompilerException(compilerErrors, "Parser error");
             }
             DAEImplicitGrammarVisitor visitor = new DAEImplicitGrammarVisitor();
             ASTNode root = visitor.VisitCompileUnit(eqContext);
@@ -70,7 +70,7 @@ namespace ElectricalPowerSystems.Equations.DAE
             return CompileDAEImplicit((RootNode)root);
         }
 
-        private DAEImplicitDefinition CompileDAEImplicit(RootNode root)
+        private Implicit.DAEIDescription CompileDAEImplicit(RootNode root)
         {
             List<Expression.Expression> equations = new List<Expression.Expression>();
             constants["time"] = 1.0;
@@ -158,19 +158,21 @@ namespace ElectricalPowerSystems.Equations.DAE
             {
                 if (variable.Value.Initialized == false)
                 {
-                    compilerErrors.Add(new ErrorMessage("Не объявлены начальные условия для переменной " + variable.Key));
+                    variable.Value.InitialValue = 0.0;
+                    //compilerErrors.Add(new ErrorMessage("Не объявлены начальные условия для переменной " + variable.Key));
                 }
             }
             if (compilerErrors.Count > 0)
             {
-                throw new Exception("Equation definition errors");
+                throw new CompilerException(compilerErrors);
                 //fall back;
             }
 
             List<RPNExpression> equationsRPN = new List<RPNExpression>();
             List<string> variableNames = new List<string>();
+            List<string> symbolNames = new List<string>();
             List<double> initialValues = new List<double>();
-            Dictionary<string, int> variableIndicies = new Dictionary<string, int>();
+            Dictionary<string, int> symbolIndicies = new Dictionary<string, int>();
 
             List<Variable> variableList = new List<Variable>();
             foreach (var variable in variables)
@@ -182,23 +184,42 @@ namespace ElectricalPowerSystems.Equations.DAE
                 return x.Name.CompareTo(y.Name);
             });
             //time variable
-            variableIndicies.Add("t", 0);
+            symbolIndicies.Add("t", 0);
 
-            variableNames.Add("t");
+            symbolNames.Add("t");
             //variables
             foreach (var variable in variableList)
             {
                 variableNames.Add(variable.Name);
+                symbolNames.Add(variable.Name);
                 initialValues.Add(variable.InitialValue);
-                variableIndicies.Add(variable.Name, variableIndicies.Count);
+                symbolIndicies.Add(variable.Name, symbolIndicies.Count);
             }
             //derivatives
             foreach (var variable in variableList)
             {
-                variableNames.Add(variable.Name+"'");
-                variableIndicies.Add(variable.Name + "'", variableIndicies.Count);
+                symbolNames.Add(variable.Name+"'");
+                symbolIndicies.Add(variable.Name + "'", symbolIndicies.Count);
             }
-            ExpressionCompiler expCompiler = new ExpressionCompiler(variableIndicies);
+
+            string[] parameterNames = new string[parameters.Count];
+            double[] parameterValues = new double[parameters.Count];
+            {
+                int i = 0;
+                foreach (var parameter in parameters)
+                {
+                    parameterNames[i] = parameter.Key;
+                    parameterValues[i] = parameter.Value;
+                    i++;
+                }
+            }
+            foreach (var parameter in parameterNames)
+            {
+                symbolNames.Add(parameter);
+                symbolIndicies.Add(parameter, symbolIndicies.Count);
+            }
+
+            Expression.Compiler expCompiler = new Expression.Compiler(symbolIndicies);
             for (int i = 0; i < equations.Count; i++)
             {
                 equationsRPN.Add(expCompiler.Compile(equations[i]));
@@ -210,7 +231,7 @@ namespace ElectricalPowerSystems.Equations.DAE
             {
                 for (int i = 0; i < equations.Count; i++)
                 {
-                    Expression.Expression derivative = ExpressionSimplifier.Simplify(difVisitor.Differentiate(equations[i], variableNames[j+1]));
+                    Expression.Expression derivative = ExpressionSimplifier.Simplify(difVisitor.Differentiate(equations[i], variableNames[j]));
                     if (derivative.Type == ExpressionType.Float)
                     {
                         if ((derivative as Expression.Float).IsZero())
@@ -227,7 +248,7 @@ namespace ElectricalPowerSystems.Equations.DAE
             {
                 for (int i = 0; i < equations.Count; i++)
                 {
-                    Expression.Expression derivative = ExpressionSimplifier.Simplify(difVisitor.Differentiate(equations[i], variableNames[j + 1] + "'"));
+                    Expression.Expression derivative = ExpressionSimplifier.Simplify(difVisitor.Differentiate(equations[i], variableNames[j] + "'"));
                     if (derivative.Type == ExpressionType.Float)
                     {
                         if ((derivative as Expression.Float).IsZero())
@@ -240,7 +261,9 @@ namespace ElectricalPowerSystems.Equations.DAE
                     dfddx.Add(i, j, exp);
                 }
             }
-            DAEImplicitDefinition definition = new DAEImplicitDefinition(variableNames.ToArray(),
+            Implicit.DAEIDescription definition = new Implicit.DAEIDescription(variableNames.ToArray(),
+                parameterNames,
+                parameterValues,
                 initialValues.ToArray(),
                 equationsRPN,
                 dfdx,

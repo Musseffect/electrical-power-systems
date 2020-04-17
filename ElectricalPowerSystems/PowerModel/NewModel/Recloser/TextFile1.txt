@@ -1,78 +1,59 @@
 ﻿
-float memory[];
+/*
+native struct recloserState
+{
+	float ua;
+	float ub;
+	float uc;
+	float ia;
+	float ib;
+	float ic;
+	float time;
+	bool currentState;
+};
+*/
+
+struct memoryState
+{
+	int i;
+};
+
+memoryState internalState = new memoryState{0};
+float[5] floatArray = new float[]{0,1,2,3,4};
 
 void init()
 {
-
+	internalState.i = 0;
+	float counter = 0;
+	for(int i=0;i<length(floatArray);i++)
+	{
+		counter += floatArray[i];
+	}
 }
-bool update(float ua,float ub,float uc,float ia,float ib,float ic,float t)
+bool calc(inout recloserState state)
 {
+	if(state.currentState)
+	{
+		state.currentState = false;
+		return true;
+	}
+	return false
+}
+bool update(in recloserState state)
+{
+	bool condition = true;
 	while(condition)
 	{
-	
+		condition = calc(state);
 	}
+	debugPrint(condition);
 	return true;
 }
-
-
-
-program: (variableDeclaration|functionDefinition|structDefinition)*;
-
-structDefinition: 'struct' name=ID LCRLPAREN structBody RCRLPAREN SEMICOLON;
-
-structBody: (type = ID name = ID arraySign? SEMICOLON)*;
-
-variableDeclaration: type=ID name=ID arraySign? (ASSIGN expression)? SEMICOLON;
-
-functionDefinition: type=ID name=ID LPAREN functionSignature RPAREN LCRLPAREN functionBody RCRLPAREN
-
-functionSignature: signatureArgument (COMMA signatureArgument) | ;
-
-signatureArgument: (in|out|inout)? type=ID name=ID arraySign?;
-
-functionBody: (statement)*;
-
-statement: variableDeclaration
-| expression SEMICOLON
-| LCRLPAREN (statement)* RCRLPAREN #scope
-| break SEMICOLON
-| continue SEMICOLON
-| while LPAREN condition = expression RPAREN statement
-| switch LPAREN expression RPAREN LCRLPAREN ((case constant)|default ':' statement)* RCRLPAREN
-| if LPAREN condition = expression RPAREN statement (else statement)?
-| return expression? SEMICOLON
-;
-
-arraySign: '[]';
-
-expression: expression + expression
-|expression - expression
-| expression*expression
-| expression/expression
-|-expression
-| expression'||'expression
-| expression '==' expression
-| expression '.' field = ID
-| expression = expression
-| expression?expression:expression
-| expression '&&' expression
-| !expression
-| name=ID LPAREN arguments RPAREN
-| id = ID
-| id= ID '[' index = INT ']'
-;
-
-arguments: expression (COMMA expression)| ;
-
-
-
-
 /*
 stack  - array of bytes
 program bytecode - array of commands
 commandpointer
 stackpointer
 registers
-
 start with main function
 */

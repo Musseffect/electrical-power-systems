@@ -11,7 +11,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
 {
     class LoadD : Element, ITransientElement, ISteadyStateElement
     {
-        Pin3Phase abc_pin;
+        Pin3Phase in_pin;
         Complex32 zAB;
         Complex32 zBC;
         Complex32 zCA;
@@ -24,20 +24,83 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
         public string IABim { get { return $"I_{ID}ab_im"; } }
         public string IBCim { get { return $"I_{ID}bc_im"; } }
         public string ICAim { get { return $"I_{ID}ca_im"; } }
-        public LoadD(Complex32 zAB, Complex32 zBC, Complex32 zCA, Pin3Phase abc_pin) : base()
+        public LoadD(Complex32 zAB, Complex32 zBC, Complex32 zCA, Pin3Phase in_pin) : base()
         {
             this.zAB = zAB;
             this.zBC = zBC;
             this.zCA = zCA;
-            this.abc_pin = abc_pin;
+            this.in_pin = in_pin;
         }
         List<EquationBlock> ITransientElement.GenerateEquations()
         {
-            throw new NotImplementedException();
+            List<EquationBlock> equations = new List<EquationBlock>();
+            string RAB = $"R_{ID}ab";
+            string LAB = $"L_{ID}ab";
+            string RBC = $"R_{ID}bc";
+            string LBC = $"L_{ID}bc";
+            string RCA = $"R_{ID}ca";
+            string LCA = $"L_{ID}ca";
+
+            equations.Add(new CurrentFlowBlock
+            {
+                Equation = IAB,
+                Node1 = in_pin.VA,
+                Node2 = in_pin.VB
+            });
+            equations.Add(new CurrentFlowBlock
+            {
+                Equation = IBC,
+                Node1 = in_pin.VB,
+                Node2 = in_pin.VC
+            });
+            equations.Add(new CurrentFlowBlock
+            {
+                Equation = ICA,
+                Node1 = in_pin.VC,
+                Node2 = in_pin.VA
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{in_pin.VA} - {in_pin.VB} - ({IAB} * {RAB} + der({IAB}) * {LAB}) = 0;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{in_pin.VB} - {in_pin.VC} - ({IBC} * {RBC} + der({IBC}) * {LBC}) = 0;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{in_pin.VC} - {in_pin.VA} - ({ICA} * {RCA} + der({ICA}) * {LCA}) = 0;"
+            });
+            return equations;
         }
         List<EquationBlock> ITransientElement.GenerateParameters()
         {
-            throw new NotImplementedException();
+            List<EquationBlock> equations = new List<EquationBlock>();
+            equations.Add(new EquationBlock
+            {
+                Equation = $"constant R_{ID}ab = {zAB.Real.ToString(new CultureInfo("en-US"))};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"constant L_{ID}ab = {(zAB.Imaginary).ToString(new CultureInfo("en-US"))}/baseFrequency;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"constant R_{ID}bc = {zBC.Real.ToString(new CultureInfo("en-US"))};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"constant L_{ID}bc = {(zBC.Imaginary).ToString(new CultureInfo("en-US"))}/baseFrequency;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"constant R_{ID}ca = {zCA.Real.ToString(new CultureInfo("en-US"))};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"constant L_{ID}ca = {(zCA.Imaginary).ToString(new CultureInfo("en-US"))}/baseFrequency;"
+            });
+            return equations;
         }
         List<EquationBlock> ISteadyStateElement.GenerateEquations()
         {
@@ -52,62 +115,62 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             equations.Add(new CurrentFlowBlock
             {
                 Equation = IABre,
-                Node1 = abc_pin.VAre,
-                Node2 = abc_pin.VBre
+                Node1 = in_pin.VAre,
+                Node2 = in_pin.VBre
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = IABim,
-                Node1 = abc_pin.VAim,
-                Node2 = abc_pin.VBim
+                Node1 = in_pin.VAim,
+                Node2 = in_pin.VBim
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = IBCre,
-                Node1 = abc_pin.VBre,
-                Node2 = abc_pin.VCre
+                Node1 = in_pin.VBre,
+                Node2 = in_pin.VCre
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = IBCim,
-                Node1 = abc_pin.VBim,
-                Node2 = abc_pin.VCim
+                Node1 = in_pin.VBim,
+                Node2 = in_pin.VCim
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = ICAre,
-                Node1 = abc_pin.VCre,
-                Node2 = abc_pin.VAre
+                Node1 = in_pin.VCre,
+                Node2 = in_pin.VAre
             });
             equations.Add(new CurrentFlowBlock
             {
                 Equation = ICAim,
-                Node1 = abc_pin.VCim,
-                Node2 = abc_pin.VAim
+                Node1 = in_pin.VCim,
+                Node2 = in_pin.VAim
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VAre} - {abc_pin.VBre} - ({IABre} * {RAB} - {IABim} * {XAB}) = 0;"
+                Equation = $"{in_pin.VAre} - {in_pin.VBre} - ({IABre} * {RAB} - {IABim} * {XAB}) = 0;"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VAim} - {abc_pin.VBim} - ({IABre} * {XAB} + {IABim} * {RAB}) = 0;"
+                Equation = $"{in_pin.VAim} - {in_pin.VBim} - ({IABre} * {XAB} + {IABim} * {RAB}) = 0;"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VBre} - {abc_pin.VCre} - ({IBCre} * {RBC} - {IBCim} * {XBC}) = 0;"
+                Equation = $"{in_pin.VBre} - {in_pin.VCre} - ({IBCre} * {RBC} - {IBCim} * {XBC}) = 0;"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VBim} - {abc_pin.VCim} - ({IBCre} * {XBC} + {IBCim} * {RBC}) = 0;"
+                Equation = $"{in_pin.VBim} - {in_pin.VCim} - ({IBCre} * {XBC} + {IBCim} * {RBC}) = 0;"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VCre} - {abc_pin.VAre} - ({ICAre} * {RCA} - {ICAim} * {XCA}) = 0;"
+                Equation = $"{in_pin.VCre} - {in_pin.VAre} - ({ICAre} * {RCA} - {ICAim} * {XCA}) = 0;"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{abc_pin.VCim} - {abc_pin.VAim} - ({ICAre} * {XCA} + {ICAim} * {RCA}) = 0;"
+                Equation = $"{in_pin.VCim} - {in_pin.VAim} - ({ICAre} * {XCA} + {ICAim} * {RCA}) = 0;"
             });
             return equations;
         }
