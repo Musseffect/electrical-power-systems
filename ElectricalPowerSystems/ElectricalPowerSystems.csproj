@@ -248,6 +248,10 @@
       <DependentUpon>NodeCanvas.xaml</DependentUpon>
     </Compile>
     <Compile Include="PowerModel\NewModel\Grammar\Visitor.cs" />
+    <Compile Include="PowerModel\OldModel\ObjectSystem.cs" />
+    <Compile Include="PowerModel\Interpreter.cs" />
+    <Compile Include="GUI\ModelEditor\TabStyleSelector.cs" />
+    <Compile Include="GUI\ModelEditor\TabTemplateSelector.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\ABCElement.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphAirLine.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphAutotransformer.cs" />
@@ -261,10 +265,6 @@
     <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GraphWattmeter.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\GroundingType.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\GraphElements\TransformerMode.cs" />
-    <Compile Include="PowerModel\OldModel\ObjectSystem.cs" />
-    <Compile Include="PowerModel\Interpreter.cs" />
-    <Compile Include="GUI\ModelEditor\TabStyleSelector.cs" />
-    <Compile Include="GUI\ModelEditor\TabTemplateSelector.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\GraphNode.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\GraphOutput.cs" />
     <Compile Include="PowerModel\OldModel\PowerGraph\PowerElementScheme.cs" />
