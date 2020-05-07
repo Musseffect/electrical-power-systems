@@ -9,7 +9,7 @@ structField: type = typeRule name = ID SEMICOLON;
 
 variableDeclaration: type = typeRule variable (COMMA variable)* SEMICOLON;
 
-variable: name=ID (ASSIGN value=expression)?;
+variable: name=ID (ASSIGN initializer=expression)?;
 
 functionDeclaration: type = typeRule name=ID LPAREN functionSignature RPAREN SEMICOLON;
 
@@ -45,25 +45,27 @@ statement: variableDeclaration #VariableDeclarationStatement
 case: (CASE constant|DEFAULT) COLON (statement)*;
 
 expression:  LPAREN expression RPAREN #BracketExpression
-| (INCREMENT|DECREMENT) expression #PreIncrementDecrement
-| expression (INCREMENT|DECREMENT) #PostIncrementDecrement
-| expression EQUAL expression #BinaryOperator
-| expression AND expression #BinaryOperator
-| expression OR expression #BinaryOperator
-| NOT expression #UnaryOperator
-| MINUS expression #UnaryOperator
-| condition=expression QUESTIONMARK first=expression COLON second=expression #TernaryOperator
-| left=expression (PLUSASSIGN|MINUSASSIGN|MULTIPLYASSIGN|DIVIDEASSIGN) right=expression #BinaryOperator
-| left=expression (PLUS|MINUS) right=expression #BinaryOperator
-| left=expression(ASTERISK|DIVISION) right=expression #BinaryOperator
-| parent=expression DOT field = ID #FieldAccess
-| left=expression ASSIGN right=expression #BinaryOperator
+| constant #ConstantExpression
+| id = ID #IdentifierExpression
+| expression op=(INCREMENT|DECREMENT) #PostIncrementDecrement
 | name=ID LPAREN arguments RPAREN #FunctionCall
 | array = expression LSQRPAREN index = expression RSQRPAREN #ArrayElementAccess
-| id = ID #IdentifierExpression
-| constant #ConstantExpression
+| parent=expression DOT field = ID #FieldAccess
+| <assoc=right>op=(INCREMENT|DECREMENT) expression #PreIncrementDecrement
+| <assoc=right>op=MINUS expression #UnaryOperator
+| <assoc=right>op=NOT expression #UnaryOperator
+| <assoc=right> LPAREN id=ID RPAREN exp=expression #CastOperator
+| left=expression op=(ASTERISK|DIVISION) right=expression #BinaryOperator
+| left=expression op=(PLUS|MINUS) right=expression #BinaryOperator
+| left=expression op=(LESS|LESSEQ|GREATER|GREATEREQ) right=expression #BinaryOperator
+| left=expression op=(EQUAL|NOTEQUAL) right=expression #BinaryOperator
+| left=expression op=AND right=expression #BinaryOperator
+| left=expression op=OR right=expression #BinaryOperator
+| <assoc=right> condition=expression QUESTIONMARK first=expression COLON second=expression #TernaryOperator
+| <assoc=right> left=expression op=ASSIGN right=expression #BinaryOperator
+/*|<assoc=right> left=expression (PLUSASSIGN|MINUSASSIGN|MULTIPLYASSIGN|DIVIDEASSIGN) right=expression #BinaryOperator*/
 | NEW typeID = ID LSQRPAREN size=INT RSQRPAREN LCRLPAREN (expression (COMMA expression)*)? RCRLPAREN #ArrayInitializerList
-| NEW structName = ID LCRLPAREN (expression (COMMA expression))? RCRLPAREN #StructInitializerList
+| NEW structName = ID LCRLPAREN (expression (COMMA expression)*)? RCRLPAREN #StructInitializerList
 ;
 
 arguments: expression (COMMA expression)| ;
@@ -82,7 +84,6 @@ CASE: 'case';
 DEFAULT: 'default';
 TRUE: 'true';
 FALSE: 'false';
-EQUAL: '==';
 NOT: 'not'|'!';
 OR: 'or'|'||';
 AND: 'and'|'&&';
@@ -99,7 +100,12 @@ FLOAT: (DIGIT+ DOT DIGIT*) ([Ee][+-]? DIGIT+)?
 		;
 ID		: [_]*(LOWERCASE|UPPERCASE)[A-Za-z0-9_]*;
 
-
+LESS:'<';
+LESSEQ:'<=';
+GREATER:'>';
+GREATEREQ:'>=';
+EQUAL:'==';
+NOTEQUAL:'!=';
 MULTIPLYASSIGN		:'*=';
 DIVIDEASSIGN		:'/=';
 MINUSASSIGN			:'-=';
@@ -118,7 +124,6 @@ DOT					: '.';
 COMMA				: ',' ;
 SEMICOLON			: ';' ;
 COLON				: ':' ;
-ARRAYSIGN			:'[]';
 LSQRPAREN			: '[' ;
 RSQRPAREN			: ']' ;
 LCRLPAREN			: '{' ;

@@ -132,7 +132,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                         catch (TypeConversionError exc)
                         {
                             result = false;
-                            errors.Add(new ErrorMessage($"Cannot convert {exc.Src} to {exc.Dst} for parameter {parameter.Key} in element {elementObject.Name}"));
+                            errors.Add(new ErrorMessage($"Невохможно осуществить преобразование типов \"{exc.Src}\" в \"{exc.Dst}\" для параметра \"{parameter.Key}\" в элементе \"{elementObject.Name}\""));
                         }
                         catch (Exception exc)
                         {
@@ -142,7 +142,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     }
                     else {
                         result = false;
-                        errors.Add(new ErrorMessage($"Missing parameter {parameter.Key} in element {elementObject.Name}"));
+                        errors.Add(new ErrorMessage($"Отсутствует параметр \"{parameter.Key}\" в элементе \"{elementObject.Name}\""));
                     }
                 }
                 return result;
@@ -249,12 +249,12 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 {
                     if (!elementEntries.ContainsKey(connection.Element1))
                     {
-                        errors.Add(new ErrorMessage($"Non existing element {connection.Element1} in connection", connection.Line, connection.Position));
+                        errors.Add(new ErrorMessage($"Неуществующий элемент \"{connection.Element1}\" в соединении", connection.Line, connection.Position));
                         continue;
                     }
                     if (!elementEntries.ContainsKey(connection.Element2))
                     {
-                        errors.Add(new ErrorMessage($"Non existing element {connection.Element2} in connection", connection.Line, connection.Position));
+                        errors.Add(new ErrorMessage($"Неуществующий элемент \"{connection.Element2}\" в соединении", connection.Line, connection.Position));
                         continue;
                     }
                     ElementEntry entry1 = elementEntries[connection.Element1];
@@ -263,19 +263,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     ElementDescription element2 = entry2.GetDescription();
                     if (!element1.ContainsNode(connection.Node1))
                     {
-                        errors.Add(new ErrorMessage($"Non existing pin {connection.Node1} in element {connection.Element1}", connection.Line, connection.Position));
+                        errors.Add(new ErrorMessage($"Несуществующий узел \"{connection.Element1}.{connection.Node1}\" в соединении", connection.Line, connection.Position));
                         continue;
                     }
                     if (!element2.ContainsNode(connection.Node2))
                     {
-                        errors.Add(new ErrorMessage($"Non existing element {connection.Node2} in element {connection.Element2}", connection.Line, connection.Position));
+                        errors.Add(new ErrorMessage($"Несуществующий узел \"{connection.Element2}.{connection.Node2}\" в соединении", connection.Line, connection.Position));
                         continue;
                     }
                     ElementDescription.NodeType node1 = element1.GetNodeType(connection.Node1);
                     ElementDescription.NodeType node2 = element2.GetNodeType(connection.Node2);
                     if (node1 != node2)
                     {
-                        errors.Add(new ErrorMessage($"Pins in connection ({connection.Element1}.{connection.Node1},{connection.Element2}.{connection.Node2}) have different types", connection.Line, connection.Position));
+                        errors.Add(new ErrorMessage($"Узлы в соединении \"connect({connection.Element1}.{connection.Node1},{connection.Element2}.{connection.Node2})\" имеют различные типы", connection.Line, connection.Position));
                         continue;
                     }
                     connections.Add(new Connection(entry1.GetPin(connection.Node1), entry2.GetPin(connection.Node2)));
@@ -322,7 +322,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                         }
                         break;
                     default:
-                        errors.Add(new ErrorMessage("Unknown solver in transient model"));
+                        errors.Add(new ErrorMessage("Неизвестный решатель для данного режима"));
                         return null;
                 }
                 FloatValue t0 = Convert(modelParameters.GetValue("t0"), Constant.Type.Float) as FloatValue;
@@ -332,12 +332,12 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             catch (MissingValueException exc)
             {
-                errors.Add(new ErrorMessage($"Отсутствует аргумент {exc.Key} в определении модели."));
+                errors.Add(new ErrorMessage($"Отсутствует параметр \"{exc.Key}\" в определении модели."));
                 return null;
             }
             catch (Exception exc)
             {
-                errors.Add(new ErrorMessage($"Exception: {exc.Message}"));
+                errors.Add(new ErrorMessage($"Необработанное исключение: {exc.Message}"));
                 return null;
             }
             return model;
@@ -385,7 +385,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                             ISteadyStateElement modelElement = description.CreateSteadyStateElement(obj, elementPins);
                             if (modelElement is null)
                             {
-                                errors.Add(new ErrorMessage($"Element {obj.Name} cannot be used in steady state model", element.Line, element.Position));
+                                errors.Add(new ErrorMessage($"Элемент \"{obj.Name}\" не может использоваться для установившегося режима", element.Line, element.Position));
                             }
                             else
                             {
@@ -395,7 +395,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     }
                     catch (MissingValueException exc)
                     {
-                        errors.Add(new ErrorMessage($"Missing parameter {exc.Key} in element {obj.Name}", element.Line, element.Position));
+                        errors.Add(new ErrorMessage($"Отсутствует необходимый параметр \"{exc.Key}\" в элементе \"{obj.Name}\"", element.Line, element.Position));
                     }
                     catch (Exception exc)
                     {
@@ -411,12 +411,12 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 {
                     if (!elementEntries.ContainsKey(connection.Element1))
                     {
-                        errors.Add(new ErrorMessage($"Non existing element {connection.Element1} in connection",connection.Line,connection.Position));
+                        errors.Add(new ErrorMessage($"Неуществующий элемент \"{connection.Element1}\" в соединении", connection.Line, connection.Position));
                         continue;
                     }
                     if (!elementEntries.ContainsKey(connection.Element2))
                     {
-                        errors.Add(new ErrorMessage($"Non existing element {connection.Element2} in connection", connection.Line, connection.Position));
+                        errors.Add(new ErrorMessage($"Неуществующий элемент \"{connection.Element2}\" в соединении", connection.Line, connection.Position));
                         continue;
                     }
                     ElementEntry entry1 = elementEntries[connection.Element1];
@@ -425,19 +425,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     ElementDescription element2 = entry2.GetDescription();
                     if (!element1.ContainsNode(connection.Node1))
                     {
-                        errors.Add(new ErrorMessage($"Non existing pin {connection.Node1} in element {connection.Element1}", connection.Line, connection.Position));
+                        errors.Add(new ErrorMessage($"Несуществующий узел \"{connection.Element1}.{connection.Node1}\" в соединении", connection.Line, connection.Position));
                         continue;
                     }
                     if (!element2.ContainsNode(connection.Node2))
                     {
-                        errors.Add(new ErrorMessage($"Non existing element {connection.Node2} in element {connection.Element2}", connection.Line, connection.Position));
+                        errors.Add(new ErrorMessage($"Несуществующий узел \"{connection.Element2}.{connection.Node2}\" в соединении", connection.Line, connection.Position));
                         continue;
                     }
                     ElementDescription.NodeType node1 = element1.GetNodeType(connection.Node1);
                     ElementDescription.NodeType node2 = element2.GetNodeType(connection.Node2);
                     if (node1 != node2)
                     {
-                        errors.Add(new ErrorMessage($"Pins in connection ({connection.Element1}.{connection.Node1},{connection.Element2}.{connection.Node2}) have different types", connection.Line, connection.Position));
+                        errors.Add(new ErrorMessage($"Узлы в соединении \"connect({connection.Element1}.{connection.Node1},{connection.Element2}.{connection.Node2})\" имеют различные типы", connection.Line, connection.Position));
                         continue;
                     }
                     connections.Add(new Connection(entry1.GetPin(connection.Node1), entry2.GetPin(connection.Node2)));
@@ -463,7 +463,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                         model.SetSolver(new SteadyStateNewtonSolver(fAbsTol.Value, iterations.Value, alpha.Value));
                         break;
                     default:
-                        errors.Add(new ErrorMessage("Unknown solver in steadystate model"));
+                        errors.Add(new ErrorMessage("Неизвестный решатель для данного режима"));
                         return null;
                 }
                 FloatValue baseFrequency = (FloatValue)Convert(modelParameters.GetValue("baseFrequency"), Constant.Type.Float);
@@ -471,7 +471,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
             }
             catch (MissingValueException exc)
             {
-                errors.Add(new ErrorMessage($"Отсутствует аргумент {exc.Key} в определении модели."));
+                errors.Add(new ErrorMessage($"Отсутствует параметр \"{exc.Key}\" в определении модели."));
                 return null;
             }
             catch (Exception exc)
@@ -808,7 +808,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 case "transient":
                     return GetTransientModel(root.Elements, root.Connections, modelParameters);
                 default:
-                    errorList.Add(new ErrorMessage("Incorrect model type", root.Line, root.Position));
+                    errorList.Add(new ErrorMessage("Некорректный режим", root.Line, root.Position));
                     return null;
             }
         }

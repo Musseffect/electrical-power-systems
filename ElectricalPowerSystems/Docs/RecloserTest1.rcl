@@ -1,0 +1,17 @@
+﻿
+float global1;
+
+float testFunction(in float a,inout int b)
+{
+	b = (int)a + b;
+	return a + 1.0;
+}
+bool updateState(float in1,float in2)
+{
+	int b = (int)in2;
+	float result = testFunction(in1, b);
+	if(result>0.0)
+		return true;
+	global1 = result;
+	return false;
+}

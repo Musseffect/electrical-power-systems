@@ -14,29 +14,6 @@ using System.Text;
 using System.Threading.Tasks;
 using ElectricalPowerSystems.PowerModel;
 
-/*
-voltageSource("4", "1", 1000.0, 0.0, 60.0);
-voltageSource("4", "2", 1000.0, 120.0, 60.0);
-voltageSource("4", "3", 1000.0, 240.0, 60.0);
-resistor("8", "9", 1.0);
-resistor("8", "10", 1.0);
-resistor("8", "11", 1.0);
-inductor("5","9",0);
-inductor("6","10",0);
-inductor("7","11",0);
-elN=line("8","4");
-elA=line("1","5");
-elB=line("2","6");
-elC=line("3","7");
-ground("4");
-current(elN);
-current(elA);
-current(elB);
-current(elC);
-*/
-
-
-
 namespace ElectricalPowerSystems.Test
 {
     class Test
@@ -59,6 +36,7 @@ namespace ElectricalPowerSystems.Test
             } catch (Exception exc)
             {
                 Stdout.WriteLine("Exception in RunTests: " + exc.Message);
+                Stdout.WriteLine(exc.StackTrace);
             }
             Stdout.WriteLine("");
             Stdout.Flush();
@@ -649,53 +627,6 @@ connections:
 
             }
         }
-        static public void testDAEInterpreterAndSolver()
-        {
-            string differentialEquation = "x'=x;" +
-                "x(t0)=1.0;" +
-                "t0=0;" +
-                "time=5";
-            string DAEequation = "constant L=1.0;" +
-                "x^2+y^2=L;" +
-                "x'=;" +
-                "y'=;" +
-                "time=5";
-            Stream StdoutStream = Console.OpenStandardOutput();
-            StreamWriter Stdout = new StreamWriter(StdoutStream);
-            throw new NotImplementedException();
-            try
-            {
-                /*ChartWindow window = new ChartWindow();
-                RADAUIIA3 solver = new RADAUIIA3();
-                DAEImplicitSystem system;
-                List<double> timeArray = new List<double>();
-                List<double> xArray = new List<double>();
-                List<double> yArray = new List<double>();
-                xArray.Add(system.x0);
-                yArray.Add(system.z0);
-                timeArray.Add(system.t0);
-                for(double t=system.t0;t<system.t0+system.time;)
-                {
-                    points =  solver.IntegrateStep(system, x, t);
-                    t = points.t;
-                    timeArray.Add(t);
-                }
-                window.addLineSeries(xArray.ToArray(),timeArray.ToArray(),"x");
-                window.addLineSeries(yArray.ToArray(),timeArray.ToArray(),"y");*/
-            }
-            catch (Exception exc)
-            {
-
-            }
-        }
 #endif
-        static public void TestTransientEquationGenerator()
-        {
-            throw new NotImplementedException();
-        }
-        static public void TestTransientSolver()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

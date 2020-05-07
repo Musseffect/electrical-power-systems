@@ -1,0 +1,25 @@
+﻿<?xml version="1.0"?>
+<SyntaxDefinition name="Equations language" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" foreground="Green" />
+  <Color name="String" foreground="DarkOrange" />
+  <!-- This is the main ruleset. -->
+  <RuleSet>
+    <Span color="Comment" begin="//" />
+    <Span color="Comment" multiline="true" begin="/\*" end="\*/" />
+    <!--keywords-->
+    <Keywords fontWeight="bold" foreground="Blue">
+      <Word>constant</Word>
+      <Word>parameter</Word>
+    </Keywords>
+    <Rule foreground="Black">
+      \b[_]*([A-Za-z])[A-Za-z0-9_]*
+    </Rule>
+    <!-- Digits -->
+    <Rule foreground="DarkBlue">
+      (    \b\d+(\.[0-9]+)?   #number with optional floating point
+      |    \.[0-9]+         #or just starting with floating point
+      )
+      ([eE][+-]?[0-9]+)? # optional exponent
+    </Rule>
+  </RuleSet>
+</SyntaxDefinition>

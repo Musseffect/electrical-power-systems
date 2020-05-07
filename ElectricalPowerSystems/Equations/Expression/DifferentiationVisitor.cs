@@ -77,17 +77,24 @@ namespace ElectricalPowerSystems.Equations.Expression
             }
             Addition root = new Addition();
             Addition current = root;
-            for (int i = 0; i < node.Arguments.Count; i++)
+            for (int i = 0; i < node.Arguments.Count - 1; i++)
             {
                 current.Left = new Multiplication
                 {
                     Left = Differentiate(node.Arguments[i]),
                     Right = node.Entry.Der[i](node.Arguments)
                 };
-                current.Right = new Addition();
-                current = (Addition)current.Right;
+                if (i < node.Arguments.Count - 2)
+                {
+                    current.Right = new Addition();
+                    current = (Addition)current.Right;
+                }
             }
-            current.Right = node.Entry.Der[node.Arguments.Count - 1](node.Arguments);
+            current.Right = new Multiplication
+            {
+                Left = Differentiate(node.Arguments[node.Arguments.Count - 1]),
+                Right = node.Entry.Der[node.Arguments.Count - 1](node.Arguments)
+            };
             return root;
         }
         Expression DifferentiateMultiplication(Multiplication node)

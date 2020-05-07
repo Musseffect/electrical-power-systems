@@ -93,7 +93,7 @@
 				         FontSize="11pt"
                          ScrollViewer.CanContentScroll="True"
                          IsModified = "{Binding Path=Changed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-				         SyntaxHighlighting="Model language">
+				         SyntaxHighlighting="{Binding Path=HighlightingDef, UpdateSourceTrigger=PropertyChanged}">
                     <avalonEdit:TextEditor.ContextMenu>
                         <ContextMenu>
                             <MenuItem Command="Cut" Header="{DynamicResource m_menu_Cut}" />

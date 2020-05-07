@@ -101,19 +101,43 @@ namespace ElectricalPowerSystems.GUI.ModelEditor.Windows
         {
             UIEnabled = true;
 
-            ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition customHighlighting;
+            ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition modelHighlighting;
+            ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition recloserHighlighting;
+            ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition equationsHighlighting;
             using (Stream s = typeof(MainWindow).Assembly.GetManifestResourceStream("ElectricalPowerSystems.GUI.ModelEditor.SyntaxHighlightingModelLanguage.xshd"))
             {
                 if (s == null)
                     throw new InvalidOperationException("Could not find embedded resource");
                 using (System.Xml.XmlReader reader = new System.Xml.XmlTextReader(s))
                 {
-                    customHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.
+                    modelHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.
+                        HighlightingLoader.Load(reader, ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance);
+                }
+            }
+            using (Stream s = typeof(MainWindow).Assembly.GetManifestResourceStream("ElectricalPowerSystems.GUI.ModelEditor.SyntaxHighlightingRecloserLanguage.xshd"))
+            {
+                if (s == null)
+                    throw new InvalidOperationException("Could not find embedded resource");
+                using (System.Xml.XmlReader reader = new System.Xml.XmlTextReader(s))
+                {
+                    recloserHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.
+                        HighlightingLoader.Load(reader, ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance);
+                }
+            }
+            using (Stream s = typeof(MainWindow).Assembly.GetManifestResourceStream("ElectricalPowerSystems.GUI.ModelEditor.SyntaxHighlightingEquationsLanguage.xshd"))
+            {
+                if (s == null)
+                    throw new InvalidOperationException("Could not find embedded resource");
+                using (System.Xml.XmlReader reader = new System.Xml.XmlTextReader(s))
+                {
+                    equationsHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.
                         HighlightingLoader.Load(reader, ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance);
                 }
             }
             // and register it in the HighlightingManager
-            ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.RegisterHighlighting("Model language", new string[] { ".*" }, customHighlighting);
+            ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.RegisterHighlighting("Model language", new string[] { ".psms",".*" }, modelHighlighting);
+            ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.RegisterHighlighting("Equation language", new string[] { ".eq" }, equationsHighlighting);
+            ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.RegisterHighlighting("Recloser language", new string[] { ".rcl" }, recloserHighlighting);
 
             StatusText = "Готово";
             errors = new ObservableCollection<ErrorMessage>();
@@ -171,7 +195,7 @@ voltage(""3_a4"",""g"");
 voltage(""3_a5"",""g"");
 voltage(""3_a6"",""g"");";*/
             FileTab.SelectedIndex = 0;
-            ((FileTabItem)_tabItems[0]).Filename = "Old language";
+            ((FileTabItem)_tabItems[0]).Filename = "Old_language.psms";
             ((FileTabItem)_tabItems[0]).Document.Text =
 @"v1=voltageSource(""g"", ""3_a1"", 220.0, 0.0, 60.0);
 v2=voltageSource(""3_a5"", ""3_a4"", 220.0, 0.0, 60.0);
@@ -189,7 +213,7 @@ voltage(""3_a4"",""g"");
 voltage(""3_a5"",""g"");
 voltage(""3_a6"",""g"");";
 
-            ((FileTabItem)_tabItems[1]).Filename = "New language";
+            ((FileTabItem)_tabItems[1]).Filename = "New_language.psms";
             ((FileTabItem)_tabItems[1]).Document.Text =
 @"model:
     steadystate{
@@ -270,13 +294,13 @@ connections:
     connect(g.in,c1.out);
 ";
 
-            ((FileTabItem)_tabItems[2]).Filename = "Algebraic equations";
+            ((FileTabItem)_tabItems[2]).Filename = "Algebraic equations.eq";
             ((FileTabItem)_tabItems[2]).Document.Text = 
 @"constant a = 2;
 x * x + a = e()^x * sin(x);
 x(0) = 0;";
 
-            ((FileTabItem)_tabItems[3]).Filename = "DAE";
+            ((FileTabItem)_tabItems[3]).Filename = "DAE.eq";
             ((FileTabItem)_tabItems[3]).Document.Text =
 @"constant a = 2;
 constant t0 = 0;
@@ -289,7 +313,7 @@ x(t0) = 1;
 y(t0) = 1;
 z(t0) = 1;";
 
-            ((FileTabItem)_tabItems[4]).Filename = "DAE2 RLC parallel";
+            ((FileTabItem)_tabItems[4]).Filename = "DAE2_RLC_parallel.eq";
             ((FileTabItem)_tabItems[4]).Document.Text =
 @"constant Y = 1;
 constant C = 0.01;
@@ -307,7 +331,7 @@ I_e(t0) = 0;
 v_1(t0) = 0;
 I_l(t0) = 0;
 ";
-            ((FileTabItem)_tabItems[5]).Filename = "DAE2 RLC serial";
+            ((FileTabItem)_tabItems[5]).Filename = "DAE2_RLC_serial.eq";
             ((FileTabItem)_tabItems[5]).Document.Text =
 @"constant Y = 1;
 constant C = 0.01;
@@ -564,7 +588,7 @@ connections:
     connect(l1.out,scopeL.in);
     connect(scopeLC.out,c1.in);
     connect(c1.out,g.in);";
-            FileTabItem tab = new FileTabItem("RLC series circuit", null, content);
+            FileTabItem tab = new FileTabItem("RLC_series_circuit.psms", null, content);
             _tabItems.Add(tab);
             FileTab.SelectedIndex = _tabItems.Count - 1;
         }
@@ -633,7 +657,7 @@ connections:
     connect(scopeL.out,g.in);
     connect(scopeR.out,g.in);
     connect(scopeC.out,g.in);";
-            FileTabItem tab = new FileTabItem("RLC parallel circuit", null, content);
+            FileTabItem tab = new FileTabItem("RLC_parallel_circuit.psms", null, content);
             _tabItems.Add(tab);
             FileTab.SelectedIndex = _tabItems.Count - 1;
         }
@@ -775,7 +799,7 @@ connections:
     connect(transformer2.in, scope2.in);
     connect(scope2.out, load1.in);
     connect(load1.n, ground.in);";
-            FileTabItem tab = new FileTabItem("Power system example", null, content);
+            FileTabItem tab = new FileTabItem("Power_system_example.psms", null, content);
             _tabItems.Add(tab);
             FileTab.SelectedIndex = _tabItems.Count - 1;
         }

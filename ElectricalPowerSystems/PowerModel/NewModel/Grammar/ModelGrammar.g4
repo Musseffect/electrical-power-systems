@@ -4,8 +4,6 @@ grammar ModelGrammar;
  * Parser Rules
  */
  
- //New Grammar start
- 
 boolean	    : value=(TRUE|FALSE);
 float		: value = FLOAT;
 integer     : value = INT;
@@ -31,122 +29,24 @@ array: '<' type = typeKeyword '>' LSQRPAREN values=arrayValues RSQRPAREN;
 arrayValues: expression (COMMA expression)* | ;
 
 expression: LPAREN expression RPAREN #BracketExpression
+	| value = constant	#ConstantExpression
+	| obj = object #ObjectExpression
+	| arr = array #ArrayExpression
+	| id=ID	#IdentifierExpression
 	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
 	| left=expression DOT id=ID #FieldExpression
-	| op=(PLUS | MINUS) expression	#UnaryOperatorExpression
-	| op=NOT expression	#UnaryOperatorExpression
+	| <assoc=right>op=(PLUS | MINUS) expression	#UnaryOperatorExpression
+	| <assoc=right>op=NOT expression	#UnaryOperatorExpression
 	| left=expression op=(DIVISION|ASTERISK) right=expression	#BinaryOperatorExpression
 	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
-	|<assoc=right> lvalue=expression ASSIGN rvalue=expression #AssignmentExpression
 	| left=expression op=(OR|AND) right=expression	#BinaryOperatorExpression
-	| obj = object #ObjectExpression
-	| value = constant	#ConstantExpression
-	| id=ID	#IdentifierExpression
-	| arr = array #ArrayExpression
+	|<assoc=right> lvalue=expression ASSIGN rvalue=expression #AssignmentExpression
 	;
 	
 functionArguments: expression (COMMA expression)* | ;
 object: name=ID LCRLPAREN arguments RCRLPAREN;
 arguments: keyValue (COMMA keyValue)* | ;
 keyValue: key=ID ASSIGN value=expression;
-
-
-//end
-
- //example
-/*
-
-
-model:
-transient{
-	t0 = 0,
-	time = 1,
-	solver = RADAUIIA5{
-		newtonIterations = ,
-		tolerance = ,
-		newtonTolerance = ,
-	},
-	step = 0.01
-}
-elements:
-generator=Generator
-{
-	Vpeak=100.0f,
-	Phase = 0.0f,
-	Z = 0.001+j0.0001f,
-	Type=Wye
-};
-transformer=Transformator
-{
-	WindingTypePrimary=Wye,
-	WindingTypeSecondary=Delta,
-	Zp = 0.01+j0.0001,
-	Zs = 0.01+j0.0001,
-	G = 1000.0,
-	X = 1000.0
-}
-load=Load
-{
-	Za=100+10j,
-	Zb=100+10j,
-	Zc=100+10j,
-	Type=Wye
-};
-res = Resistance
-{
-	R=1000.0f
-};
-ground = Ground{};
-meter1 = Wattmeter{Label = "generator"};
-meter2 = Wattmeter{Label = "load"};
-connections:
-connect(generator.abc_out,meter1.abc_in);
-connect(generator.n,res.in);
-connect(res.out,ground.in);
-connect(meter1.abc_out,transformer.abc_in);
-connect(transformer.abc_out,meter2.abc_in);
-connect(meter2.abc_out,load.abc_in);
-connect(load.n,ground.in);
-*/
- 
- //old grammar start
- /*
- 
-number		: value=(FLOAT|INT);
-complexExp	: left=number type=(IM| ANGLE) right=number;
-complex		: IM im=number;
-constant	: value=number  #NumberConstant
-	| value=complex #ComplexConstant
-	| value=complexExp #ComplexExprConstant
-	| value=STRING #StringConstant
-;
-
-model: (state=statement)* EOF;
-
-
-
-statement: expression SEMICOLON #StatementRule
-| SEMICOLON #EmptyStatement;
-
-unaryOperator: op=(PLUS | MINUS);
-
-expression: <assoc=right> left=expression op=CARET  right=expression	#BinaryOperatorExpression
-	| LPAREN expression RPAREN #BracketExpression
-	| func=ID LPAREN functionArguments RPAREN	#FunctionExpression
-	| left=expression DOT id=ID #FieldExpression
-	| op=unaryOperator expression	#UnaryOperatorExpression
-	| LPAREN id=ID RPAREN right=expression #CastExpression
-	| left=expression op=(DIVISION|ASTERISK) right=expression	#BinaryOperatorExpression
-	| left=expression op=(PLUS|MINUS) right=expression	#BinaryOperatorExpression
-	|<assoc=right> lvalue=expression ASSIGN rvalue=expression #AssignmentExpression
-	| id=ID		#IdentifierExpression
-	| value=constant	#ConstantExpression
-	;	
-
-
-functionArguments: expression (COMMA expression)* | ;
-*/
-//end
 
 
 /*

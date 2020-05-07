@@ -1,0 +1,53 @@
+﻿float timer;
+float waitTime;
+float lastEventTime;
+float restoreTriesTime;
+float iPeakMax;
+float pPeakMax;
+int tries;
+int tryCounter;
+
+void init()
+{
+    iPeakMax = 10.0;
+    pPeakMax = 200.0;
+    tries = 3;
+    waitTime = 0.1;
+    restoreTriesTime = 10;
+    lastEventTime = 0;
+    timer = 0;
+    tryCounter = 0;
+}
+void update(in recloserState recloserState)
+{
+    if (!recloserState.currentState)//if turned off
+    {
+        if (tryCounter < tries)
+        {
+            timer = (state.time - lastEventTime);
+            if (timer > waitTime)
+            {
+                tryCounter++;
+                lastEventTime = state.time;
+                return true;//try to turn on
+            }
+        }
+        return false;
+    }
+    float p = state.ia*state.ua + state.ib*state.ub+state.ic*state.uc;
+    if (
+        fabs(state.ia) > iPeakMax ||
+        fabs(state.ib) > iPeakMax ||
+        fabs(state.ic) > iPeakMax ||
+        fabs(p) > pPeakMax
+        )
+    {
+        lastEventTime = state.time;
+        return false;
+    }
+    if (state.time - lastEventTime > restoreTriesTime)
+    {
+        tryCounter = 0;
+    }
+    return recloserState.currentState;
+}

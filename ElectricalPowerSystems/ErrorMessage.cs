@@ -30,6 +30,13 @@ namespace ElectricalPowerSystems
                 return position == -1 ? "" : position.ToString();
             }
         }
+        public string Error
+        {
+            get
+            {
+                return Message + (position == -1?"":$" position: {position.ToString()}") +(line == -1 ? "" : $" line: {line.ToString()}");
+            }
+        }
         public ErrorMessage(string message, int line = -1, int position = -1)
         {
             this.message = message;

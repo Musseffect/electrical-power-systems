@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Highlighting;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -7,10 +8,24 @@ namespace ElectricalPowerSystems
     public class FileTabItem: INotifyPropertyChanged
     {
         private string filename;
+        private IHighlightingDefinition highlightdef = null;
+        public IHighlightingDefinition HighlightingDef
+        {
+            get { return highlightdef; }
+            set {
+                if (this.highlightdef != value)
+                {
+                    this.highlightdef = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public string Filename {
             get { return filename; }
             set {
                 filename = value;
+                if (filename != null)
+                    HighlightingDef = HighlightingManager.Instance.GetDefinitionByExtension(System.IO.Path.GetExtension(filename));
                 OnPropertyChanged();
                 OnPropertyChanged("Header");
             }
@@ -92,6 +107,7 @@ namespace ElectricalPowerSystems
         {
             changed = false;
             Filename = filename;
+
             //this.content = content;
             this.document = new TextDocument(content);
             FilePath = filepath;

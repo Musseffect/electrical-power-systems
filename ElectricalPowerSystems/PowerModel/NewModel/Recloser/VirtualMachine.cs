@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Antlr4.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -8,438 +9,271 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
 {
-    public abstract class Value
-    {
-        public abstract byte[] ToBytes();
-        public abstract int ByteSize();
-        public abstract void FromBytes(byte[] bytes);
-        public new abstract string ToString();
-    }
-    class Float : Value
-    {
-        double value;
-        public double Value { get { return value; } set { this.value = value; } }
-        public Float()
-        { }
-        public Float(double value)
-        {
-            this.value = value;
-        }
-        public Float(byte[] bytes)
-        {
-            FromBytes(bytes);
-        }
-        public static Float FromByteArray(ByteArray bytearray,int offset)
-        {
-            Float result = new Float();
-            result.FromBytes(bytearray.At(offset,result.ByteSize()));
-            return result;
-        }
-        public override byte[] ToBytes()
-        {
-            return BitConverter.GetBytes(value);
-        }
-        public static int Sizeof()
-        {
-            return sizeof(double);
-        }
-        public override int ByteSize()
-        {
-            return Sizeof();
-        }
-        public override void FromBytes(byte[] bytes)
-        {
-            value = BitConverter.ToDouble(bytes,0);
-        }
-        public override string ToString()
-        {
-            return value.ToString(new CultureInfo("en-US"));
-        }
-    }
-    class Short : Value
-    {
-        short value;
-        public short Value { get { return value; } set { this.value = value; } }
-        public Short()
-        { }
-        public Short(byte[] bytes)
-        {
-            FromBytes(bytes);
-        }
-        public Short(short value)
-        {
-            this.value = value;
-        }
-        public override byte[] ToBytes()
-        {
-            return BitConverter.GetBytes(value);
-        }
-        public static int Sizeof()
-        {
-            return sizeof(short);
-        }
-        public override int ByteSize()
-        {
-            return Sizeof();
-        }
-        public override void FromBytes(byte[] bytes)
-        {
-            value = BitConverter.ToInt16(bytes, 0);
-        }
-        public override string ToString()
-        {
-            return value.ToString();
-        }
-    }
-    class Int : Value
-    {
-        int value;
-        public int Value { get{ return value; } set { this.value = value; } }
-        public Int()
-        { }
-        public Int(byte[] bytes)
-        {
-            FromBytes(bytes);
-        }
-        public Int(int value)
-        {
-            this.value = value;
-        }
-        public override byte[] ToBytes()
-        {
-            return BitConverter.GetBytes(value);
-        }
-        public static int Sizeof()
-        {
-            return sizeof(int);
-        }
-        public override int ByteSize()
-        {
-            return Sizeof();
-        }
-        public override void FromBytes(byte[] bytes)
-        {
-            value = BitConverter.ToInt32(bytes, 0);
-        }
-        public override string ToString()
-        {
-            return value.ToString();
-        }
-    }
-    class Bool : Value
-    {
-        int value;
-        public int Value { get { return value; } set { this.value = value; } }
-        public Bool()
-        { }
-        public Bool(bool value)
-        {
-            this.value = value?1:0;
-        }
-        public Bool(byte[] bytes)
-        {
-            FromBytes(bytes);
-        }
-        public override byte[] ToBytes()
-        {
-            return BitConverter.GetBytes(value);
-        }
-        static public int Sizeof()
-        {
-            return sizeof(int);
-        }
-        public override int ByteSize()
-        {
-            return Sizeof();
-        }
-        public override void FromBytes(byte[] bytes)
-        {
-            value = BitConverter.ToInt32(bytes, 0);
-        }
-        public override string ToString()
-        {
-            return value!=0?"true":"false";
-        }
-    }
-    public class ByteArray
-    {
-        byte[] storage;
-        int size;
-        public int Size{get{return size;} }
-        int capacity;
-        public ByteArray()
-        {
-            size = 0;
-            capacity = 16;
-            storage = new byte[capacity];
-        }
-        public T GetValue<T>(int offset)where T: Value, new()
-        {
-            T result = new T();
-            result.FromBytes(this.At(offset, result.ByteSize()));
-            return result;
-        }
-        public byte[] At(int i, int count)
-        {
-#if DEBUG||TEST
-            if (i + count > size || i < 0)
-                throw new Exception($"Invalid index in ByteArray.At({i})");
-#endif
-            byte[] result = new byte[count];
-            Array.Copy(storage,i,result,0,count);
-            return result;
-        }
-        public byte At(int i)
-        {
-#if DEBUG||TEST
-            if (i > size || i < 0)
-                throw new Exception($"Invalid index in ByteArray.At({i})");
-#endif
-            return storage[i];
-        }
-        void GrowArray(int newCapacity)
-        {
-            int oldCapacity = capacity;
-            while (capacity < newCapacity)
-                capacity *= 2;
-            Array.Resize<byte>(ref storage,capacity);
-        }
-        void WriteToArray(byte _byte)
-        {
-            if (1 + size > capacity)
-            {
-                GrowArray(1 + size);
-            }
-            storage[size] = _byte;
-            size ++;
-        }
-        void WriteToArray(byte[] bytes)
-        {
-            if (bytes.Length + size > capacity)
-            {
-                GrowArray(bytes.Length + size);
-            }
-            Array.Copy(bytes,0,storage,size,bytes.Length);
-            size += bytes.Length;
-        }
-        public int AddConstant(Value value)
-        {
-            byte[] bytes = value.ToBytes();
-            WriteToArray(bytes);
-            return size;
-        }
-        public int AddInstruction(Instruction instruction)
-        {
-            WriteToArray((byte)instruction);
-            return size;
-        }
-    }
     public enum Instruction
     {
-        ADD_SP,//add_sp offset(4B),
-        SUB_SP,//sub_sp offset(4B)
-        LOAD,//load offset(4B) size(4B)
-        WRITE,//write offset(4B) size(4B)
-        LOAD_CONSTANT,//load_constant offset(4B) size(4B),
-        LOAD_GLOBAL,//load_global address
-        WRITE_GLOBAL,//write_global address
-        ADD_CONSTANT_I,
-        ADD_I,//add_i,
-        SUB_I,
-        MULT_I,
-        DIV_I,
-        MOD_I,
-        NEGATE_I,
-        ADD_D,
-        SUB_D,
-        MULT_D,
-        DIV_D,
-        NEGATE_D,
-        GREATER_I,//greater_i,
-        GREATEREQUAL_I,
-        LESSER_I,
-        LESSEREQUAL_I,
-        EQUAL_I,
-        NEQUAL_I,
-        GREATER_D,//greater_i,
-        GREATEREQUAL_D,
-        LESSER_D,
-        LESSEREQUAL_D,
-        EQUAL_D,
-        NEQUAL_D,
-        NOT_B,
-        SET_RESULT,//write_result size(4B)
+        POP,
+        ARR_POP,
+        DUP,//duplicate last value on stack
+        RCREATE,//rcreate index 
+        /*RLOAD,//rload index - load reference
+        RSTORE,//store reference*/
+        IRLOAD,//pop int ref | push int from (0 + ref)
+        FRLOAD,//pop int ref | push float from (0 + ref)
+        IRSTORE,//pop int ref, int value| push int value | save value to (0 + ref)
+        FRSTORE,//pop int ref, float value| push float value | save value to (0 + ref)
+        /*GILOAD,//GILOAD index,  push int from stackBottom + index
+        GFLOAD,//GFLOAD index,  push float from stackBottom + index
+        GISTORE,
+        GFSTORE,//GFSTORE index,  pop float to stackBottom + index*/
+        ILOAD,//ILOAD index , push int
+        FLOAD,//FLOAT index, push float
+        ISTORE,//ISTORE index, pop int| push int value
+        FSTORE,//ISTORE index, pop float| push float value
+        IPUSH,//IPUSH int, push int
+        FPUSH,//FPUSH float, push float
+        IMUL,//IMUL, pop int,int | push int
+        IADD,
+        IDIV,
+        ISUB,
+        IMOD,
+        INEG,
+        FADD,
+        FSUB,
+        FMUL,
+        FDIV,
+        FNEG,
+
+        IEQ,
+        FEQ,
+        INEQ,
+        FNEQ,
+        IGR,
+        FGR,
+        IGREQ,
+        FGREQ,
+        ILS,
+        FLS,
+        ILSEQ,
+        FLSEQ,
+        BNOT,
+        BAND,
+        BOR,
+        
+        FRET,
+        IRET,
         RET,
         CALL,//call index
         CALL_NATIVE, //call_native index
         JUMP_IF,//jump_if offset
         JUMP_NIF,//jump_nif offset
-        DTOI,//dtoi
-        ITOD//itod
-
-        /*OP_NEGATE = 1,
-        OP_ADD_D=2,
-        OP_SUB_D=3,
-        OP_MULT_D =4,//two addresses
-        OP_DIV_D =5,//two addresses, addresses are local
-        OP_ADD_I =6,//two addresses
-        OP_SUB_I =7,//two addresses
-        OP_MULT_I =8,//two addresses
-        OP_DIV_I =9,//two addresses
-        OP_CONSTANT_I =10,//get int from constants 
-        OP_CONSTANT_D = 11,//get double from constants 
-        OP_LOAD_I=12,//get int from address
-        OP_WRITE_I=13,//put int to address
-        OP_LOAD_D=14,//get double from address
-        OP_WRITE_D=15,//put double to address
-        OP_POP_D=16,//pop double on stack
-        OP_PUSH_D=17,//push double on stack
-        OP_POP_I=18,//pop int from stack
-        OP_PUSH_I=19,//put int on stack
-        OP_JUMP=20,//jump to int adress
-        OP_IF_NOT_JUMP=21,//if int is not 0 jump to address(int), otherwise stay
-        OP_IF_JUMP=22,//if int is 0 jump to address(int)
-        OP_EQUAL=23,//two adresses
-        OP_GREATER =24,//two adresses
-        OP_LESS =25,//two adresses
-        OP_D_TO_I =26,// convert double from adress(int) to integer
-        OP_I_TO_D = 27,// convert int from adress(int) to double
-        OP_NEGATE_I = 28,
-        OP_NEGATE_D = 29,
-        OP_NOT = 30,
-        OP_NEQUAL = 31,
-        OP_MOVE_SP = 32 // OP_MOVE_SP Bytes(int) : sp += Bytes*/
+        JUMP,
+        F2I,//dtoi, pop float | push int
+        I2F,//itod, pop int | push float
+        NOP
     }
     public class Stack
     {
-        byte[] storage;
+        IValue[] storage;
         int pointer;
         public int Pointer { get { return pointer; } set { pointer = value; } }
-        public Stack(int byteSize)
+        public Stack(int size)
         {
+            storage = new IValue[size];
             pointer = 0;
-            storage = new byte[byteSize];
+        }
+        public IValue LastValue()
+        {
+            return storage[pointer-1];
+        }
+        public IValue At(int index)
+        {
+            if (index >= pointer)
+                throw new Exception("Invalid index in Stack.At(index)");
+            return storage[index];
+        }
+        public void Set(int index, IValue value)
+        {
+            if (index >= pointer)
+                throw new Exception("Invalid index in Stack.At(index)");
+            storage[index] = value;
+        }
+        public IValue Pop()
+        {
+            if (pointer == 0)
+                throw new Exception("Invalid pop call");
+            return storage[--pointer];
+        }
+        public int Push(IValue value)
+        {
+            if (pointer == storage.Length)
+                throw new Exception("Stack overflow");
+            storage[pointer] = value;
+            return ++pointer;
         }
         public void Empty()
         {
             pointer = 0;
         }
-        public byte[] ReadBytes(int offset, int size)
-        {
-            if (pointer - offset < 0 || size - offset > 0)
-                throw new Exception("Invalid read stack command");
-            byte[] bytes = new byte[size];
-            Array.Copy(storage, pointer - offset, bytes, 0, size);
-            return bytes;
-        }
-        public void WriteBytes(byte[] bytes,int offset, int size)
-        {
-            if (pointer - offset < 0 || size - offset > 0)
-                throw new Exception("Invalid write stack command");
-            Array.Copy(bytes, 0, storage, pointer - offset, size);
-        }
-        public T ReadValue<T>(int offset) where T:Value,new()
-        {
-            T result = new T();
-            int size = result.ByteSize();
-            if (offset< 0)
-                throw new Exception("Stack is empty");
-            byte[] bytes = new byte[size];
-            Array.Copy(storage, pointer - offset, bytes, 0, size);
-            result.FromBytes(bytes);
-            return result;
-        }
-        public byte[] Pop(int size)
-        {
-            if (pointer - size < 0)
-                throw new Exception("Stack is empty");
-            byte[] result = new byte[size];
-            pointer -= size;
-            Array.Copy(storage, pointer, result, 0, size);
-            return result;
-        }
-        public void PushToStack(byte[] bytes)
-        {
-            if (pointer + bytes.Length > storage.Length)
-                throw new Exception("Stack overflow");
-            Array.Copy(bytes,0,storage,pointer,bytes.Length);
-            pointer += bytes.Length;
-        }
     }
     public class Disassembler
     {
         string result;
-        public string Disassemble(Program program)
+        public string Disassemble(Program program, string programText)
         {
             result = "";
+            int textLineNumber = 0;
+            int lineIterator = 0;
+            int localLineIterator = 0;
+            var reader = new StringReader(programText);
+            string lineText = "";
+            result += $"OFFS  LINE  INTSRUCTION{Environment.NewLine}";
             for (int offset = 0; offset < program.Bytecode.Size;)
             {
-                offset = DisassembleInstruction(program.Bytecode, offset);
+                Program.Line line = program.Lines[lineIterator];
+                if (++localLineIterator == line.Count)
+                {
+                    localLineIterator = 0;
+                    lineIterator++;
+                }
+                int currentLine = line.LineNumber;
+                string currentLineText = " |  ";
+                if (textLineNumber < currentLine)
+                {
+                    while (textLineNumber < currentLine)
+                    {
+                        lineText = reader.ReadLine();
+                        textLineNumber++;
+                    }
+                    result +=$"{lineText}{Environment.NewLine}";
+                    currentLineText = currentLine.ToString("D4");
+                }
+                offset = DisassembleInstruction(program, offset, currentLineText);
             }
             return result;
         }
-        int DisassembleInstruction(ByteArray bytecode,int offset)
+        int DisassembleInstruction(Program program, int offset, string currentLine)
         {
-            result += $"    {offset} ";
+            ByteArray bytecode = program.Bytecode;
+            result += $"{offset.ToString("D4")}  {currentLine}  ";
             byte instruction = bytecode.At(offset);
             switch (instruction)
             {
-                case (byte)Instruction.ADD_SP:
-                    return PrintConstantInstruction("ADD_SP", bytecode.GetValue<Int>(offset+1), offset);
-                case (byte)Instruction.LOAD:
-                    {
-                        Int a1 = bytecode.GetValue<Int>(offset + 1);
-                        Int a2 = bytecode.GetValue<Int>(offset + 1 + a1.ByteSize());
-                        return PrintTwoConstantsInstruction("LOAD", a1, a2, offset);
-                    }
-                case (byte)Instruction.LOAD_CONSTANT:
-                    {
-                        Int a1 = bytecode.GetValue<Int>(offset + 1);
-                        Int a2 = bytecode.GetValue<Int>(offset + 1 + a1.ByteSize());
-                        return PrintTwoConstantsInstruction("LOAD_CONSTANT", a1, a2, offset);
-                    }
-                case (byte)Instruction.WRITE:
-                    {
-                        Int a1 = bytecode.GetValue<Int>(offset + 1);
-                        Int a2 = bytecode.GetValue<Int>(offset + 1 + a1.ByteSize());
-                        return PrintTwoConstantsInstruction("WRITE", a1, a2, offset);
-                    }
-                case (byte)Instruction.SET_RESULT:
-                    return PrintConstantInstruction("SET_RESULT", bytecode.GetValue<Int>(offset + 1), offset);
+                case (byte)Instruction.POP:
+                    return PrintInstruction("pop", offset);
+                case (byte)Instruction.ARR_POP:
+                    return PrintConstantInstruction("arr_pop", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.DUP:
+                    return PrintInstruction("dup", offset);
+                case (byte)Instruction.RCREATE:
+                    return PrintConstantInstruction("rcreate", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.IRLOAD:
+                    return PrintInstruction("irload", offset);
+                case (byte)Instruction.FRLOAD:
+                    return PrintInstruction("frload", offset);
+                case (byte)Instruction.IRSTORE:
+                    return PrintInstruction("irstore", offset);
+                case (byte)Instruction.FRSTORE:
+                    return PrintInstruction("frstore", offset);
+                case (byte)Instruction.ILOAD:
+                    return PrintConstantInstruction("iload", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.FLOAD:
+                    return PrintConstantInstruction("fload", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.ISTORE:
+                    return PrintConstantInstruction("istore", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.FSTORE:
+                    return PrintConstantInstruction("fstore", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.IPUSH:
+                    return PrintConstantInstruction("ipush", bytecode.GetValue<Int>(offset + 1), offset);
+                case (byte)Instruction.FPUSH:
+                    return PrintConstantInstruction("fpush", bytecode.GetValue<Float>(offset + 1), offset);
+                case (byte)Instruction.IMUL:
+                    return PrintInstruction("imul", offset);
+                case (byte)Instruction.IADD:
+                    return PrintInstruction("iadd", offset);
+                case (byte)Instruction.IDIV:
+                    return PrintInstruction("idiv", offset);
+                case (byte)Instruction.ISUB:
+                    return PrintInstruction("isub", offset);
+                case (byte)Instruction.IMOD:
+                    return PrintInstruction("imod", offset);
+                case (byte)Instruction.INEG:
+                    return PrintInstruction("ineg", offset);
+                case (byte)Instruction.FADD:
+                    return PrintInstruction("fadd", offset);
+                case (byte)Instruction.FSUB:
+                    return PrintInstruction("fsub", offset);
+                case (byte)Instruction.FMUL:
+                    return PrintInstruction("fmul", offset);
+                case (byte)Instruction.FDIV:
+                    return PrintInstruction("fdiv", offset);
+                case (byte)Instruction.FNEG:
+                    return PrintInstruction("fneg", offset);
+                case (byte)Instruction.IEQ:
+                    return PrintInstruction("ieq", offset);
+                case (byte)Instruction.FEQ:
+                    return PrintInstruction("feq", offset);
+                case (byte)Instruction.INEQ:
+                    return PrintInstruction("ineq", offset);
+                case (byte)Instruction.FNEQ:
+                    return PrintInstruction("fneq", offset);
+                case (byte)Instruction.IGR:
+                    return PrintInstruction("igr", offset);
+                case (byte)Instruction.FGR:
+                    return PrintInstruction("fgr", offset);
+                case (byte)Instruction.IGREQ:
+                    return PrintInstruction("igreq", offset);
+                case (byte)Instruction.FGREQ:
+                    return PrintInstruction("fgreq", offset);
+                case (byte)Instruction.ILS:
+                    return PrintInstruction("ils", offset);
+                case (byte)Instruction.FLS:
+                    return PrintInstruction("fls", offset);
+                case (byte)Instruction.ILSEQ:
+                    return PrintInstruction("ilseq", offset);
+                case (byte)Instruction.FLSEQ:
+                    return PrintInstruction("flseq", offset);
+                case (byte)Instruction.BNOT:
+                    return PrintInstruction("bnot", offset);
+                case (byte)Instruction.BAND:
+                    return PrintInstruction("band", offset);
+                case (byte)Instruction.BOR:
+                    return PrintInstruction("bor", offset);
+                case (byte)Instruction.FRET:
+                    return PrintInstruction("fret", offset);
+                case (byte)Instruction.IRET:
+                    return PrintInstruction("iret", offset);
                 case (byte)Instruction.RET:
-                    return PrintInstruction("RET", offset);
-                case (byte)Instruction.ADD_I:
-                    return PrintInstruction("ADD_I", offset);
-                case (byte)Instruction.GREATER_I:
-                    return PrintInstruction("GREATER_I", offset);
-                case (byte)Instruction.CALL_NATIVE:
-                    return PrintConstantInstruction("CALL_NATIVE", bytecode.GetValue<Int>(offset + 1), offset);
+                    return PrintInstruction("ret", offset);
                 case (byte)Instruction.CALL:
-                    return PrintConstantInstruction("CALL", bytecode.GetValue<Int>(offset + 1), offset);
+                    return PrintConstantInstruction("call", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.CALL_NATIVE:
+                    return PrintConstantInstruction("call_native", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.JUMP_IF:
+                    return PrintConstantInstruction("jump_if", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.JUMP_NIF:
+                    return PrintConstantInstruction("jump_nif", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.JUMP:
+                    return PrintConstantInstruction("jump", bytecode.GetValue<Short>(offset + 1), offset);
+                case (byte)Instruction.F2I:
+                    return PrintInstruction("f2i", offset);
+                case (byte)Instruction.I2F:
+                    return PrintInstruction("i2f", offset);
+                case (byte)Instruction.NOP:
+                    return PrintInstruction("nop", offset);
                 default:
                     result +=$"Unknown instruction {instruction.ToString()}{Environment.NewLine}";
                     return offset + 1;
             }
         }
-        int PrintConstantInstruction(string name, Value constant, int offset)
+        int PrintConstantInstruction(string name, IValue constant, int offset)
         {
             result += $"{name} {constant.ToString()} {Environment.NewLine}";
             return offset + 1 + constant.ByteSize();
         }
-        int PrintTwoConstantsInstruction(string name, Value c1, Value c2, int offset)
+        int PrintTwoConstantsInstruction(string name,  IValue c1,  IValue c2, int offset)
         {
             result += $"{name} {c1.ToString()} {c2.ToString()} {Environment.NewLine}";
             return offset + 1 + c1.ByteSize() + c2.ByteSize();
-        }
-        int PrintTwoAddressInstruction(string name, Int add1, Int add2, int offset)
-        {
-            result += $"{name} {offset + add1.Value} {offset + add2.Value} {Environment.NewLine}";
-            return offset + 1 + add1.ByteSize() + add2.ByteSize();
-        }
-        int PrintOneAddressInstruction(string name, Int add, int offset)
-        {
-            result += $"{name} {offset + add.Value} {Environment.NewLine}";
-            return offset + 1 + add.ByteSize();
         }
         int PrintInstruction(string name,int offset)
         {
@@ -447,309 +281,527 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             return offset + 1;
         }
     }
-    /*public class CallStack
+    public class CallStack
     {
         public class CallFrame
         {
-            int offset;
-
+            int stackPointer;
+            int commandOffset;
+            int functionIndex;
+            public int CommandOffset { get { return commandOffset; } }
+            public int StackPointer { get { return stackPointer; } }
+            public int FunctionIndex { get { return functionIndex; } }
+            public CallFrame(int stackPointer, int commandOffset, int functionIndex)
+            {
+                this.stackPointer = stackPointer;
+                this.commandOffset = commandOffset;
+                this.functionIndex = functionIndex;
+            }
         }
+        CallFrame []frames;
         int stackPointer;
-    }*/
+        public int Pointer { get { return stackPointer; } }
+        public CallStack(int size)
+        {
+            frames = new CallFrame[size];
+            stackPointer = 0;
+        }
+        public CallFrame Last()
+        {
+            return frames[stackPointer - 1];
+        }
+        public CallFrame Pop()
+        {
+            return frames[--stackPointer];
+        }
+        public void Push(CallFrame frame)
+        {
+            if (stackPointer == frames.Length)
+                throw new Exception("CallStack overflow");
+            frames[stackPointer++] = frame;
+        }
+    }
     public interface INativeFunction
     {
-        byte[] Execute(Stack stack);
+        void Execute(Stack stack);
     }
     public class NativePow: INativeFunction
     {
-        byte[] INativeFunction.Execute(Stack stack)
+        void INativeFunction.Execute(Stack stack)
         {
-            int a1_address = 0;
-            int a2_address = Float.Sizeof();
-            int stackLength = a2_address + +Float.Sizeof();
-            Float a1 = stack.ReadValue<Float>(stackLength - a1_address);
-            Float a2 = stack.ReadValue<Float>(stackLength - a2_address);
+            Float a2 = stack.Pop() as Float;
+            Float a1 = stack.Pop() as Float;
             Float result = new Float(Math.Pow(a1.Value,a2.Value));
-            return result.ToBytes();
-        }
-    }
-    public class Program
-    {
-        class Global { }
-        public ByteArray Bytecode { get { return code; } }
-        ByteArray code;
-        ByteArray constants;
-        Dictionary<string, int> functionTable;
-        List<int> functionAddresses;
-        Dictionary<Value, int> constantsMap;
-        INativeFunction[] nativeFunctions;
-        Global[] globals;
-        public Program()
-        {
-            code = new ByteArray();
-            constants = new ByteArray();
-            constantsMap = new Dictionary<Value, int>();
-            functionTable = new Dictionary<string, int>();
-            functionAddresses = new List<int>();
-            globals = new Global[1];
-            nativeFunctions = new INativeFunction[1] { new NativePow()};
-        }
-        public byte[] LoadConstant(int offset, int size)
-        {
-            return constants.At(offset,size);
-        }
-        public void RegisterFunction(string name,int offset)
-        {
-            functionTable.Add(name,offset);
-            functionAddresses.Add(offset);
-        }
-        public void AddConstant(Value value)
-        {
-            int offset = constants.Size;
-            constants.AddConstant(value);
-            constantsMap.Add(value,offset);
-        }
-        public int GetFunctionOffset(string function)
-        {
-            return functionTable[function];
-        }
-        public int GetFunctionOffset(int index)
-        {
-            return functionAddresses[index];
-        }
-        public byte[] CallNative(Stack stack,int index)
-        {
-#if DEBUG||TEST
-            if (index >= nativeFunctions.Length||index<0)
-                throw new Exception("Incorrect native function index " + index);
-#endif
-            return nativeFunctions[index].Execute(stack);
+            stack.Push(result);
         }
     }
     public class VirtualMachine
     {
         Stack stack;
+        CallStack callStack;
         Program program;
-        byte[] resultRegister;
         int basePointer;
         //CallStack callStack;
-        void InitVM(int stackSize, Program program)
+        public void InitVM(int stackSize,int callStackSize, Program program)
         {
             stack = new Stack(stackSize);
+            callStack = new CallStack(callStackSize);
             this.program = program;
-            resultRegister = new byte[8];
+            //init stack
+            foreach (var global in this.program.Globals)
+            {
+                List<IValue> values = (global.Type as Compiler.NonRefType).DefaultValue();
+                foreach(var value in values)
+                    stack.Push(value);
+            }
+            basePointer = stack.Pointer;
         }
         void Interpret(int offset)
         {
             bool flag = true;
             while (flag) {
                 byte instruction = program.Bytecode.At(offset);
+                offset += 1;
                 switch (instruction)
                 {
-                    case (byte)Instruction.CALL://save stack pointer in bp and jump to address
+                    /*
+                    RCREATE,//rcreate index 
+                    IRLOAD,//pop int ref | push int from (0 + ref)
+                    FRLOAD,//pop int ref | push float from (0 + ref)
+                    IRSAVE,//pop int ref, int value | save value to (0 + ref)
+                    FRSAVE,//pop int ref, float value | save value to (0 + ref)
+                    GILOAD,//GILOAD index,  push int from stackBottom + index
+                    GFLOAD,//GFLOAD index,  push float from stackBottom + index
+                    GISTORE,
+                    GFSTORE,//GFSTORE index,  pop float to stackBottom + index
+                    ILOAD,//ILOAD index , push int
+                    FLOAD,//FLOAT index, push float
+                    ISTORE,//ISTORE index, pop int
+                    FSTORE,//ISTORE index, pop float*/
+                    case (byte)Instruction.POP://Done
                         {
-                            offset++;
-                            Int functionIndex = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            stack.PushToStack(new Int(offset).ToBytes());//save return address
-                            stack.PushToStack(new Int(basePointer).ToBytes());//save frame pointer
-                            basePointer = stack.Pointer;//set frame pointer to top of the stack
-                            offset = program.GetFunctionOffset(functionIndex.Value);//set offset to address value
+                            stack.Pop();
                             break;
                         }
-                    case (byte)Instruction.CALL_NATIVE:
-                    case (byte)Instruction.ADD_SP:
+                    case (byte)Instruction.ARR_POP:
                         {
-                            offset++;
-                            Int bytes = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            stack.Pointer += bytes.Value;
+                            Short slots = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            for (int i = 0; i < slots.Value; i++)
+                            {
+                                stack.Pop();
+                            }
                             break;
                         }
-                    case (byte)Instruction.SUB_SP:
+                    case (byte)Instruction.DUP://Done
                         {
-                            offset++;
-                            Int bytes = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            stack.Pointer -= bytes.Value;
+                            stack.Push(stack.LastValue());
                             break;
                         }
-                    case (byte)Instruction.LOAD:
+                    case (byte)Instruction.RCREATE://Done?
                         {
-                            offset++;
-                            Int _offset = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            Int size = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            byte[] bytes = stack.ReadBytes(_offset.Value,size.Value);
-                            stack.PushToStack(bytes);
+                            Short index = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            Int address = new Int(callStack.Last().StackPointer + index.Value);
+                            stack.Push(address);
                             break;
                         }
-                    case (byte)Instruction.LOAD_CONSTANT:
+                    case (byte)Instruction.IRLOAD:
                         {
-                            offset++;
-                            Int _offset = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            Int size = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            stack.PushToStack(program.LoadConstant(_offset.Value,size.Value));
+                            Int @ref = stack.Pop() as Int;
+                            stack.Push(stack.At(@ref.Value) as Int);
                             break;
                         }
-                    case (byte)Instruction.ADD_I:
+                    case (byte)Instruction.FRLOAD:
                         {
-                            Int a2 = new Int();
-                            a2.FromBytes(stack.Pop(Int.Sizeof()));
-                            Int a1 = new Int();
-                            a1.FromBytes(stack.Pop(Int.Sizeof()));
-                            stack.PushToStack(new Int(a1.Value + a2.Value).ToBytes());
-                            offset += 1;
+                            Int @ref = stack.Pop() as Int;
+                            stack.Push(stack.At(@ref.Value) as Float);
                             break;
                         }
-                    case (byte)Instruction.SUB_I:
+                    case (byte)Instruction.IRSTORE:
                         {
-                            Int a2 = new Int();
-                            a2.FromBytes(stack.Pop(Int.Sizeof()));
-                            Int a1 = new Int();
-                            a1.FromBytes(stack.Pop(Int.Sizeof()));
-                            stack.PushToStack(new Int(a1.Value - a2.Value).ToBytes());
-                            offset += 1;
+                            Int @ref = stack.Pop() as Int;
+                            Int value = stack.Pop() as Int;
+                            stack.Set(@ref.Value, value);
                             break;
                         }
-                    case (byte)Instruction.MULT_I:
+                    case (byte)Instruction.FRSTORE:
                         {
-                            Int a2 = new Int();
-                            a2.FromBytes(stack.Pop(Int.Sizeof()));
-                            Int a1 = new Int();
-                            a1.FromBytes(stack.Pop(Int.Sizeof()));
-                            stack.PushToStack(new Int(a1.Value * a2.Value).ToBytes());
-                            offset += 1;
+                            Int @ref = stack.Pop() as Int;
+                            Float value = stack.Pop() as Float;
+                            stack.Set(@ref.Value, value);
                             break;
                         }
-                    case (byte)Instruction.DIV_I:
+                    case (byte)Instruction.ILOAD:
                         {
-                            Int a2 = new Int();
-                            a2.FromBytes(stack.Pop(Int.Sizeof()));
-                            Int a1 = new Int();
-                            a1.FromBytes(stack.Pop(Int.Sizeof()));
-                            stack.PushToStack(new Int(a1.Value / a2.Value).ToBytes());
-                            offset += 1;
+                            Short index = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            stack.Push(stack.At(callStack.Last().StackPointer + index.Value) as Int);
                             break;
                         }
-                    case (byte)Instruction.MOD_I:
+                    case (byte)Instruction.FLOAD:
                         {
-                            Int a2 = new Int();
-                            a2.FromBytes(stack.Pop(Int.Sizeof()));
-                            Int a1 = new Int();
-                            a1.FromBytes(stack.Pop(Int.Sizeof()));
-                            stack.PushToStack(new Int(a1.Value % a2.Value).ToBytes());
-                            offset += 1;
+                            Short index = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            stack.Push(stack.At(callStack.Last().StackPointer + index.Value) as Float);
                             break;
                         }
-                    case (byte)Instruction.WRITE:
+                    case (byte)Instruction.ISTORE:
                         {
-                            offset++;
-                            Int _offset = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            Int size = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
+                            Short index = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            Int value = stack.Pop() as Int;
+                            stack.Set(callStack.Last().StackPointer + index.Value, value);
+                            break;
+                        }
+                    case (byte)Instruction.FSTORE:
+                        {
+                            Short index = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            Float value = stack.Pop() as Float;
+                            stack.Set(callStack.Last().StackPointer + index.Value, value);
+                            break;
+                        }
+                    case (byte)Instruction.IPUSH://Done
+                        {
+                            Int value = program.Bytecode.GetValue<Int>(offset);
+                            offset +=Int.Sizeof();
+                            stack.Push(value);
+                            break;//IPUSH int, push int
+                        }
+                    case (byte)Instruction.FPUSH://Done
+                        {
+                            Float value = program.Bytecode.GetValue<Float>(offset);
+                            offset += Float.Sizeof();
+                            stack.Push(value);
+                            break;//FPUSH float, push float
+                        }
+                    case (byte)Instruction.IMUL://Done
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value * b.Value));
+                            break;//IMUL, pop int,int | push int
+                        }
+                    case (byte)Instruction.IADD://Done
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value + b.Value));
+                            break;
+                        }
+                    case (byte)Instruction.IDIV://Done
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value / b.Value));
+                            break;
+                        }
+                    case (byte)Instruction.ISUB://Done
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value - b.Value));
+                            break;
+                        }
+                    case (byte)Instruction.IMOD://Done
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value % b.Value));
+                            break;
+                        }
+                    case (byte)Instruction.INEG://Done
+                        {
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(-a.Value));
+                            break;
+                        }
+                    case (byte)Instruction.FADD://Done
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Float(a.Value + b.Value));
+                            break;
+                        }
+                    case (byte)Instruction.FSUB://Done
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Float(a.Value - b.Value));
+                            break;
+                        }
+                    case (byte)Instruction.FMUL://Done
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Float(a.Value * b.Value));
+                            break;
+                        }
+                    case (byte)Instruction.FDIV://Done
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Float(a.Value / b.Value));
+                            break;
+                        }
+                    case (byte)Instruction.FNEG://Done
+                        {
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Float(-a.Value));
+                            break;
+                        }
+                    case (byte)Instruction.IEQ:
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value == b.Value?1:0));
+                            break;
+                        }
+                    case (byte)Instruction.FEQ:
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Int(a.Value == b.Value ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.INEQ:
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value == b.Value ? 0 : 1));
+                            break;
+                        }
+                    case (byte)Instruction.FNEQ:
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Int(a.Value == b.Value ? 0 : 1));
+                            break;
+                        }
+                    case (byte)Instruction.IGR:
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value > b.Value ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.FGR:
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Int(a.Value > b.Value ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.IGREQ:
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value >= b.Value ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.FGREQ:
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Int(a.Value >= b.Value ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.ILS:
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value < b.Value ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.FLS:
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Int(a.Value < b.Value ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.ILSEQ:
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value <= b.Value ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.FLSEQ:
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Int(a.Value <= b.Value ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.BNOT:
+                        {
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int(a.Value == 0 ? 1 : 0));
+                            break;
+                        }
+                    case (byte)Instruction.BAND:
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int((a.Value != 0&&b.Value!=0)?1:0));
+                            break;
+                        }
+                    case (byte)Instruction.BOR:
+                        {
+                            Int b = stack.Pop() as Int;
+                            Int a = stack.Pop() as Int;
+                            stack.Push(new Int((a.Value != 0 || b.Value != 0) ? 1 : 0));
+                            break;
+                        }
+                    /*case (byte)Instruction.WRITE:
+                        {
+                            Short _offset = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            Short size = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
                             byte[] bytes = stack.Pop(size.Value);
-                            stack.WriteBytes(bytes,_offset.Value, size.Value);
+                            stack.WriteBytes(bytes, _offset.Value, size.Value);
+                            break;
+                        }*/
+                    case (byte)Instruction.FRET:
+                        {
+                            Float value = stack.Pop() as Float;
+                            CallStack.CallFrame frame = callStack.Pop();
+                            offset = frame.CommandOffset;//return to command right after function call
+                            stack.Pointer = frame.StackPointer;//reset stack pointer
+                            stack.Push(value);//push result
                             break;
                         }
-                    case (byte)Instruction.GREATER_I:
+                    case (byte)Instruction.IRET:
                         {
-                            Int a2 = new Int();
-                            a2.FromBytes(stack.Pop(Int.Sizeof()));
-                            Int a1 = new Int();
-                            a1.FromBytes(stack.Pop(Int.Sizeof()));
-                            stack.PushToStack(new Bool(a1.Value>a2.Value).ToBytes());
-                            offset += 1;
-                            break;
-                        }
-                    case (byte)Instruction.SET_RESULT:
-                        {
-                            offset++;
-                            Int size = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            byte[] bytes = stack.Pop(size.Value);
-                            Array.Copy(bytes,resultRegister,size.Value);
+                            Int value = stack.Pop() as Int;
+                            CallStack.CallFrame frame = callStack.Pop();
+                            offset = frame.CommandOffset;//return to command right after function call
+                            stack.Pointer = frame.StackPointer;//reset stack pointer
+                            stack.Push(value);//push result
                             break;
                         }
                     case (byte)Instruction.RET:
                         {
-                            stack.Pointer = basePointer;
-                            basePointer = new Int(stack.Pop(Int.Sizeof())).Value;//prev frame pointer
-                            //stack now points to return address
-                            Int address = new Int(stack.Pop(Int.Sizeof()));
-                            if (address.Value == -1)//stop program
-                                return;
-                            offset = address.Value;//return to place right after function call
+                            CallStack.CallFrame frame = callStack.Pop();
+                            offset = frame.CommandOffset;//return to command right after function call
+                            stack.Pointer = frame.StackPointer;//reset stack pointer
+                            break;
+                        }
+                    case (byte)Instruction.CALL://save stack pointer in bp and jump to address //Done
+                        {
+                            Short functionIndex = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            Compiler.FunctionType function = program.GetFunctionType((int)functionIndex.Value);
+                            CallStack.CallFrame frame = new CallStack.CallFrame( stack.Pointer - function.GetSlotSize(), offset, functionIndex.Value);
+                            callStack.Push(frame);
+                            offset = function.Offset;//set offset to address value
+                            break;
+                        }
+                    case (byte)Instruction.CALL_NATIVE:
+                        {
+                            Short index = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            program.CallNative(stack, index.Value);
                             break;
                         }
                     case (byte)Instruction.JUMP_IF:
                         {
-                            Bool condition = new Bool(stack.Pop(Bool.Sizeof()));
-                            offset++;
-                            Int _offset = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
-                            if(condition.Value!=0)
-                                offset += _offset.Value;
+                            Int condition = stack.Pop() as Int;
+                            Short _offset = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            if (condition.Value != 0)
+                                offset = _offset.Value;
                             break;
                         }
                     case (byte)Instruction.JUMP_NIF:
                         {
-                            Bool condition = new Bool(stack.Pop(Bool.Sizeof()));
-                            offset++;
-                            Int _offset = program.Bytecode.GetValue<Int>(offset);
-                            offset += Int.Sizeof();
+                            Int condition = stack.Pop() as Int;
+                            Short _offset = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
                             if (condition.Value == 0)
-                                offset += _offset.Value;
+                                offset = _offset.Value;
                             break;
                         }
+                    case (byte)Instruction.JUMP:
+                        {
+                            Short _offset = program.Bytecode.GetValue<Short>(offset);
+                            offset += Short.Sizeof();
+                            offset = _offset.Value;
+                            break;
+                        }
+                    case (byte)Instruction.F2I:
+                        {
+                            Float val = stack.Pop() as Float;
+                            stack.Push(new Int((int)val.Value));
+                            break;//dtoi, pop float | push int
+                        }
+                    case (byte)Instruction.I2F://Done
+                        {
+                            Int val = stack.Pop() as Int;
+                            stack.Push(new Float((double)val.Value));
+                            break;
+                        }
+                    case (byte)Instruction.NOP://Done
+                        break;
                     default:
                         throw new Exception("Unknown instruction");
+                }
+                if (callStack.Pointer == 0)
+                {
+                    return;//stop program, float result would be on top of the stack
                 }
             }
         }
         //Done
-        void Execute(string functionName, Value[] arguments)
+        public IValue Execute(string functionName, IValue[] arguments)
         {
-            stack.Empty();
             //add arguments to stack
-            foreach (Value arg in arguments)
+            foreach (IValue arg in arguments)
             {
-                stack.PushToStack(arg.ToBytes());
+                stack.Push(arg);
             }
-            //add -1 return address
-            stack.PushToStack(new Int(-1).ToBytes());//address
-            stack.PushToStack(new Int(-1).ToBytes());//base pointer
-            basePointer = stack.Pointer;
             //load function address/offset
-            int offset = program.GetFunctionOffset(functionName);
+            Compiler.FunctionType function = program.GetFunctionType(functionName);
+            int offset = function.Offset;
+            callStack.Push(new CallStack.CallFrame(basePointer,offset,program.GetFunctionIndex(functionName)));
             //start executing instructions from that offset
             Interpret(offset);
-        }
-        //Done
-        public T GetResult<T>() where T: Value, new()
-        {
-            T result = new T();
-            result.FromBytes(resultRegister);
-            //result.FromBytes(stack.Pop(result.ByteSize()));
+            IValue result = null;
+            switch (function.ReturnType.Type)
+            {
+                case Compiler.BasicType.BType.Void:
+                    result = null;
+                    break;
+                case Compiler.BasicType.BType.Bool:
+                case Compiler.BasicType.BType.Int:
+                    result = stack.Pop() as Int;
+                    break;
+                case Compiler.BasicType.BType.Float:
+                    result = stack.Pop() as Float;
+                    break;
+            }
+            stack.Pointer = basePointer;//restore stack
             return result;
         }
-        /*
-         Stack:
-         arguments,
-         return address,
-         locals
-             
-             */
+        public IValue[] ExtractFromStack(int size)
+        {
+            int i = 0;
+            IValue[] result = new IValue[size];
+            while (i < size)
+            {
+                result[size-1-i] = stack.Pop();
+            }
+            return result;
+        }
         public static void Test()
         {
             /*
              int c;
              float r[5] = new float[5]{1.0,2.0,3.0,4.0,5.0};
-             float callPow(int a,int b)
+             float callPow(inout int a,int b)
              {
                 return pow(a,b);//native function
              }
@@ -761,27 +813,25 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 return a;
              }
             callPow:
-                LOAD 16
-                LOAD 12
-                CALL_NATIVE pow
-                GET_RESULT 4
-                SAVE 4
-                RET
+              0  RLOAD(1B) 0(2B)
+              3  IRLOAD(1B)
+              4  LOAD(1B) 1(2B)
+              7  CALL_NATIVE(1B) pow(2B)
+              10 FRET(1B)
             powTest:
-                LOAD 16
-                LOAD 12
-                CALL pow
-                SUB 8
-                GET_RESULT 4
-                LOAD_CONSTANT 0
-                GREATER
-                JUMP_IF 10
-                LOAD 12
-                SAVE 4
-                RET
-                LOAD 16
-                SAVE 4
-                RET
+              11 RCREATE(1B) ()0
+              14 LOAD 1
+              17 CALL pow
+              20 FSTORE 2
+              23 FPUSH (8B)4.0
+              31 FGR
+              32 JUMP_IF 10
+              35 LOAD 12
+              38 SAVE 4
+              41 FRET
+              42 LOAD 16
+              45 SAVE 4
+              46 FRET
              */
 
 
@@ -820,49 +870,51 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             OP_SAVE 4//pop and save result in special 8 bytes register
             OP_RET //jump to address in stack
              */
-            Program program = new Program();
+            
+            Compiler compiler = new Compiler();
+            string text = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Docs\RecloserTest1.rcl"));
+            AntlrInputStream inputStream = new AntlrInputStream(text);
+            RecloserGrammarLexer programLexer = new RecloserGrammarLexer(inputStream);
+            ErrorListener<int> lexerErrorListener = new ErrorListener<int>();
+            programLexer.RemoveErrorListeners();
+            programLexer.AddErrorListener(lexerErrorListener);
+            CommonTokenStream commonTokenStream = new CommonTokenStream(programLexer);
+            RecloserGrammarParser programParser = new RecloserGrammarParser(commonTokenStream);
+            ErrorListener<IToken> parserErrorListener = new ErrorListener<IToken>();
+            programParser.RemoveErrorListeners();
+            programParser.AddErrorListener(parserErrorListener);
+
+            RecloserGrammarParser.ProgramContext programContext = programParser.program();
+            List<ErrorMessage> errorList = new List<ErrorMessage>();
+            errorList.AddRange(lexerErrorListener.GetErrors());
+            errorList.AddRange(parserErrorListener.GetErrors());
+            if (errorList.Count > 0)
+            {
+                foreach (var error in errorList)
+                {
+                    Console.WriteLine(error.Error);
+                }
+                return;
+            }
+            Visitor visitor = new Visitor();
+            Node root = visitor.VisitProgram(programContext);
+
+            Program program =  compiler.Compile(root as ProgramNode, 4096);
             //TODO init program
-            program.Bytecode.AddInstruction(Instruction.ADD_SP);
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddInstruction(Instruction.LOAD);
-            program.Bytecode.AddConstant(new Int(16));
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddInstruction(Instruction.LOAD_CONSTANT);
-            program.Bytecode.AddConstant(new Int(0));
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddInstruction(Instruction.ADD_I);
-            program.Bytecode.AddInstruction(Instruction.WRITE);
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddInstruction(Instruction.LOAD);
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddInstruction(Instruction.LOAD_CONSTANT);
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddInstruction(Instruction.GREATER_I);
-            program.Bytecode.AddInstruction(Instruction.SET_RESULT);
-            program.Bytecode.AddConstant(new Int(4));
-            program.Bytecode.AddInstruction(Instruction.RET);
-
-            program.AddConstant(new Int(5));
-            program.AddConstant(new Int(9));
-
-            program.RegisterFunction("main",0);
-
+            //program.RegisterFunction("main", 0, 0);
+            if (!program.HasFunction("updateState", new Compiler.Type[] { new Compiler.FloatType(),new Compiler.FloatType()},new Compiler.BoolType()))
+                throw new Exception("Function is not found");
             VirtualMachine vm = new VirtualMachine();
-            vm.InitVM(4096, program);
+            vm.InitVM(4096/8, 20, program);
             Disassembler disassembler = new Disassembler();
             Stream StdoutStream = Console.OpenStandardOutput();
             StreamWriter Stdout = new StreamWriter(StdoutStream);
             Stdout.WriteLine("\tTest virtual machine");
-            string result = disassembler.Disassemble(program);
+            string result = disassembler.Disassemble(program, text);
             Stdout.WriteLine(result);
-            //TODO write result
-            vm.Execute("main",new Value[] { new Int(10)});
+            Stdout.Flush();
+            Int programResult = vm.Execute("updateState", new IValue[] { new Float(10),new Float(5)}) as Int;
 
-            Bool programResult = vm.GetResult<Bool>();
-            //TODO print programResult
             Stdout.WriteLine("Result: " + programResult.ToString());
         }
     }

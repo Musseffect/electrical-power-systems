@@ -5,7 +5,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Antlr4.Runtime;
 using ElectricalPowerSystems.Equations.DAE;
+using ElectricalPowerSystems.PowerModel.NewModel.Recloser;
 using ElectricalPowerSystems.PowerModel.NewModel.Transient;
 using MathNet.Numerics.LinearAlgebra;
 using static ElectricalPowerSystems.PowerModel.NewModel.ModelInterpreter;
@@ -42,13 +44,78 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
     }
     public class RecloserProgram: IRecloserProgram
     {
-        public RecloserProgram(string program)
+        Program program;
+        VirtualMachine vm;
+        public RecloserProgram(string programText,int programSizeLimit, int stackSize,int callStackSize)
         {
             //some black magic here
+            Recloser.Compiler compiler = new Recloser.Compiler();
+            AntlrInputStream inputStream = new AntlrInputStream(programText);
+            RecloserGrammarLexer programLexer = new RecloserGrammarLexer(inputStream);
+            ErrorListener<int> lexerErrorListener = new ErrorListener<int>();
+            programLexer.RemoveErrorListeners();
+            programLexer.AddErrorListener(lexerErrorListener);
+            CommonTokenStream commonTokenStream = new CommonTokenStream(programLexer);
+            RecloserGrammarParser programParser = new RecloserGrammarParser(commonTokenStream);
+            ErrorListener<IToken> parserErrorListener = new ErrorListener<IToken>();
+            programParser.RemoveErrorListeners();
+            programParser.AddErrorListener(parserErrorListener);
+
+            RecloserGrammarParser.ProgramContext programContext = programParser.program();
+            List<ErrorMessage> errorList = new List<ErrorMessage>();
+            errorList.AddRange(lexerErrorListener.GetErrors());
+            errorList.AddRange(parserErrorListener.GetErrors());
+            if (errorList.Count > 0)
+            {
+                foreach (var error in errorList)
+                {
+                    throw new Equations.CompilerException(errorList);
+                }
+                return;
+            }
+            Visitor visitor = new Visitor();
+            Node root = visitor.VisitProgram(programContext);
+            Recloser.Compiler.StructType recloserStateStruct = compiler.RegisterCustomType("recloserState", 
+                new List<KeyValuePair<string,Recloser.Compiler.NonRefType>>
+                {
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ua", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ub", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "uc", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ia", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ib", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ic", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "currentState", new Recloser.Compiler.BoolType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "time", new Recloser.Compiler.FloatType())
+                }
+            );
+            program = compiler.Compile(root as ProgramNode, programSizeLimit);
+            if (program.HasFunction("init", new Recloser.Compiler.Type []{ }, new Recloser.Compiler.VoidType()))
+            {
+                throw new Exception("Функция \"void init()\" не найдена в программе");
+            }
+            if (program.HasFunction("updateState", new Recloser.Compiler.Type[] { recloserStateStruct }, new Recloser.Compiler.BoolType()))
+            {
+                throw new Exception("Функция \"bool updateState()\" не найдена в программе");
+            }
+            vm = new VirtualMachine();
+            vm.InitVM(stackSize, callStackSize, program);
+            IValue result = vm.Execute("init",new Recloser.IValue[] { });
             throw new NotImplementedException("RecloserProgram.Constructor");
         }
         bool IRecloserProgram.Execute(RecloserState state)
         {
+            IValue result = vm.Execute("main", new Recloser.IValue[]{
+                    new Float(state.UA),
+                    new Float(state.UB),
+                    new Float(state.UC),
+                    new Float(state.IA),
+                    new Float(state.IB),
+                    new Float(state.IC),
+                    new Int(state.currentState),
+                    new Float(state.time)
+                }
+            );
+            return (result as Int).BoolValue;
             throw new NotImplementedException("RecloserProgram.Execute");
         }
     }
@@ -236,7 +303,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             RecloserProgram program;
             try
             {
-                program = new RecloserProgram(programText);
+                program = new RecloserProgram(programText,4096,4096/4,20);
             } catch (Exception exc)
             {
                 throw exc;

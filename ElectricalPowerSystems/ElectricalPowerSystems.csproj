@@ -138,13 +138,20 @@
     <Compile Include="PowerModel\NewModel\Elements\GeneratorD.cs" />
     <Compile Include="PowerModel\NewModel\Elements\LineRL.cs" />
     <Compile Include="PowerModel\NewModel\Elements\Switch2Way1P.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\ByteArray.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\Compiler.Old.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\Compiler.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\Interpreter.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\Program.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\RecloserGrammar.g4.lexer.cs">
       <DependentUpon>RecloserGrammar.g4</DependentUpon>
     </Compile>
     <Compile Include="PowerModel\NewModel\Recloser\RecloserGrammar.g4.parser.cs">
       <DependentUpon>RecloserGrammar.g4</DependentUpon>
     </Compile>
+    <Compile Include="PowerModel\NewModel\Recloser\Test.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\Value.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\VirtualMachine.Old.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\VirtualMachine.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\Visitor.cs" />
     <Compile Include="PowerModel\OldModel\ACGraph\ACGraph.cs" />
@@ -336,6 +343,7 @@
       <CustomToolNamespace>ElectricalPowerSystems.PowerModel.OldModel</CustomToolNamespace>
     </Antlr4>
     <EmbeddedResource Include="GUI\ModelEditor\SyntaxHighlightingRecloserLanguage.xshd" />
+    <EmbeddedResource Include="GUI\ModelEditor\SyntaxHighlightingEquationsLanguage.xshd" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -399,10 +407,18 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\app.ico" />
-    <Resource Include="Docs\SteadyState.txt" />
+    <None Include="Docs\SteadyState.psms">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Resource Include="Examples\SteadyStateExample1.txt" />
     <Resource Include="Examples\SteadyStateExample2.txt" />
     <Resource Include="Examples\TransientExample1.txt" />
+    <None Include="Docs\RecloserTest1.rcl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\RecloserTest2.rcl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Content Include="Help\help.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
