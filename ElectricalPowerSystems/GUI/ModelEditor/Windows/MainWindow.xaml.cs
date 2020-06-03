@@ -474,36 +474,6 @@ I_l(t0) = 0;
             expanderRow.Height = new GridLength(1, GridUnitType.Star);
         }
         #region CLICK_METHODS
-        private async void RunOldMenuButton_Click(object sender, RoutedEventArgs e)
-        {
-            UIEnabled = false;
-            ClearOutput();
-            try
-            {
-                await Task.Run(() => RunOldModel(this));
-            }
-            catch (Exception exc)
-            {
-                Console.Write(exc.Message);
-            }
-            UIEnabled = true;
-            Expander.IsExpanded = true;
-        }
-        private async void RunOldTransientMenuButton_Click(object sender, RoutedEventArgs e)
-        {
-            UIEnabled = false;
-            ClearOutput();
-            try
-            {
-                await Task.Run(() => RunOldTransientModel(this));
-            }
-            catch (Exception exc)
-            {
-                Console.Write(exc.Message);
-            }
-            UIEnabled = true;
-            Expander.IsExpanded = true;
-        }
         private async void RunNonlinearTest_Click(object sender, RoutedEventArgs e)
         {
             UIEnabled = false;
@@ -661,14 +631,6 @@ connections:
             _tabItems.Add(tab);
             FileTab.SelectedIndex = _tabItems.Count - 1;
         }
-        private async void RungGenerateDAE_Click(object sender, RoutedEventArgs e)
-        {
-            UIEnabled = false;
-            ClearOutput();
-            await Task.Run(() => RunEquationGenerationDAE(this));
-            UIEnabled = true;
-            Expander.IsExpanded = true;
-        }
         private async void RunDAEExpressionTest_Click(object sender, RoutedEventArgs e)
         {
             //Тестирование парсинга и упрощения ДАУ
@@ -807,7 +769,7 @@ connections:
         {
             UIEnabled = false;
             ClearOutput();
-            await Task.Run(() => RunEquationGenerationAC(this));
+            await Task.Run(() => RunEquationGeneration(this));
             UIEnabled = true;
             Expander.IsExpanded = true;
         }
@@ -1116,140 +1078,6 @@ connections:
             }
             return;
         }
-        internal void RunOldTransientModel(MainWindow window)
-        {
-            FileTabItem tab = null;
-            window.Dispatcher.Invoke(() =>
-            {
-                tab = window.FileTab.SelectedItem as FileTabItem;
-            });
-            if (tab == null)
-            {
-                return;
-            }
-            List<ErrorMessage> errorList = new List<ErrorMessage>();
-            window.Dispatcher.Invoke(() =>
-            {
-                window.FileTab.Focus();
-                window.StatusText = "Расчёт";
-            });
-            //Thread.Sleep(4000); //Test of UI
-            List<string> outputList = new List<string>();
-            try
-            {
-                string text = "";
-                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-                PowerModel.MainInterpreter.RunModelOldTransient(text, ref errorList, ref outputList);
-            }
-            catch (Equations.CompilerException exc)
-            {
-                outputList.Add(exc.Message);
-                var errors = exc.Errors;
-                foreach (var error in errors)
-                {
-                    errorList.Add(error);
-                }
-            }
-            catch (Exception exc)
-            {
-                window.Dispatcher.Invoke(() =>
-                {
-                    window.OutputText += exc.Message;
-                    window.OutputText += "\n";
-                    window.OutputText += exc.StackTrace;
-                });
-                return;
-            }
-            try
-            {
-                window.Dispatcher.Invoke(() =>
-                {
-                    foreach (ErrorMessage error in errorList)
-                    {
-                        window.errors.Add(error);
-                    }
-                    foreach (var output in outputList)
-                    {
-                        window.OutputText += output;
-                        window.OutputText += "\n";
-                    }
-                    window.StatusText = "Готово";
-                }
-                );
-            }
-            catch (Exception exc)
-            {
-                Console.Write(exc.Message);
-            }
-            return;
-        }
-        internal void RunOldModel(MainWindow window)
-        {
-            FileTabItem tab = null;
-            window.Dispatcher.Invoke(() =>
-            {
-                tab = window.FileTab.SelectedItem as FileTabItem;
-            });
-            if (tab == null)
-            {
-                return;
-            }
-            List<ErrorMessage> errorList = new List<ErrorMessage>();
-            window.Dispatcher.Invoke(() =>
-            {
-                window.FileTab.Focus();
-                window.StatusText = "Расчёт";
-            });
-            //Thread.Sleep(4000); //Test of UI
-            List<string> outputList = new List<string>();
-            try
-            {
-                string text = "";
-                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-                PowerModel.MainInterpreter.RunModelOld(text,ref errorList,ref outputList);
-            }
-            catch (Equations.CompilerException exc)
-            {
-                outputList.Add(exc.Message);
-                var errors = exc.Errors;
-                foreach (var error in errors)
-                {
-                    errorList.Add(error);
-                }
-            }
-            catch (Exception exc)
-            {
-                window.Dispatcher.Invoke(() =>
-                {
-                    window.OutputText += exc.Message;
-                    window.OutputText += "\n";
-                    window.OutputText += exc.StackTrace;
-                });
-                return;
-            }
-            try
-            {
-                window.Dispatcher.Invoke(() =>
-                {
-                    foreach (ErrorMessage error in errorList)
-                    {
-                        window.errors.Add(error);
-                    }
-                    foreach (var output in outputList)
-                    {
-                        window.OutputText += output;
-                        window.OutputText += "\n";
-                    }
-                    window.StatusText = "Готово";
-                }
-                );
-            }
-            catch (Exception exc)
-            {
-                Console.Write(exc.Message);
-            }
-            return;
-        }
         internal void RunDAETest(MainWindow window,double alpha,double fAbsTol,double step,int iterations,int method)
         {
             FileTabItem tab = null;
@@ -1346,7 +1174,7 @@ connections:
             }
             return;
         }
-        internal void RunEquationGenerationAC(MainWindow window)
+        internal void RunEquationGeneration(MainWindow window)
         {
             FileTabItem tab = null;
             Dispatcher.Invoke(() => {
@@ -1368,53 +1196,6 @@ connections:
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
                 PowerModel.MainInterpreter.EquationGeneration(text, ref errorList, ref outputList);
-            }
-            catch (Exception exc)
-            {
-                Dispatcher.Invoke(() => {
-                    window.OutputText += exc.Message;
-                    window.OutputText += "\n";
-                    window.OutputText += exc.StackTrace;
-                });
-                return;
-            }
-            Dispatcher.Invoke(() => {
-                foreach (ErrorMessage error in errorList)
-                {
-                    window.errors.Add(error);
-                }
-                foreach (var output in outputList)
-                {
-                    window.OutputText += output;
-                    window.OutputText += "\n";
-                }
-                window.StatusText = "Готово";
-            }
-            );
-            return;
-        }
-        internal void RunEquationGenerationDAE(MainWindow window)
-        {
-            FileTabItem tab = null;
-            Dispatcher.Invoke(() => {
-                tab = window.FileTab.SelectedItem as FileTabItem;
-            });
-            if (tab == null)
-            {
-                return;
-            }
-            List<ErrorMessage> errorList = new List<ErrorMessage>();
-            Dispatcher.Invoke(() => {
-                window.FileTab.Focus();
-                window.StatusText = "Генерация уравнений";
-            });
-            //Thread.Sleep(4000); //Test of UI
-            List<string> outputList = new List<string>();
-            try
-            {
-                string text = "";
-                window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-                PowerModel.MainInterpreter.EquationGenerationDAE(text, ref errorList, ref outputList);
             }
             catch (Exception exc)
             {

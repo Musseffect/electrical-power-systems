@@ -189,13 +189,7 @@
             </MenuItem>
             <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" Click="RunMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}">
             </MenuItem>
-            <MenuItem Header="Запуск(old)" IsEnabled="{Binding Path = UIEnabled}">
-                <MenuItem x:Name="RunOldMenuButton" Header="Уст. режим" Click="RunOldMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}">
-                </MenuItem>
-                <MenuItem x:Name="RunOldTransentMenuButton" Header="Перех. проц." Click="RunOldTransientMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}">
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="Тесты" IsEnabled="True">
+            <MenuItem Header="Дополнительный функционал" IsEnabled="True">
                 <MenuItem Header="Схемы">
                     <MenuItem x:Name="RLCSeriesCircuit" Header="Схема Series RLC" IsEnabled="True" Click="RLCSeriesCircuit_Click"/>
                     <MenuItem x:Name="RLCParallelCircuit" Header="Схема Parallel RLC" IsEnabled="True" Click="RLCParallelCircuit_Click"/>
@@ -204,13 +198,11 @@
                 <MenuItem Header="Уравнения">
                     <MenuItem x:Name="RunNonlinearTestButton" Header="Решение АУ" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIEnabled}"/>
                     <MenuItem x:Name="RunNonlinearExpressionTestButton" Header="Разбор и упрощения АУ" IsEnabled="{Binding Path = UIEnabled}" Click="RunNonlinearExpressionTest_Click"/>
-                    <MenuItem x:Name="GenerateEquationsACButton" Header="Генерация уравнений установившегося режима(Old)" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
-                    <MenuItem x:Name="GenerateEquationsACButtonNew" Header="Генерация уравнений установившегося режима" IsEnabled="False"/>
                     <Separator />
-                    <MenuItem x:Name="GenerateDAEButton" Header="Генерация ДАУ уравнений(Old)" Click="RungGenerateDAE_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
-                    <MenuItem x:Name="GenerateDAEButtonNew" Header="Генерация ДАУ уравнений" IsEnabled="False"/>
                     <MenuItem x:Name="RunDAEExpressionTestButton" Header="Тестирование разбора и упрощения ДАУ" IsEnabled="{Binding Path = UIEnabled}" Click="RunDAEExpressionTest_Click"/>
                     <MenuItem x:Name="RunDAETestButton" Header="Решение ДАУ системы" Click="RunDAETest_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
+                    <Separator />
+                    <MenuItem x:Name="GenerateEquationsButtoт" Header="Генерация уравнений" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="{DynamicResource m_menu_Help}" IsEnabled="True" Command="ApplicationCommands.Help"></MenuItem>

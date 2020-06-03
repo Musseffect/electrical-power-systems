@@ -252,18 +252,6 @@
     <Compile Include="PowerModel\Interpreter.cs" />
     <Compile Include="GUI\ModelEditor\TabStyleSelector.cs" />
     <Compile Include="GUI\ModelEditor\TabTemplateSelector.cs" />
-    <Compile Include="PowerModel\OldModel\ACGraph\ACGraph.cs" />
-    <Compile Include="PowerModel\OldModel\ACGraph\CircuitModelAC.cs" />
-    <Compile Include="PowerModel\OldModel\ACGraph\ElementsAC.cs" />
-    <Compile Include="PowerModel\OldModel\ASTNode.cs" />
-    <Compile Include="PowerModel\OldModel\ASTVisitor.cs" />
-    <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.lexer.cs">
-      <DependentUpon>OldGrammar.g4</DependentUpon>
-    </Compile>
-    <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.parser.cs">
-      <DependentUpon>OldGrammar.g4</DependentUpon>
-    </Compile>
-    <Compile Include="PowerModel\OldModel\ObjectSystem.cs" />
     <Compile Include="Test\Test.cs" />
     <Compile Include="Equations\DAE\Implicit\DAEISystem.cs" />
     <Compile Include="Equations\DAE\Implicit\DAEISolver.cs" />
@@ -313,10 +301,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Antlr4 Include="PowerModel\OldModel\Grammar\OldGrammar.g4">
-      <Generator>MSBuild:Compile</Generator>
-      <CustomToolNamespace>ElectricalPowerSystems.PowerModel.OldModel</CustomToolNamespace>
-    </Antlr4>
     <Compile Include="MathUtils\MathUtils.cs" />
     <Compile Include="ModelException.cs" />
     <Compile Include="ErrorMessage.cs" />
