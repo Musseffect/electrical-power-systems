@@ -20,7 +20,8 @@ namespace ElectricalPowerSystems.GUI.ModelEditor.Windows
         RADAUIIA3 = 0,
         RADAUIIA5 =1,
         BDF = 2,
-        TRAPEZOID = 3
+        TRAPEZOID = 3,
+        BDF2 = 4
     }
     /// <summary>
     /// Логика взаимодействия для DAESolverDialog.xaml

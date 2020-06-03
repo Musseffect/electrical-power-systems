@@ -26,6 +26,7 @@
             <ComboBoxItem>RADAUIIA5</ComboBoxItem>
             <ComboBoxItem>BDF1</ComboBoxItem>
             <ComboBoxItem>TRAPEZOID</ComboBoxItem>
+            <ComboBoxItem>BDF2</ComboBoxItem>
         </ComboBox>
 
         <Label VerticalAlignment="Center" Height="Auto" Margin="10" Grid.Row="1"  Grid.Column="0" Content="Шаг"/>

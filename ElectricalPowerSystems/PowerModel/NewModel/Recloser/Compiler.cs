@@ -90,7 +90,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 this.function = function;
                 int c = 0;
                 //variableSlots = -this.function.GetSlotSize();
-                foreach (var arg in this.function.ArgumentTypes)
+                foreach (var arg in this.function.Signature.ArgumentTypes)
                 {
                     Type type = arg.Type;
                     if (!arg.IsLocal)
@@ -325,6 +325,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 size = 0;
                 this.name = name;
                 this.fields = new Dictionary<string, Field>();
+                this.fieldList = new List<Field>();
             }
             public override void EmitInit(Compiler compiler)
             {
@@ -787,18 +788,33 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 throw new Exception("Нельзя использовать тип void");
             }
         }
-        public class FunctionType
+        public class FunctionSignature
         {
-            public BasicType ReturnType;
-            public string Name;
             public class ArgType
             {
                 public NonRefType Type;
                 public bool IsLocal;
                 public string Name;
+                public ArgType(NonRefType type, bool isLocal, string name)
+                {
+                    this.Type = type;
+                    this.IsLocal = isLocal;
+                    this.Name = name;
+                }
             };
-            public List<ArgType> ArgumentTypes;
-            public Dictionary<string, ArgType> ArgumentsDictionary;//null if not initialized
+            public BasicType ReturnType { get; protected set; }
+            public List<ArgType> ArgumentTypes { get; protected set; }
+            public Dictionary<string, ArgType> ArgumentsDictionary { get; set; }//null if not initialized
+            public FunctionSignature(List<ArgType> arguments, BasicType returnType)
+            {
+                ArgumentsDictionary = new Dictionary<string, ArgType>();
+                this.ArgumentTypes = arguments;
+                foreach (var argument in arguments)
+                {
+                    ArgumentsDictionary.Add(argument.Name,argument);
+                }
+                this.ReturnType = returnType;
+            }
             public int GetSlotSize()
             {
                 int slots = 0;
@@ -808,13 +824,13 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 }
                 return slots;
             }
-            public static bool CompareSignatures(FunctionType a, FunctionType b)
+            public static bool Compare(FunctionSignature a, FunctionSignature b)
             {
                 if (a.ArgumentTypes.Count != b.ArgumentTypes.Count)
                     return false;
                 if (a.ReturnType != b.ReturnType)
                     return false;
-                for(int i=0;i<a.ArgumentTypes.Count;i++)
+                for (int i = 0; i < a.ArgumentTypes.Count; i++)
                 {
                     if (a.ArgumentTypes[i].Type != b.ArgumentTypes[i].Type)//TODO
                         return false;
@@ -823,15 +839,31 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 }
                 return true;
             }
+
+        }
+        public class NativeFunctionType
+        {
+            public INativeFunction Function;
+            public FunctionSignature Signature;
+            public int Index;
+            public string Name;
+        }
+        public class FunctionType
+        {
+            public FunctionSignature Signature;
+            public string Name;
+            public int SrcPosBegin;
+            public int SrcPosEnd;
             public int Index;
             public int Offset;//address in program memory
         }
         ByteArray bytecode;
         Dictionary<string, StructType> structs;
         Dictionary<string, BasicType> basicTypes;
-        Dictionary<string, FunctionType> functionDictionary;
-        List<FunctionType> functionList;
-
+        Dictionary<string, FunctionType> functionsDictionary;
+        Dictionary<string, NativeFunctionType> nativeFunctionsDictionary;
+        List<FunctionType> functionsList;
+        List<INativeFunction> nativeFunctions;
         Dictionary<string, Variable> globalsDictionary;
         List<Variable> globalsList;
         //List<IValue> globalValues;
@@ -840,10 +872,17 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         int currentLine;
         int programSizeLimit;
         //Dictionary<string, NativeFunction> nativeFunctions;
-        public Program Compile(ProgramNode program, int programSizeLimit)
+        public void Init(List<NativeFunctionType> nativeFunctionsList)
         {
-            functionDictionary = new Dictionary<string, FunctionType>();
-            functionList = new List<FunctionType>();
+            nativeFunctionsDictionary = new Dictionary<string, NativeFunctionType>();
+            nativeFunctions = new List<INativeFunction>();
+            foreach (var func in nativeFunctionsList)
+            {
+                nativeFunctionsDictionary.Add(func.Name, func);
+                nativeFunctions.Add(func.Function);
+            }
+            functionsDictionary = new Dictionary<string, FunctionType>();
+            functionsList = new List<FunctionType>();
             structs = new Dictionary<string, StructType>();
             basicTypes = new Dictionary<string, BasicType> {
                 { "int",new IntType()},
@@ -851,12 +890,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 { "float",new FloatType()},
                 { "void",new VoidType()}
             };
+            globalsDictionary = new Dictionary<string, Variable>();
+            globalsList = new List<Variable>();
+        }
+        public Program Compile(ProgramNode program, int programSizeLimit)
+        {
             lines = new List<Program.Line>();
             currentLine = -1;
             errors = new List<ErrorMessage>();
             bytecode = new ByteArray();
-            globalsDictionary = new Dictionary<string, Variable>();
-            globalsList = new List<Variable>();
             this.programSizeLimit = programSizeLimit;
             foreach (var statement in program.Statements)
             {
@@ -866,8 +908,9 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 errors.Add(new ErrorMessage($"Размер программы {bytecode.Size} байт больше максимального {programSizeLimit} байт"));
             if (errors.Count > 0)
                 throw new Equations.CompilerException(errors);
-            return new Program(bytecode, globalsList, functionList, functionDictionary, new List<INativeFunction>(), lines.ToArray());
+            return new Program(bytecode, globalsList, functionsList, functionsDictionary, nativeFunctions, lines.ToArray());
         }
+        //public void RegisternativeFunctions(List<>);
         public StructType RegisterCustomType(string structType, List<KeyValuePair<string, NonRefType>> fields)
         {
             if (this.structs.ContainsKey(structType))
@@ -946,7 +989,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             }
             throw new Exception("Ожидалось: оператор [], оператор ., идентификатор");
         }
-        private Type ResolveType(string typename)
+        private NonRefType ResolveType(string typename)
         {
             if (basicTypes.ContainsKey(typename))
                 return basicTypes[typename];
@@ -1086,52 +1129,58 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                         FunctionType function = new FunctionType();
                         function.Name = functionNode.Name;
                         //TODO: argument types and return type
-                        List<FunctionType.ArgType> argTypes = new List<FunctionType.ArgType>();
-                        Dictionary<string, FunctionType.ArgType> argDictionary = new Dictionary<string, FunctionType.ArgType>();
+                        List<FunctionSignature.ArgType> argTypes = new List<FunctionSignature.ArgType>();
+                        Dictionary<string, FunctionSignature.ArgType> argDictionary = new Dictionary<string, FunctionSignature.ArgType>();
                         foreach (var arg in functionNode.Signature)
                         {
-                            FunctionType.ArgType type = new FunctionType.ArgType()
-                            {
-                                IsLocal = (arg.Way == SignatureArgumentNode.WayType.In),
-                                Type = ResolveType(arg.ArgumentType),
-                                Name = arg.Name
-                            };
+                            FunctionSignature.ArgType type = new FunctionSignature.ArgType(
+                                ResolveType(arg.ArgumentType),
+                                (arg.Way == SignatureArgumentNode.WayType.In),
+                                arg.Name);
                             argTypes.Add(type);
                             if (argDictionary.ContainsKey(arg.Name))
                                 throw new Exception($"Переопределение аргумента \"{arg.Name}\"");
                             argDictionary.Add(arg.Name, type);
                         }
-                        function.ArgumentTypes = argTypes;
-                        function.ArgumentsDictionary = argDictionary;
+                        function.SrcPosBegin = functionNode.Start;
+                        function.SrcPosEnd = functionNode.Stop;
                         Type returnType = ResolveType(functionNode.ReturnType);
-                        if (returnType is BasicType)
-                            function.ReturnType = returnType as BasicType;
-                        else
+                        if (!(returnType is BasicType))
                             throw new Exception("Тип возвращаемого значения функции должен быть базовым");
-                        if (functionDictionary.ContainsKey(functionNode.Name))
+                        function.Signature = new FunctionSignature(argTypes,returnType as BasicType);
+                        if (nativeFunctionsDictionary.ContainsKey(functionNode.Name))
                         {
-                            if (FunctionType.CompareSignatures(function, functionDictionary[functionNode.Name]))
+                            throw new Exception($"Переопределение нативной функции \"{functionNode.Name}\"");
+                        }
+                        else if (functionsDictionary.ContainsKey(functionNode.Name))
+                        {
+                            if (FunctionSignature.Compare(function.Signature, functionsDictionary[functionNode.Name].Signature))
                             {
-                                if (functionDictionary[functionNode.Name].ArgumentsDictionary != null)
+                                if (functionsDictionary[functionNode.Name].Signature.ArgumentsDictionary != null)
                                     throw new Exception($"Переопределение функции \"{functionNode.Name}\"");
-                                functionDictionary[functionNode.Name] = function;
-                                functionList[function.Index] = function;
+                                functionsDictionary[functionNode.Name] = function;
+                                functionsList[function.Index] = function;
                             }
                             else
                             {
                                 throw new Exception($"Множественные объявления функции \"{functionNode.Name}\" с различными сигнатурами");
                             }
                         }
-                        else {
-                            function.Index = functionDictionary.Count;
-                            functionDictionary.Add(functionNode.Name, function);
-                            functionList.Add(function);
+                        else
+                        {
+                            function.Index = functionsDictionary.Count;
+                            functionsDictionary.Add(functionNode.Name, function);
+                            functionsList.Add(function);
                         }
 
                         //add function offset
                         function.Offset = this.bytecode.Size;
 
                         FunctionScope _scope = new FunctionScope(scope, function);
+                        if (returnType.Equals(new VoidType()))
+                        {
+                            _scope.SetHasReturn();
+                        }
                         foreach (var functionStatement in functionNode.Body)
                         {
                             CompileStatement(_scope,functionStatement);
@@ -1150,34 +1199,33 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                         //Create decalaration
                         FunctionType function = new FunctionType();
                         function.Name = functionNode.Name;
-                        function.ArgumentsDictionary = null;//declaration
                         //TODO: argument types and return type
-                        List<FunctionType.ArgType> argTypes = new List<FunctionType.ArgType>();
+                        List<FunctionSignature.ArgType> argTypes = new List<FunctionSignature.ArgType>();
                         foreach (var arg in functionNode.Signature)
                         {
-                            argTypes.Add(new FunctionType.ArgType()
-                            {
-                                IsLocal = (arg.Way == SignatureArgumentNode.WayType.In),
-                                Type = ResolveType(arg.ArgumentType)
-                            });
+                            argTypes.Add(new FunctionSignature.ArgType(ResolveType(arg.ArgumentType), (arg.Way == SignatureArgumentNode.WayType.In),arg.Name));
                         }
-                        function.ArgumentTypes = argTypes;
                         Type returnType = ResolveType(functionNode.ReturnType);
-                        if (returnType is BasicType)
-                            function.ReturnType = returnType as BasicType;
-                        else
+                        if (!(returnType is BasicType))
                             throw new Exception("Тип возвращаемого значения функции должен быть базовым");
-                        if (functionDictionary.ContainsKey(functionNode.Name))
+
+                        function.Signature = new FunctionSignature(argTypes, returnType as BasicType);
+                        function.Signature.ArgumentsDictionary = null;//declaration
+                        if (nativeFunctionsDictionary.ContainsKey(functionNode.Name))
+                        {
+                            throw new Exception($"Переопределение нативной функции \"{functionNode.Name}\"");
+                        }
+                        else if (functionsDictionary.ContainsKey(functionNode.Name))
                         {
                             //Compare signatures
 
-                            if (FunctionType.CompareSignatures(function, functionDictionary[functionNode.Name]))
+                            if (FunctionSignature.Compare(function.Signature, functionsDictionary[functionNode.Name].Signature))
                                 return;
                             throw new Exception($"Множественные объявления функции \"{functionNode.Name}\" с различными сигнатурами");
                         } 
-                        function.Index = functionDictionary.Count;
-                        functionDictionary.Add(functionNode.Name, function);
-                        functionList.Add(function);
+                        function.Index = functionsDictionary.Count;
+                        functionsDictionary.Add(functionNode.Name, function);
+                        functionsList.Add(function);
                         return;
                     }
                 case StatementNode.Type.ExpressionStatement:
@@ -1222,7 +1270,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                             functionScope.SetHasReturn();
                         if (node.Expression == null)
                         {
-                            if (functionScope.Function.ReturnType is VoidType)
+                            if (functionScope.Function.Signature.ReturnType is VoidType)
                             {
                                 Emit(Instruction.RET);
                                 return;
@@ -1232,12 +1280,12 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                         //get type of expression
                         Type expType = InferType(scope, node.Expression);
                         //if type is not equal to type of function throw exception
-                        if (!expType.Equals(functionScope.Function.ReturnType))
+                        if (!expType.Equals(functionScope.Function.Signature.ReturnType))
                         {
                             throw new Exception("Тип возвращаемого значения не совпадает с типом в объявлении функции");
                         }
                         CompileExpression(scope, node.Expression);
-                        switch (functionScope.Function.ReturnType.Type)
+                        switch (functionScope.Function.Signature.ReturnType.Type)
                         {
                             case BasicType.BType.Float:
                                 Emit(Instruction.FRET);
@@ -1449,13 +1497,13 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         {
             bytecode.AddConstant(v);
         }
-        Variable FindGlobalSymbol(string symbol)
+        private Variable FindGlobalSymbol(string symbol)
         {
             if (globalsDictionary.ContainsKey(symbol))
                 return globalsDictionary[symbol];
             return null;
         }
-        Variable FindLocalSymbol(Scope scope, string symbol)
+        private Variable FindLocalSymbol(Scope scope, string symbol)
         {
             Scope _scope = scope;
             while (_scope != null)
@@ -1789,15 +1837,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                     {
                         FunctionCallNode functionCallNode = expression as FunctionCallNode;
                         //TODO add native functions
-                        if (functionDictionary.ContainsKey(functionCallNode.Name))
+                        if (functionsDictionary.ContainsKey(functionCallNode.Name))
                         {
-                            FunctionType type = functionDictionary[functionCallNode.Name];
-                            if (type.ArgumentTypes.Count != functionCallNode.Arguments.Count)
+                            FunctionType type = functionsDictionary[functionCallNode.Name];
+                            if (type.Signature.ArgumentTypes.Count != functionCallNode.Arguments.Count)
                                 throw new Exception($"Неверное количество аргументов в вызове функции\"{functionCallNode.Name}\"");
                             int stackPointer = scope.StackPointer;
-                            for (int i = 0; i < type.ArgumentTypes.Count; i++)
+                            for (int i = 0; i < type.Signature.ArgumentTypes.Count; i++)
                             {
-                                FunctionType.ArgType argType = type.ArgumentTypes[i];
+                                FunctionSignature.ArgType argType = type.Signature.ArgumentTypes[i];
                                 ExpressionNode argExp = functionCallNode.Arguments[i];
                                 Type expType = InferType(scope, argExp);
                                 if (!expType.Equals(argType.Type))
@@ -1875,15 +1923,101 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                             }
                             //call function
                             Emit(Instruction.CALL);
-                            Emit(new Short((short)functionDictionary[functionCallNode.Name].Index));
+                            Emit(new Short((short)functionsDictionary[functionCallNode.Name].Index));
                             scope.AddToStackPointer(stackPointer - scope.StackPointer);
-                            if(type.ReturnType !=null)
-                                scope.AddToStackPointer(type.ReturnType.GetSlotSize());
-                        }/*else if (nativeFunctions.ConstainsKey(functionCallNode.Name))
+                            if(type.Signature.ReturnType !=null)
+                                scope.AddToStackPointer(type.Signature.ReturnType.GetSlotSize());
+                        }else if (nativeFunctionsDictionary.ContainsKey(functionCallNode.Name))
                         {
+                           NativeFunctionType type = nativeFunctionsDictionary[functionCallNode.Name];
+                            if (type.Signature.ArgumentTypes.Count != functionCallNode.Arguments.Count)
+                                throw new Exception($"Неверное количество аргументов в вызове функции\"{functionCallNode.Name}\"");
+                            int stackPointer = scope.StackPointer;
+                            for (int i = 0; i < type.Signature.ArgumentTypes.Count; i++)
+                            {
+                                FunctionSignature.ArgType argType = type.Signature.ArgumentTypes[i];
+                                ExpressionNode argExp = functionCallNode.Arguments[i];
+                                Type expType = InferType(scope, argExp);
+                                if (!expType.Equals(argType.Type))
+                                    throw new Exception($"Тип выражения \"{expType.GetName()}\" не совпадает с типом аргумента \"{argType.Type.GetName()}\" в объявлении функции \"{functionCallNode.Name}\" ");
+                                if (argType.IsLocal)
+                                {
+                                    CompileExpression(scope, argExp);
+                                }
+                                else //load ref
+                                {
+                                    int slot = 0;
+                                    if (argExp is IdentifierNode)
+                                    {
+                                        IdentifierNode identifierNode = argExp as IdentifierNode;
+                                        //check ref or non-ref
+                                        Variable var = null;
+                                        if ((var = FindLocalSymbol(scope, identifierNode.Identifier)) != null)
+                                        {
+                                            if (var.Type is RefType)
+                                            {
+                                                Emit(Instruction.ILOAD);
+                                                Emit(new Short((short)var.Index));
+                                                scope.AddToStackPointer(1);
+                                                continue;
+                                            }
+                                            else
+                                            {
+                                                slot = var.Index;
+                                            }
+                                        }
+                                        if ((var = FindGlobalSymbol(identifierNode.Identifier)) != null)
+                                        {
+                                            Emit(Instruction.IPUSH);
+                                            Emit(new Int(var.Index));
+                                            scope.AddToStackPointer(1);
+                                            continue;
+                                        }
+
+                                    }
+                                    else if (argExp is FieldAccessNode)
+                                    {
+                                        /*
+                                         if ref
+                                         load baseRef + field slot
+                                         else 
+                                            rcreate slot
+                                         */
+                                        throw new NotImplementedException();
+                                    }
+                                    else if (argExp is ArrayAccessNode)
+                                    {
+                                        /*
+                                         if ref
+                                         load baseRef + field slot
+                                         else 
+                                            rcreate slot
+                                         */
+                                        throw new NotImplementedException();
+                                    }
+                                    else
+                                        throw new Exception("Только l-value можно использовать в качестве inout-аргумента");
+                                    Emit(Instruction.RCREATE);
+                                    Emit(new Short((short)slot));
+                                    scope.AddToStackPointer(1);
+                                }
+                                /*
+                                 for each argument
+                                 if Identifier, Field, ArrayAccess and INOUT way
+                                    push global index
+                                 if Identifier, Field, ArrayAccess and In way
+                                    push load()
+                                 if(!(Identifier, Field, ArrayAccess) and INOUT way)
+                                    throw error;
+                                 */
+                            }
+                            //call function
                             Emit(Instruction.CALL_NATIVE);
-                            Emit(new Short((short)nativeFunctions[functionCallNode.Name].Index));
-                        }*/
+                            Emit(new Short((short)nativeFunctionsDictionary[functionCallNode.Name].Index));
+                            scope.AddToStackPointer(stackPointer - scope.StackPointer);
+                            if (type.Signature.ReturnType != null)
+                                scope.AddToStackPointer(type.Signature.ReturnType.GetSlotSize());
+                        }
                         else
                         {
                             throw new Exception($"Вызов необъявленной функции \"{functionCallNode.Name}\"");
@@ -1925,8 +2059,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                     }
                 case ExpressionNode.ExpType.ArrayAccess:
                     {
-                        throw new NotImplementedException();
                         ArrayAccessNode node = expression as ArrayAccessNode;
+                        /*
+                         get node.Parent() {isLocal,offset,parentType};
+                         get parentType.offset for current
+                         load currentType
+                         
+                         */
+                        throw new NotImplementedException();
                         if (!(node.Array is IdentifierNode))
                             throw new Exception($"Использование оператора [] с некорректным типом выражения");
                         CheckType(scope, node.Index, basicTypes["int"]);
@@ -1958,8 +2098,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                     }
                 case ExpressionNode.ExpType.FieldExpression:
                     {
-                        throw new NotImplementedException();
                         FieldAccessNode node = expression as FieldAccessNode;
+                        /*
+                         get node.Parent() {isLocal,offset,parentType};
+                         get parentType.offset for current
+                         load currentType
+                         
+                         */
+                        throw new NotImplementedException();
                         ExpressionNode _node = node.Parent;
                         List<ExpressionNode> chain = ResolveChain(node.Parent);
                         //get base type and compute index of field in loop
@@ -2021,8 +2167,8 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 /*case ExpressionNode.ExpType.ArrayInitializerList:
                     {
                         ArrayInitializerListNode arrayInitializer = expression as arrayInitializer;
-                    }
-                case ExpressionNode.ExpType.StructInitializerList:
+                    }*/
+                /*case ExpressionNode.ExpType.StructInitializerList:
                     {
                         StructInitializerListNode structInitializer = expression as StructInitilizerListNode;
                     }*/
@@ -2186,9 +2332,9 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                         throw new Exception($"Неизвестный тип \"{node.TypeName}\"");
                     }
                 case ExpressionNode.ExpType.FunctionCall:
-                    if (functionDictionary.ContainsKey((exp as FunctionCallNode).Name))
+                    if (functionsDictionary.ContainsKey((exp as FunctionCallNode).Name))
                     {
-                        return functionDictionary[(exp as FunctionCallNode).Name].ReturnType;
+                        return functionsDictionary[(exp as FunctionCallNode).Name].Signature.ReturnType;
                     }
                     throw new Exception("Вызов необъявленной функции");
                 case ExpressionNode.ExpType.IntConstant:
@@ -2197,6 +2343,18 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                     return basicTypes["bool"];
                 case ExpressionNode.ExpType.FloatConstant:
                     return basicTypes["float"];
+                case ExpressionNode.ExpType.ArrayInitializerList:
+                    {
+                        ArrayInitializerList node = exp as ArrayInitializerList;
+                        return new ArrayType(ResolveType(node.TypeName),node.Size);
+                    }
+                case ExpressionNode.ExpType.StructInitializerList:
+                    {
+                        StructInitializerList node = exp as StructInitializerList;
+                        if (this.structs.ContainsKey(node.StructName))
+                            return structs[node.StructName];
+                        throw new Exception($"Использование неизвестной структуры \"{node.StructName}\"");
+                    }
                 case ExpressionNode.ExpType.IdentifierExpression:
                     {
                         IdentifierNode node = exp as IdentifierNode;

@@ -69,6 +69,10 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
             List<string> namesList = new List<string>();
             namesList.Add("t");
             namesList.AddRange(variableNames);
+            foreach (var name in variableNames)
+            {
+                namesList.Add("der("+name+")");
+            }
             namesList.AddRange(parameterNames);
             string[] nameArray = namesList.ToArray();
             string result = "";

@@ -37,7 +37,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 Size = int.Parse(context.size.Text),
                 Elements = elements,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -101,7 +101,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             {
                 Value = (context.value.Type == RecloserGrammarLexer.TRUE ? true : false),
                 Line = context.value.Line,
-                Position = context.value.Column
+                Position = context.value.Column,
             };
         }
         //Done
@@ -114,7 +114,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         {
             return new BreakNode {
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -149,7 +149,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 Exp = Visit(context.exp) as ExpressionNode,
                 TypeName = context.id.Text,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -165,7 +165,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 Parent = Visit(context.parent) as ExpressionNode,
                 Field = context.field.Text,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -175,7 +175,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             {
                 Value = double.Parse(context.value.Text, CultureInfo.InvariantCulture),
                 Line = context.value.Line,
-                Position = context.value.Column
+                Position = context.value.Column,
             };
         }
         //Done
@@ -218,7 +218,9 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 Signature = signature,
                 Body = body,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
+                Start = context.Start.StartIndex,
+                Stop = context.RPAREN().Symbol.StopIndex+1
             };
         }
         //Done
@@ -235,7 +237,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 Name = context.name.Text,
                 Signature = signature,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -250,7 +252,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             {
                 Identifier = context.id.Text,
                 Line = context.id.Line,
-                Position = context.id.Column
+                Position = context.id.Column,
             };
         }
         //Done
@@ -263,7 +265,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                     Condition = Visit(context.condition) as ExpressionNode,
                     IfBody = Visit(context.ifbody) as StatementNode,
                     Line = context.Start.Line,
-                    Position = context.Start.Column
+                    Position = context.Start.Column,
                 };
             }
             return new IfElseNode
@@ -272,7 +274,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 IfBody = Visit(context.ifbody) as StatementNode,
                 ElseBody = Visit(context.elsebody) as StatementNode,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -293,12 +295,12 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 case RecloserGrammarLexer.INCREMENT:
                     return new PostIncrement {Inner=Visit(context.expression()) as ExpressionNode,
                         Line = context.Start.Line,
-                        Position = context.Start.Column
+                        Position = context.Start.Column,
                     };
                 case RecloserGrammarLexer.DECREMENT:
                     return new PostDecrement { Inner = Visit(context.expression()) as ExpressionNode,
                         Line = context.Start.Line,
-                        Position = context.Start.Column
+                        Position = context.Start.Column,
                     };
             }
             throw new NotSupportedException();
@@ -311,7 +313,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 case RecloserGrammarLexer.INCREMENT:
                     return new PreIncrement { Inner = Visit(context.expression()) as ExpressionNode,
                         Line = context.Start.Line,
-                        Position = context.Start.Column
+                        Position = context.Start.Column,
                     };
                 case RecloserGrammarLexer.DECREMENT:
                     return new PreDecrement { Inner = Visit(context.expression()) as ExpressionNode,
@@ -390,7 +392,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 FieldType = Visit(context.type) as TypeNode,
                 Name = context.name.Text,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -406,7 +408,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 Name = context.structname.Text,
                 Fields = fields,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -420,7 +422,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 StructName = context.structName.Text,
                 Elements = elements,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -436,7 +438,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 Expression = Visit(context.expression()) as ExpressionNode,
                 Cases = cases,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -448,7 +450,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 First = Visit(context.first) as ExpressionNode,
                 Second = Visit(context.second) as ExpressionNode,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -462,7 +464,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                     Value = int.Parse(context.size.Text)
                 },
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -498,7 +500,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 VariableType = Visit(context.type) as TypeNode,
                 Variables = variables,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
 
@@ -514,7 +516,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 Name = context.name.Text,
                 Initializer = context.initializer==null?null:Visit(context.initializer) as ExpressionNode,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
         //Done
@@ -525,7 +527,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 Condition = Visit(context.condition) as ExpressionNode,
                 Body = Visit(context.body) as StatementNode,
                 Line = context.Start.Line,
-                Position = context.Start.Column
+                Position = context.Start.Column,
             };
         }
     }

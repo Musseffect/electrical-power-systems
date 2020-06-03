@@ -144,6 +144,8 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         public string Name;
         public List<SignatureArgumentNode> Signature;
         public List<StatementNode> Body;
+        public int Start { get; set; }
+        public int Stop { get; set; }
         public FunctionDefinitionNode() : base(Type.FunctionDefinition)
         {
         }

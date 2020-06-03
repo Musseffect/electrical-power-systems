@@ -88,6 +88,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
                     new KeyValuePair<string, Recloser.Compiler.NonRefType>( "time", new Recloser.Compiler.FloatType())
                 }
             );
+            compiler.Init(new List<Recloser.Compiler.NativeFunctionType>());
             program = compiler.Compile(root as ProgramNode, programSizeLimit);
             if (program.HasFunction("init", new Recloser.Compiler.Type []{ }, new Recloser.Compiler.VoidType()))
             {
@@ -100,7 +101,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             vm = new VirtualMachine();
             vm.InitVM(stackSize, callStackSize, program);
             IValue result = vm.Execute("init",new Recloser.IValue[] { });
-            throw new NotImplementedException("RecloserProgram.Constructor");
+            //throw new NotImplementedException("RecloserProgram.Constructor");
         }
         bool IRecloserProgram.Execute(RecloserState state)
         {
@@ -116,7 +117,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
                 }
             );
             return (result as Int).BoolValue;
-            throw new NotImplementedException("RecloserProgram.Execute");
+            //throw new NotImplementedException("RecloserProgram.Execute");
         }
     }
     public class RecloserProgramNative: IRecloserProgram

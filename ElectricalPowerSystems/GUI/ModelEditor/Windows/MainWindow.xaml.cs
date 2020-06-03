@@ -1290,6 +1290,9 @@ connections:
                     case (int)METHOD.BDF:
                         solver = new Equations.DAE.Implicit.BDF1(fAbsTol, iterations, alpha, step);
                         break;
+                    case (int)METHOD.BDF2:
+                        solver = new Equations.DAE.Implicit.BDF2(fAbsTol, iterations, alpha, step);
+                        break;
                     case (int)METHOD.TRAPEZOID:
                         throw new NotImplementedException();
                     default:

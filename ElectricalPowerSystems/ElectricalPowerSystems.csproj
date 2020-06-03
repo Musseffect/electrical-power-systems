@@ -141,7 +141,8 @@
     <Compile Include="PowerModel\NewModel\Recloser\ByteArray.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\Compiler.Old.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\Compiler.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\Interpreter.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\INativeFunction.cs" />
+    <Compile Include="PowerModel\NewModel\Recloser\Interpreter\Interpreter.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\Program.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\RecloserGrammar.g4.lexer.cs">
       <DependentUpon>RecloserGrammar.g4</DependentUpon>
@@ -154,9 +155,6 @@
     <Compile Include="PowerModel\NewModel\Recloser\VirtualMachine.Old.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\VirtualMachine.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\Visitor.cs" />
-    <Compile Include="PowerModel\OldModel\ACGraph\ACGraph.cs" />
-    <Compile Include="PowerModel\OldModel\ACGraph\CircuitModelAC.cs" />
-    <Compile Include="PowerModel\OldModel\ACGraph\ElementsAC.cs" />
     <Compile Include="GUI\ModelEditor\Windows\HelpWindow.xaml.cs">
       <DependentUpon>HelpWindow.xaml</DependentUpon>
     </Compile>
@@ -200,10 +198,6 @@
     <Compile Include="PowerModel\NewModel\Pin.cs" />
     <Compile Include="PowerModel\NewModel\Elements\Recloser3P.cs" />
     <Compile Include="PowerModel\NewModel\Elements\Switch3P.cs" />
-    <Compile Include="PowerModel\OldModel\ASTNode.cs" />
-    <Compile Include="PowerModel\OldModel\ASTVisitor.cs" />
-    <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.lexer.cs" />
-    <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.parser.cs" />
     <Compile Include="PowerModel\NewModel\Recloser\Node.cs" />
     <Compile Include="PowerModel\NewModel\SteadyStateModel.cs" />
     <Compile Include="PowerModel\NewModel\Transient\TransientModel.cs" />
@@ -255,10 +249,21 @@
       <DependentUpon>NodeCanvas.xaml</DependentUpon>
     </Compile>
     <Compile Include="PowerModel\NewModel\Grammar\Visitor.cs" />
-    <Compile Include="PowerModel\OldModel\ObjectSystem.cs" />
     <Compile Include="PowerModel\Interpreter.cs" />
     <Compile Include="GUI\ModelEditor\TabStyleSelector.cs" />
     <Compile Include="GUI\ModelEditor\TabTemplateSelector.cs" />
+    <Compile Include="PowerModel\OldModel\ACGraph\ACGraph.cs" />
+    <Compile Include="PowerModel\OldModel\ACGraph\CircuitModelAC.cs" />
+    <Compile Include="PowerModel\OldModel\ACGraph\ElementsAC.cs" />
+    <Compile Include="PowerModel\OldModel\ASTNode.cs" />
+    <Compile Include="PowerModel\OldModel\ASTVisitor.cs" />
+    <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.lexer.cs">
+      <DependentUpon>OldGrammar.g4</DependentUpon>
+    </Compile>
+    <Compile Include="PowerModel\OldModel\Grammar\OldGrammar.g4.parser.cs">
+      <DependentUpon>OldGrammar.g4</DependentUpon>
+    </Compile>
+    <Compile Include="PowerModel\OldModel\ObjectSystem.cs" />
     <Compile Include="Test\Test.cs" />
     <Compile Include="Equations\DAE\Implicit\DAEISystem.cs" />
     <Compile Include="Equations\DAE\Implicit\DAEISolver.cs" />
@@ -308,6 +313,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Antlr4 Include="PowerModel\OldModel\Grammar\OldGrammar.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <CustomToolNamespace>ElectricalPowerSystems.PowerModel.OldModel</CustomToolNamespace>
+    </Antlr4>
     <Compile Include="MathUtils\MathUtils.cs" />
     <Compile Include="ModelException.cs" />
     <Compile Include="ErrorMessage.cs" />
@@ -337,10 +346,6 @@
     <Antlr4 Include="Equations\Nonlinear\EquationGrammar.g4">
       <Generator>MSBuild:Compile</Generator>
       <CustomToolNamespace>ElectricalPowerSystems.Equations.Nonlinear</CustomToolNamespace>
-    </Antlr4>
-    <Antlr4 Include="PowerModel\OldModel\Grammar\OldGrammar.g4">
-      <Generator>MSBuild:Compile</Generator>
-      <CustomToolNamespace>ElectricalPowerSystems.PowerModel.OldModel</CustomToolNamespace>
     </Antlr4>
     <EmbeddedResource Include="GUI\ModelEditor\SyntaxHighlightingRecloserLanguage.xshd" />
     <EmbeddedResource Include="GUI\ModelEditor\SyntaxHighlightingEquationsLanguage.xshd" />

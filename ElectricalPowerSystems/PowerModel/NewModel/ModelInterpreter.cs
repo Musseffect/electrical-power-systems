@@ -321,12 +321,36 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                             model.SetSolver(new Equations.DAE.Implicit.BDF1(fAbsTol.Value, iterations.Value, alpha.Value, step.Value));
                         }
                         break;
+                    case "bdf2":
+                        {
+                            FloatValue fAbsTol = Convert(solver.GetValue("fAbsTol"), Constant.Type.Float) as FloatValue;
+                            IntValue iterations = Convert(solver.GetValue("iterations"), Constant.Type.Int) as IntValue;
+                            FloatValue alpha = Convert(solver.GetValue("alpha"), Constant.Type.Float) as FloatValue;
+                            FloatValue step = Convert(solver.GetValue("step"), Constant.Type.Float) as FloatValue;
+                            model.SetSolver(new Equations.DAE.Implicit.BDF2(fAbsTol.Value, iterations.Value, alpha.Value, step.Value));
+                            break;
+                        }
                     default:
                         errors.Add(new ErrorMessage("Неизвестный решатель для данного режима"));
                         return null;
                 }
                 FloatValue t0 = Convert(modelParameters.GetValue("t0"), Constant.Type.Float) as FloatValue;
                 FloatValue t1 = Convert(modelParameters.GetValue("t1"), Constant.Type.Float) as FloatValue;
+                /*if (modelParameters.ContainsKey("exportTo"))
+                {
+                    StringValue fileName = Convert(modelParameters.GetValue("exportTo"), Constant.Type.String) as StringValue;
+                    model.setExportTo(fileName);
+                }*/
+                /*if (modelParameters.ContainsKey("useInterpolation"))
+                {
+                    BoolValue useInterpolation = Convert(modelParameters.GetValue("useInterpolation"), Constant.Type.Bool) as BoolValue;
+                    model.setUseInterpolation(useInterpolation);
+                }*/
+                /*if (modelParameters.ContainsKey("epsilon"))
+                {
+                    FloatValue epsilon = Convert(modelParameters.GetValue("epsilon"), Constant.Type.Float) as FloatValue;
+                    model.setEpsilon(epsilon);
+                }*/
                 model.SetT0(t0.Value);
                 model.SetT1(t1.Value);
             }

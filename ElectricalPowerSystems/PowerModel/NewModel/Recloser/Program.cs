@@ -16,6 +16,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         ByteArray code;
         Line[] lines;
         public Line[] Lines { get { return lines; } }
+        public List<FunctionType> Functions { get { return functions; } }
         Dictionary<string, Compiler.FunctionType> functionTable;
         List<Compiler.FunctionType> functions;
         List<INativeFunction> nativeFunctions;
@@ -65,13 +66,13 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             if (!functionTable.ContainsKey(functionName))
                 return false;
             FunctionType type = functionTable[functionName];
-            if (!type.ReturnType.Equals(returnType))
+            if (!type.Signature.ReturnType.Equals(returnType))
                 return false;
-            if (argumentsTypes.Length != type.ArgumentTypes.Count)
+            if (argumentsTypes.Length != type.Signature.ArgumentTypes.Count)
                 return false;
             for (int i=0;i<argumentsTypes.Length;i++)
             {
-                if (!argumentsTypes[i].Equals(type.ArgumentTypes[i].Type) || type.ArgumentTypes[i].IsLocal == false)
+                if (!argumentsTypes[i].Equals(type.Signature.ArgumentTypes[i].Type) || type.Signature.ArgumentTypes[i].IsLocal == false)
                     return false;
             }
             return true;

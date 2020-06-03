@@ -75,5 +75,10 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         {
 
         }
+        IValue Execute(string function,List<IValue> arguments)
+        {
+            //if function exist and signature is right
+        
+        }
     }*/
 }

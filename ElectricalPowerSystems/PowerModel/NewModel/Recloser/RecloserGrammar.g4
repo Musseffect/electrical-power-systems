@@ -15,9 +15,9 @@ functionDeclaration: type = typeRule name=ID LPAREN functionSignature RPAREN SEM
 
 functionDefinition: type = typeRule name=ID LPAREN functionSignature RPAREN LCRLPAREN functionBody RCRLPAREN;
 
-functionSignature: signatureArgument (COMMA signatureArgument) | ;
+functionSignature: signatureArgument (COMMA signatureArgument)* | ;
 
-signatureArgument: way=(IN|INOUT)? type=typeRule name=ID;
+signatureArgument: way=(IN|INOUT) type=typeRule name=ID;
 
 functionBody: (statement)*;
 
@@ -68,7 +68,7 @@ expression:  LPAREN expression RPAREN #BracketExpression
 | NEW structName = ID LCRLPAREN (expression (COMMA expression)*)? RCRLPAREN #StructInitializerList
 ;
 
-arguments: expression (COMMA expression)| ;
+arguments: expression (COMMA expression)*| ;
 
 fragment LOWERCASE  : [a-z] ;
 fragment UPPERCASE  : [A-Z] ;

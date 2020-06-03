@@ -40,6 +40,10 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
             this.values.Add(point);
             this.timeArray.Add(time);
         }
+        /*public void SaveTo(string filename)
+        {
+            
+        }*/
         public void SetStateChangedCount(int stateChangedCount)
         {
             this.stateChangedCount = stateChangedCount;
@@ -66,6 +70,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
         List<TransientEvent> events;
         double t0;
         double t1;
+        double epsilon;
         Equations.DAE.Implicit.DAEISolver solver;
         List<Pin> nodeList;
         int stateChangedCount;
@@ -218,6 +223,72 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
                 system.UpdateParameters(_event.GetParameters());
             }
         }
+        private TransientSolution SolveAdaptiveTimestep(string equations)
+        {
+            stateChangedCount = 0;
+            List<IScopeElement> scopeElements = new List<IScopeElement>();
+            foreach (var element in elements)
+            {
+                if (element is IScopeElement)
+                {
+                    scopeElements.Add(element as IScopeElement);
+                }
+            }
+            Equations.DAE.Compiler compiler = new Equations.DAE.Compiler();
+            Equations.DAE.Implicit.DAEIDescription compiledEquation = compiler.CompileDAEImplicit(equations);
+            double t = t0;
+            Equations.DAE.Implicit.DAEIAnalytic system = new Equations.DAE.Implicit.DAEIAnalytic(compiledEquation);
+            Vector<double> x = Vector<double>.Build.SparseOfArray(compiledEquation.InitialValues);
+            List<string> variableNames = new List<string>();
+            foreach (var scope in scopeElements)
+            {
+                variableNames.AddRange(scope.GetTransientVariableNames());
+            }
+            //generate events
+            InitEvents(ref system);
+            TransientSolution result = new TransientSolution(variableNames.ToArray());
+            int scopeVariableCount = variableNames.Count;
+            Dictionary<string, int> variableMap = compiledEquation.GetVariableDictionary();
+
+            {
+                TransientState currentState = new TransientState(x, variableMap);
+                List<double> currentValues = new List<double>();
+                foreach (var scopeElement in scopeElements)
+                {
+                    currentValues.AddRange(scopeElement.GetReading(currentState));
+                }
+                result.AddPoint(currentValues.ToArray(), t);
+            }
+            while (t < t1 && maxPoints > (scopeVariableCount + 1) * result.GetPointCount())
+            {
+                Vector<double> xPrev = x;
+                double tPrev = t;
+                double closestEventTime = GetClosestEventTime();
+                double oldStep = solver.Step;
+                double step = Math.Min(oldStep, closestEventTime - t + epsilon);
+                solver.SetStep(step);
+                //make step
+                x = solver.IntegrateStep(system, x, t);
+                t += solver.Step;
+                solver.SetStep(oldStep);
+                //update t
+                if (events.Count != 0)
+                {
+                    //if state happened during [tprev,tcurr]
+                    t = UpdateState(tPrev, t, xPrev, x, variableMap, ref system);
+                    x = MathUtils.MathUtils.Interpolate(xPrev, x, (t - tPrev) / solver.Step);
+                }
+                TransientState currentState = new TransientState(x, variableMap);
+                List<double> currentValues = new List<double>();
+                foreach (var scopeElement in scopeElements)
+                {
+                    currentValues.AddRange(scopeElement.GetReading(currentState));
+                }
+                result.AddPoint(currentValues.ToArray(), t);
+            }
+            result.SetStateChangedCount(stateChangedCount);
+            return result;
+        }
         private TransientSolution Solve(string equations)
         {
             stateChangedCount = 0;
@@ -285,6 +356,13 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
             TransientSolution solution = this.Solve(equations);
             solution.Plot();
             return solution.ToString();
+        }
+        private double GetClosestEventTime()
+        {
+            if (events.Count == 0)
+                return double.PositiveInfinity;
+            else
+                return events.First().Time;
         }
         public void SetT0(double t0)
         {

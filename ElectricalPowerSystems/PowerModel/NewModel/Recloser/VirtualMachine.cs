@@ -122,6 +122,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         {
             result = "";
             int textLineNumber = 0;
+            int functionIterator = 0;
             int lineIterator = 0;
             int localLineIterator = 0;
             var reader = new StringReader(programText);
@@ -130,6 +131,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             for (int offset = 0; offset < program.Bytecode.Size;)
             {
                 Program.Line line = program.Lines[lineIterator];
+                if (functionIterator < program.Functions.Count)
+                {
+                    Compiler.FunctionType function = program.Functions[functionIterator];
+                    if (offset == function.Offset)
+                    {
+                        result += $"{(functionIterator!=0?Environment.NewLine:"")}{programText.Substring(function.SrcPosBegin, function.SrcPosEnd - function.SrcPosBegin)}{Environment.NewLine}";
+                        functionIterator++;
+                    }
+                }
                 if (++localLineIterator == line.Count)
                 {
                     localLineIterator = 0;
@@ -321,20 +331,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             frames[stackPointer++] = frame;
         }
     }
-    public interface INativeFunction
-    {
-        void Execute(Stack stack);
-    }
-    public class NativePow: INativeFunction
-    {
-        void INativeFunction.Execute(Stack stack)
-        {
-            Float a2 = stack.Pop() as Float;
-            Float a1 = stack.Pop() as Float;
-            Float result = new Float(Math.Pow(a1.Value,a2.Value));
-            stack.Push(result);
-        }
-    }
+    
     public class VirtualMachine
     {
         Stack stack;
@@ -695,7 +692,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                             Short functionIndex = program.Bytecode.GetValue<Short>(offset);
                             offset += Short.Sizeof();
                             Compiler.FunctionType function = program.GetFunctionType((int)functionIndex.Value);
-                            CallStack.CallFrame frame = new CallStack.CallFrame( stack.Pointer - function.GetSlotSize(), offset, functionIndex.Value);
+                            CallStack.CallFrame frame = new CallStack.CallFrame( stack.Pointer - function.Signature.GetSlotSize(), offset, functionIndex.Value);
                             callStack.Push(frame);
                             offset = function.Offset;//set offset to address value
                             break;
@@ -770,7 +767,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             //start executing instructions from that offset
             Interpret(offset);
             IValue result = null;
-            switch (function.ReturnType.Type)
+            switch (function.Signature.ReturnType.Type)
             {
                 case Compiler.BasicType.BType.Void:
                     result = null;
@@ -833,9 +830,6 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
               45 SAVE 4
               46 FRET
              */
-
-
-
             /*
              bool add(in int a)
              {
@@ -843,8 +837,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 c = a + 5;
                 return c>9;
              } 
-
-            
+             
             stack:
             -12
             int a
@@ -870,52 +863,259 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             OP_SAVE 4//pop and save result in special 8 bytes register
             OP_RET //jump to address in stack
              */
-            
-            Compiler compiler = new Compiler();
-            string text = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Docs\RecloserTest1.rcl"));
-            AntlrInputStream inputStream = new AntlrInputStream(text);
-            RecloserGrammarLexer programLexer = new RecloserGrammarLexer(inputStream);
-            ErrorListener<int> lexerErrorListener = new ErrorListener<int>();
-            programLexer.RemoveErrorListeners();
-            programLexer.AddErrorListener(lexerErrorListener);
-            CommonTokenStream commonTokenStream = new CommonTokenStream(programLexer);
-            RecloserGrammarParser programParser = new RecloserGrammarParser(commonTokenStream);
-            ErrorListener<IToken> parserErrorListener = new ErrorListener<IToken>();
-            programParser.RemoveErrorListeners();
-            programParser.AddErrorListener(parserErrorListener);
 
-            RecloserGrammarParser.ProgramContext programContext = programParser.program();
-            List<ErrorMessage> errorList = new List<ErrorMessage>();
-            errorList.AddRange(lexerErrorListener.GetErrors());
-            errorList.AddRange(parserErrorListener.GetErrors());
-            if (errorList.Count > 0)
-            {
-                foreach (var error in errorList)
-                {
-                    Console.WriteLine(error.Error);
-                }
-                return;
-            }
-            Visitor visitor = new Visitor();
-            Node root = visitor.VisitProgram(programContext);
-
-            Program program =  compiler.Compile(root as ProgramNode, 4096);
-            //TODO init program
-            //program.RegisterFunction("main", 0, 0);
-            if (!program.HasFunction("updateState", new Compiler.Type[] { new Compiler.FloatType(),new Compiler.FloatType()},new Compiler.BoolType()))
-                throw new Exception("Function is not found");
-            VirtualMachine vm = new VirtualMachine();
-            vm.InitVM(4096/8, 20, program);
-            Disassembler disassembler = new Disassembler();
             Stream StdoutStream = Console.OpenStandardOutput();
             StreamWriter Stdout = new StreamWriter(StdoutStream);
-            Stdout.WriteLine("\tTest virtual machine");
-            string result = disassembler.Disassemble(program, text);
-            Stdout.WriteLine(result);
-            Stdout.Flush();
-            Int programResult = vm.Execute("updateState", new IValue[] { new Float(10),new Float(5)}) as Int;
+            #region initNativeFunctions
+            //Init native functions
+            List<Compiler.NativeFunctionType> nativeFunctions = new List<Compiler.NativeFunctionType>();
+            nativeFunctions.Add(new Compiler.NativeFunctionType() {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "fabs",
+                Signature = new Compiler.FunctionSignature ( new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"x")
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFPow(),
+                Index = 0,
+                Name = "fpow",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"x"),
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"y")
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFMin(),
+                Index = 0,
+                Name = "fmin",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"a"),
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"b")
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFMax(),
+                Index = 0,
+                Name = "fmax",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"a"),
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"b")
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFStep(),
+                Index = 0,
+                Name = "step",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"x")
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "iabs",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.IntType(),true,"x")
+                }, new Compiler.IntType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "sqrt",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"x")
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "e",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "pi",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "exp",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"x")
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "sin",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"x")
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "cos",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.FloatType(),true,"x")
+                }, new Compiler.FloatType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "imin",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.IntType(),true,"a"),
+                    new Compiler.FunctionSignature.ArgType(new Compiler.IntType(),true,"b")
+                }, new Compiler.IntType()),
+            });
+            nativeFunctions.Add(new Compiler.NativeFunctionType()
+            {
+                Function = new NativeFAbs(),
+                Index = 0,
+                Name = "imax",
+                Signature = new Compiler.FunctionSignature(new List<Compiler.FunctionSignature.ArgType> {
+                    new Compiler.FunctionSignature.ArgType(new Compiler.IntType(),true,"a"),
+                    new Compiler.FunctionSignature.ArgType(new Compiler.IntType(),true,"b")
+                }, new Compiler.IntType()),
+            });
+            for (int i = 0; i < nativeFunctions.Count; i++)
+            {
+                nativeFunctions[i].Index = i;
+            }
+            #endregion
 
-            Stdout.WriteLine("Result: " + programResult.ToString());
+            {
+                Compiler compiler = new Compiler();
+                string text = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Docs\RecloserTest1.rcl"));
+                AntlrInputStream inputStream = new AntlrInputStream(text);
+                RecloserGrammarLexer programLexer = new RecloserGrammarLexer(inputStream);
+                ErrorListener<int> lexerErrorListener = new ErrorListener<int>();
+                programLexer.RemoveErrorListeners();
+                programLexer.AddErrorListener(lexerErrorListener);
+                CommonTokenStream commonTokenStream = new CommonTokenStream(programLexer);
+                RecloserGrammarParser programParser = new RecloserGrammarParser(commonTokenStream);
+                ErrorListener<IToken> parserErrorListener = new ErrorListener<IToken>();
+                programParser.RemoveErrorListeners();
+                programParser.AddErrorListener(parserErrorListener);
+
+                RecloserGrammarParser.ProgramContext programContext = programParser.program();
+                List<ErrorMessage> errorList = new List<ErrorMessage>();
+                errorList.AddRange(lexerErrorListener.GetErrors());
+                errorList.AddRange(parserErrorListener.GetErrors());
+                if (errorList.Count > 0)
+                {
+                    foreach (var error in errorList)
+                    {
+                        Console.WriteLine(error.Error);
+                    }
+                    return;
+                }
+                Visitor visitor = new Visitor();
+                Node root = visitor.VisitProgram(programContext);
+                compiler.Init(new List<Compiler.NativeFunctionType>());
+                Program program = compiler.Compile(root as ProgramNode, 4096);
+                //TODO init program
+                //program.RegisterFunction("main", 0, 0);
+                if (!program.HasFunction("updateState", new Compiler.Type[] { new Compiler.FloatType(), new Compiler.FloatType() }, new Compiler.BoolType()))
+                    throw new Exception("Function is not found");
+                VirtualMachine vm = new VirtualMachine();
+                vm.InitVM(4096 / 8, 20, program);
+                Disassembler disassembler = new Disassembler();
+                Stdout.WriteLine("\tTest virtual machine on RecloserTest1.rcl");
+                string result = disassembler.Disassemble(program, text);
+                Stdout.WriteLine(result);
+                Stdout.Flush();
+                Int programResult = vm.Execute("updateState", new IValue[] { new Float(10), new Float(5) }) as Int;
+
+                Stdout.WriteLine("Result: " + programResult.BoolValue.ToString());
+                Stdout.Flush();
+            }
+            {
+                Compiler compiler = new Compiler();
+                string text = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Docs\RecloserTest2.rcl"));
+                AntlrInputStream inputStream = new AntlrInputStream(text);
+                RecloserGrammarLexer programLexer = new RecloserGrammarLexer(inputStream);
+                ErrorListener<int> lexerErrorListener = new ErrorListener<int>();
+                programLexer.RemoveErrorListeners();
+                programLexer.AddErrorListener(lexerErrorListener);
+                CommonTokenStream commonTokenStream = new CommonTokenStream(programLexer);
+                RecloserGrammarParser programParser = new RecloserGrammarParser(commonTokenStream);
+                ErrorListener<IToken> parserErrorListener = new ErrorListener<IToken>();
+                programParser.RemoveErrorListeners();
+                programParser.AddErrorListener(parserErrorListener);
+
+                RecloserGrammarParser.ProgramContext programContext = programParser.program();
+                //Console.WriteLine(programContext.ToStringTree(programParser.RuleNames));
+                List<ErrorMessage> errorList = new List<ErrorMessage>();
+                errorList.AddRange(lexerErrorListener.GetErrors());
+                errorList.AddRange(parserErrorListener.GetErrors());
+                if (errorList.Count > 0)
+                {
+                    foreach (var error in errorList)
+                    {
+                        Console.WriteLine(error.Error);
+                    }
+                    return;
+                }
+                Visitor visitor = new Visitor();
+                Node root = visitor.VisitProgram(programContext);
+                compiler.Init(nativeFunctions);
+                compiler.RegisterCustomType("recloserState", new List<KeyValuePair<string, Recloser.Compiler.NonRefType>>
+                {
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ua", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ub", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "uc", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ia", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ib", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "ic", new Recloser.Compiler.FloatType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "currentState", new Recloser.Compiler.BoolType()),
+                    new KeyValuePair<string, Recloser.Compiler.NonRefType>( "time", new Recloser.Compiler.FloatType())
+                });
+                Program program = compiler.Compile(root as ProgramNode, 4096);
+                //TODO init program
+                //program.RegisterFunction("main", 0, 0);
+                if (!program.HasFunction("updateState", new Compiler.Type[] { new Compiler.FloatType(), new Compiler.FloatType() }, new Compiler.BoolType()))
+                    throw new Exception("Function is not found");
+                VirtualMachine vm = new VirtualMachine();
+                vm.InitVM(4096 / 8, 20, program);
+                Disassembler disassembler = new Disassembler();
+                Stdout.WriteLine("\tTest virtual machine on RecloserTest2.rcl");
+                string result = disassembler.Disassemble(program, text);
+                Stdout.WriteLine(result);
+                Stdout.Flush();
+                vm.Execute("init", new IValue[] {});//void init()
+                Int programResult = vm.Execute("updateState", new IValue[] {
+                    new Float(10),
+                    new Float(5),
+                    new Float(),
+                    new Float(),
+                    new Float(),
+                    new Float(),
+                    new Float(),
+                    new Float()
+                }) as Int;//bool updateState(in recloserState)
+
+                Stdout.WriteLine("Result: " + programResult.BoolValue.ToString());
+            }
         }
     }
 }

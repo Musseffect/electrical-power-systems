@@ -13,14 +13,14 @@ void init()
     pPeakMax = 200.0;
     tries = 3;
     waitTime = 0.1;
-    restoreTriesTime = 10;
-    lastEventTime = 0;
-    timer = 0;
+    restoreTriesTime = 10.;
+    lastEventTime = 0.;
+    timer = 0.;
     tryCounter = 0;
 }
 void update(in recloserState recloserState)
 {
-    if (!recloserState.currentState)//if turned off
+    if (!recloserState.currentState[0].wow[1])//if turned off
     {
         if (tryCounter < tries)
         {

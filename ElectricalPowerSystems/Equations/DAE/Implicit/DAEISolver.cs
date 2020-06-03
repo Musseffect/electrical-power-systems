@@ -18,6 +18,10 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
     {
         protected double step;
         public double Step { get { return step; } }
+        public virtual void SetStep(double step)
+        {
+            this.step = step;
+        }
         public abstract Vector<double> IntegrateStep(DAEISystem system, Vector<double> x, double t);
         static public Solution Solve(DAEIDescription equations, DAEISolver solver)
         {
@@ -81,6 +85,121 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
              only when df/dx' exists
              */
             throw new NotImplementedException();
+        }
+    }
+    public abstract class BDFN:DAEISolver
+    {
+        protected DAEISolver solver;
+        protected double[] a;
+        public int Steps { get; protected set; }
+        int counter;
+        int newtonIterations;
+        double fAbsTol;
+        double alpha;
+        List<Vector<double>> previousValues;
+        public BDFN(double fAbsTol, int iterations, double alpha, double step)
+        {
+            this.fAbsTol = fAbsTol;
+            this.newtonIterations = iterations;
+            this.alpha = alpha;
+            this.step = step;
+            this.counter = 1;
+            previousValues = new List<Vector<double>>();
+        }
+        public BDFN()
+        {
+            step = 0.1;
+            newtonIterations = 20;
+            fAbsTol = 0.001;
+            alpha = 1;
+            this.counter = 1;
+            previousValues = new List<Vector<double>>();
+        }
+        public virtual void SetNewtonIterations(int iterations)
+        {
+            this.newtonIterations = iterations;
+        }
+        public virtual void SetNewtonFAbsTol(float value)
+        {
+            this.fAbsTol = value;
+        }
+        public override void SetStep(double value)
+        {
+            counter = 1;
+            base.SetStep(value);
+            solver.SetStep(step);
+            previousValues.Clear();
+        }
+        public override Vector<double> IntegrateStep(DAEISystem system, Vector<double> x, double t)
+        {
+            if (counter != Steps)
+            {
+                //call some method with comparable accuracy
+                Vector<double> result = solver.IntegrateStep(system, x, t);
+                counter++;
+                previousValues.Insert(0, x);
+                return result;
+            }
+            //solve f(xn+1,a[0]*xn+1+SUM(a[i]*xn+1-i)/h,t+h)
+            Vector<double> xNew = x;
+            Vector<double> _dx = x * a[1];
+            for (int j = 0; j < Steps - 1; j++)
+            {
+                _dx += previousValues[j] * a[j + 2] / step;
+            }
+            for (int i = 0; i < newtonIterations; i++)
+            {
+                Vector<double> dx = (_dx + xNew * a[0]) / step;
+                double time = t + step;
+                Matrix<double> dFdX = system.DFdX(xNew, dx, time); //use k as dx
+                Matrix<double> dFddX = system.DFddX(xNew, dx, time);
+                Vector<double> F = system.F(xNew, dx, time);
+                F = F * alpha;
+                //Vector<double> f = Vector<double>.Build.SparseOfArray(F).Multiply(alpha);
+                Matrix<double> jacobiMatrix;// = Matrix<double>.Build.Sparse(system.Size, system.Size);
+                jacobiMatrix = dFdX.Add(dFddX.Divide(step));
+                /* for (int m = 0; m < system.Size; m++)
+                 {
+                     for (int l = 0; l < system.Size; l++)
+                     {
+                         jacobiMatrix[m, l] = dFdX[m, l]  + dFddX[m, l]/step;
+                     }
+                 }*/
+                Vector<double> deltax = jacobiMatrix.Solve(-F);
+                xNew += deltax;
+                if (F.L2Norm() < fAbsTol)
+                {
+                    previousValues.Insert(0, x);
+                    previousValues.RemoveAt(previousValues.Count-1);
+                    return xNew;
+                }
+            }
+            throw new Exception("Решение не сошлось");
+        }
+
+    }
+    public class BDF2 : BDFN
+    {
+        public BDF2(double fAbsTol, int iterations, double alpha, double step):base(fAbsTol,iterations,alpha,step)
+        {
+            a = new double[] { 1.5,-2, 0.5};
+            Steps = 2;
+            solver = new RADAUIIA3(fAbsTol, iterations, alpha, step);
+        }
+        public BDF2():base(0.001, 20, 1, 0.1)
+        {
+            Steps = 2;
+            solver = new RADAUIIA3(0.001, 20, 1, step);
+        }
+        public override void SetNewtonIterations(int iterations)
+        {
+            base.SetNewtonIterations(iterations);
+            (solver as RADAUIIA3).SetNewtonIterations(iterations);
+        }
+        public virtual void SetNewtonFAbsTol(float value)
+        {
+            base.SetNewtonFAbsTol(value);
+            (solver as RADAUIIA3).SetNewtonFAbsTol(value);
         }
     }
     public class BDF1: DAEISolver
