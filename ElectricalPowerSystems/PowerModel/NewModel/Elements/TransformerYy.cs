@@ -126,121 +126,164 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             }
             throw new NotImplementedException();
         }
-    List<EquationBlock> ISteadyStateElement.GenerateEquations()
+        List<EquationBlock> ISteadyStateElement.GenerateEquations()
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                string[] nodes = GetNodes(); string[] in_p = new string[] { nodes[0], nodes[4], nodes[8] };
+                string[] out_p = new string[] { nodes[1], nodes[5], nodes[9] };
+                string[] in_s = new string[] { nodes[2], nodes[6], nodes[10] };
+                string[] out_s = new string[] { nodes[3], nodes[7], nodes[11] };
+
+                //current equations for a,as1 ... 
+
+                for (int i = 1; i < 4; i++)
+                {
+                    equations.Add(new CurrentFlowBlock
+                    {
+                        Equation = $"I_{ID}p{i}_re",
+                        Node1 = $"{in_p[i - 1]}_re",
+                        Node2 = $"{out_p[i - 1]}_re"
+                    });
+                    equations.Add(new CurrentFlowBlock
+                    {
+                        Equation = $"I_{ID}p{i}_im",
+                        Node1 = $"{in_p[i - 1]}_im",
+                        Node2 = $"{out_p[i - 1]}_im"
+                    });
+                }
+                for (int i = 1; i < 4; i++)
+                {
+                    equations.Add(new CurrentFlowBlock
+                    {
+                        Equation = $"I_{ID}s{i}_re",
+                        Node1 = $"{in_s[i - 1]}_re",
+                        Node2 = $"{out_s[i - 1]}_re"
+                    });
+                    equations.Add(new CurrentFlowBlock
+                    {
+                        Equation = $"I_{ID}s{i}_im",
+                        Node1 = $"{in_s[i - 1]}_im",
+                        Node2 = $"{out_s[i - 1]}_im"
+                    });
+                }
+                for (int i = 1; i < 4; i++)
+                {
+                    equations.Add(new EquationBlock
+                    {
+                        Equation = $"{in_s[i - 1]}_re - {out_s[i - 1]}_re = k_{ID} * I_{ID}c{i}_re * Rc_{ID} + I_{ID}s{i}_re * Rs_{ID} - I_{ID}s{i}_im * Ls_{ID} * frequency;"
+                    });
+                    equations.Add(new EquationBlock
+                    {
+                        Equation = $"{in_s[i - 1]}_im - {out_s[i - 1]}_im = k_{ID} * I_{ID}c{i}_im * Rc_{ID} + I_{ID}s{i}_im * Rs_{ID} + I_{ID}s{i}_re * Ls_{ID} * frequency;"
+                    });
+                    equations.Add(new EquationBlock
+                    {
+                        Equation = $"{in_p[i - 1]}_re - {out_p[i - 1]}_re = I_{ID}c{i}_re * Rc_{ID} + I_{ID}p{i}_re * Rp_{ID} - I_{ID}p{i}_im * Lp_{ID} * frequency;"
+                    });
+                    equations.Add(new EquationBlock
+                    {
+                        Equation = $"{in_p[i - 1]}_im - {out_p[i - 1]}_im = I_{ID}c{i}_im * Rc_{ID} + I_{ID}p{i}_im * Rp_{ID} + I_{ID}p{i}_re * Lp_{ID} * frequency;"
+                    });
+                    equations.Add(new EquationBlock
+                    {
+                        Equation = $"I_{ID}p{i}_re = I_{ID}s{i}_re * k_{ID} + I_{ID}m{i}_re + I_{ID}c{i}_re;"
+                    });
+                    equations.Add(new EquationBlock
+                    {
+                        Equation = $"I_{ID}p{i}_im = I_{ID}s{i}_im * k_{ID} + I_{ID}m{i}_im + I_{ID}c{i}_im;"
+                    });
+                    equations.Add(new EquationBlock
+                    {
+                        Equation = $"I_{ID}c{i}_re * Rc_{ID} = - I_{ID}m{i}_im * Lm_{ID} * frequency;"
+                    });
+                    equations.Add(new EquationBlock
+                    {
+                        Equation = $"I_{ID}c{i}_im * Rc_{ID} = I_{ID}m{i}_re * Lm_{ID} * frequency;"
+                    });
+                }
+                return equations;
+            }
+
+        List<EquationBlock> ISteadyStateElement.GenerateParameters(double frequency)
+            {
+                List<EquationBlock> equations = new List<EquationBlock>();
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"constant Rp_{ID} = {zp.Real.ToString(new CultureInfo("en-US"))};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"constant Lp_{ID} = {zp.Imaginary.ToString(new CultureInfo("en-US"))}/baseFrequency;"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"constant Rs_{ID} = {zs.Real.ToString(new CultureInfo("en-US"))};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"constant Ls_{ID} = {zs.Imaginary.ToString(new CultureInfo("en-US"))}/baseFrequency;"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"constant Rc_{ID} = {rc.ToString(new CultureInfo("en-US"))};"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"constant Lm_{ID} = {xm.ToString(new CultureInfo("en-US"))}/baseFrequency;"
+                });
+                equations.Add(new EquationBlock
+                {
+                    Equation = $"constant k_{ID} = {k.ToString(new CultureInfo("en-US"))};"
+                });
+                return equations;
+            }
+
+        List<EquationBlock> ITransientElement.GenerateEquations()
         {
             List<EquationBlock> equations = new List<EquationBlock>();
             string[] nodes = GetNodes(); string[] in_p = new string[] { nodes[0], nodes[4], nodes[8] };
             string[] out_p = new string[] { nodes[1], nodes[5], nodes[9] };
             string[] in_s = new string[] { nodes[2], nodes[6], nodes[10] };
             string[] out_s = new string[] { nodes[3], nodes[7], nodes[11] };
-
             //current equations for a,as1 ... 
-
             for (int i = 1; i < 4; i++)
             {
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $"I_{ID}p{i}_re",
-                    Node1 = $"{in_p[i - 1]}_re",
-                    Node2 = $"{out_p[i - 1]}_re"
-                });
-                equations.Add(new CurrentFlowBlock
-                {
-                    Equation = $"I_{ID}p{i}_im",
-                    Node1 = $"{in_p[i - 1]}_im",
-                    Node2 = $"{out_p[i - 1]}_im"
+                    Equation = $"I_{ID}p{i}",
+                    Node1 = $"{in_p[i - 1]}",
+                    Node2 = $"{out_p[i - 1]}"
                 });
             }
             for (int i = 1; i < 4; i++)
             {
                 equations.Add(new CurrentFlowBlock
                 {
-                    Equation = $"I_{ID}s{i}_re",
-                    Node1 = $"{in_s[i - 1]}_re",
-                    Node2 = $"{out_s[i - 1]}_re"
-                });
-                equations.Add(new CurrentFlowBlock
-                {
-                    Equation = $"I_{ID}s{i}_im",
-                    Node1 = $"{in_s[i - 1]}_im",
-                    Node2 = $"{out_s[i - 1]}_im"
+                    Equation = $"I_{ID}s{i}",
+                    Node1 = $"{in_s[i - 1]}",
+                    Node2 = $"{out_s[i - 1]}"
                 });
             }
             for (int i = 1; i < 4; i++)
             {
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{in_s[i - 1]}_re - {out_s[i - 1]}_re - k_{ID} * (I_{ID}m{i}_re * Rm_{ID} - I_{ID}m{i}_im * Zm_{ID}_im * frequency) = I_{ID}s{i}_re * Rs_{ID} - I_{ID}s{i}_im * Ls_{ID} * frequency;"
+                    Equation = $"{in_s[i - 1]} - {out_s[i - 1]} = k_{ID} * I_{ID}c{i} * Rc_{ID} + I_{ID}s{i} * Rs_{ID} + Ls_{ID} * der(I_{ID}s{i});"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{in_s[i - 1]}_im - {out_s[i - 1]}_im - k_{ID} * (I_{ID}m{i}_re * Zm_{ID}_im + I_{ID}m{i}_im * Rm_{ID}) = I_{ID}s{i}_im * Rp_{ID} + I_{ID}s{i}_re * Lp_{ID} * frequency;"
+                    Equation = $"{in_p[i - 1]} - {out_p[i - 1]} = I_{ID}c{i} * Rc_{ID} + I_{ID}p{i} * Rp_{ID} + Lp_{ID} * der(I_{ID}p{i});"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{in_p[i - 1]}_re - {out_p[i - 1]}_re - (I_{ID}m{i}_re * Rm_{ID} - I_{ID}m{i}_im * Zm_{ID}_im) = I_{ID}p{i}_re * Rp_{ID} - I_{ID}p{i}_im * Lp_{ID} * frequency;"
+                    Equation = $"I_{ID}p{i} = I_{ID}s{i} * k_{ID} + I_{ID}m{i} + I_{ID}c{i};"
                 });
                 equations.Add(new EquationBlock
                 {
-                    Equation = $"{in_p[i - 1]}_im - {out_p[i - 1]}_im - (I_{ID}m{i}_re * Zm_{ID}_im - I_{ID}m{i}_im * Rm_{ID}) = I_{ID}p{i}_im * Rp_{ID} + I_{ID}p{i}_re * Lp_{ID} * frequency;"
-                });
-                equations.Add(new EquationBlock
-                {
-                    Equation = $"I_{ID}p{i}_re = I_{ID}s{i}_re * k_{ID} + I_{ID}m{i}_re;"
-                });
-                equations.Add(new EquationBlock
-                {
-                    Equation = $"I_{ID}p{i}_im = I_{ID}s{i}_im * k_{ID} + I_{ID}m{i}_im;"
+                    Equation = $"I_{ID}c{i} * Rc_{ID} = - Lm_{ID} * der(I_{ID}m{i});"
                 });
             }
             return equations;
-        }
-
-        List<EquationBlock> ISteadyStateElement.GenerateParameters(double frequency)
-        {
-            List<EquationBlock> equations = new List<EquationBlock>();
-            equations.Add(new EquationBlock
-            {
-                Equation = $"constant Rp_{ID} = {zp.Real.ToString(new CultureInfo("en-US"))};"
-            });
-            equations.Add(new EquationBlock
-            {
-                Equation = $"constant Lp_{ID} = {zp.Imaginary.ToString(new CultureInfo("en-US"))} / baseFrequency;"
-            });
-            equations.Add(new EquationBlock
-            {
-                Equation = $"constant Rs_{ID} = {zs.Real.ToString(new CultureInfo("en-US"))};"
-            });
-            equations.Add(new EquationBlock
-            {
-                Equation = $"constant Ls_{ID} = {zs.Imaginary.ToString(new CultureInfo("en-US"))} / baseFrequency;"
-            });
-            equations.Add(new EquationBlock
-            {
-                Equation = $"constant Rc_{ID} = {rc.ToString(new CultureInfo("en-US"))};"
-            });
-            equations.Add(new EquationBlock
-            {
-                Equation = $"constant Xmf_{ID} = {(xm * frequency).ToString(new CultureInfo("en-US"))}/baseFrequency;"
-            });
-            equations.Add(new EquationBlock
-            {
-                Equation = $"constant Rm_{ID} = Rc_{ID} * Xmf_{ID} * Xmf_{ID} / (Rc_{ID} * Rc_{ID} + Xmf_{ID} * Xmf_{ID});"
-            });
-            equations.Add(new EquationBlock
-            {
-                Equation = $"constant Xm_{ID} = Xmf_{ID} * Rc_{ID} * Rc_{ID} * {frequency.ToString(new CultureInfo("en-US"))} / (Rc_{ID} * Rc_{ID} + Xmf_{ID} * Xmf_{ID}) / baseFrequency;"
-            });
-            equations.Add(new EquationBlock
-            {
-                Equation = $"constant k_{ID} = {k.ToString(new CultureInfo("en-US"))};"
-            });
-            return equations;
-        }
-
-        List<EquationBlock> ITransientElement.GenerateEquations()
-        {
-            throw new NotImplementedException();
         }
 
         List<EquationBlock> ITransientElement.GenerateParameters()
@@ -252,7 +295,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"constant Lp_{ID} = {zp.Imaginary.ToString(new CultureInfo("en-US"))};"
+                Equation = $"constant Lp_{ID} = {zp.Imaginary.ToString(new CultureInfo("en-US"))}/baseFrequency;"
             });
             equations.Add(new EquationBlock
             {
@@ -260,7 +303,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"constant Ls_{ID} = {zs.Imaginary.ToString(new CultureInfo("en-US"))};"
+                Equation = $"constant Ls_{ID} = {zs.Imaginary.ToString(new CultureInfo("en-US"))}/baseFrequency;"
             });
             equations.Add(new EquationBlock
             {
@@ -268,7 +311,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"constant Lm_{ID} = {xm.ToString(new CultureInfo("en-US"))};"
+                Equation = $"constant Lm_{ID} = {xm.ToString(new CultureInfo("en-US"))}/baseFrequency;"
             });
             equations.Add(new EquationBlock
             {
@@ -280,6 +323,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
     public class SteadyStateTransformerYyModel : ISteadyStateElementModel
     {
         public ISteadyStateElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            Complex32 zp = (elementObject.GetValue("Zp") as ComplexValue).Value;
+            Complex32 zs = (elementObject.GetValue("Zs") as ComplexValue).Value;
+            double xm = (elementObject.GetValue("Xm") as FloatValue).Value;
+            double rc = (elementObject.GetValue("Rc") as FloatValue).Value;
+            double k = (elementObject.GetValue("K") as FloatValue).Value;
+            int group = (elementObject.GetValue("Group") as IntValue).Value;
+            return new TransformerYy(zp, zs, (float)xm, (float)rc, (float)k, group, elementNodes["in"] as Pin3Phase, elementNodes["out"] as Pin3Phase, elementNodes["in_n"] as Pin1Phase, elementNodes["out_n"] as Pin1Phase);
+        }
+    }
+    public class TransientTransformYyModel : ITransientElementModel
+    {
+        public ITransientElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
         {
             Complex32 zp = (elementObject.GetValue("Zp") as ComplexValue).Value;
             Complex32 zs = (elementObject.GetValue("Zs") as ComplexValue).Value;

@@ -53,7 +53,130 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
         }
         List<EquationBlock> ITransientElement.GenerateEquations()
         {
-            throw new NotImplementedException();
+            List<EquationBlock> equations = new List<EquationBlock>();
+            //input current
+            equations.Add(new CurrentFlowBlock{
+                Equation = $"(I_{ID}_a_io + I_{ID}_ag_i + I_{ID}_abg_i + I_{ID}_ab_i + I_{ID}_ac_i)",
+                Node1 = in_pin.VA,
+                Node2 = null
+            });
+            equations.Add(new CurrentFlowBlock{
+                Equation = $"(I_{ID}_b_io + I_{ID}_bg_i + I_{ID}_bbg_i - I_{ID}_ab_i + I_{ID}_bc_i)",
+                Node1 = in_pin.VB,
+                Node2 = null
+            });
+            equations.Add(new CurrentFlowBlock{
+                Equation = $"(I_{ID}_c_io + I_{ID}_cg_i + I_{ID}_cbg_i - I_{ID}_ac_i - I_{ID}_bc_i)",
+                Node1 = in_pin.VC,
+                Node2 = null
+            });
+            //output current
+            equations.Add(new CurrentFlowBlock{
+                Equation = $"(- I_{ID}_a_io + I_{ID}_ag_o + I_{ID}_abg_o + I_{ID}_ab_o + I_{ID}_ac_o)",
+                Node1 = null,
+                Node2 = out_pin.VA
+            });
+            equations.Add(new CurrentFlowBlock{
+                Equation = $"(- I_{ID}_b_io + I_{ID}_bg_o + I_{ID}_bbg_o - I_{ID}_ab_o + I_{ID}_bc_o)",
+                Node1 = null,
+                Node2 = out_pin.VB
+            });
+            equations.Add(new CurrentFlowBlock{
+                Equation = $"(- I_{ID}_c_io + I_{ID}_cg_o + I_{ID}_cbg_o - I_{ID}_ac_o - I_{ID}_bc_o)",
+                Node1 = null,
+                Node2 = out_pin.VC
+            });
+            //input ground voltages for G
+            equations.Add(new EquationBlock{
+                Equation = $"{in_pin.VA} = I_{ID}_ag_i * G_{ID};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{in_pin.VB} = I_{ID}_bg_i * G_{ID};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{in_pin.VC} = I_{ID}_cg_i * G_{ID};"
+            });
+            //input ground voltages for B
+            equations.Add(new EquationBlock
+            {
+                Equation = $"der({in_pin.VA}) * B_{ID} = I_{ID}_abg_i;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"der({in_pin.VB}) * B_{ID} = I_{ID}_bbg_i;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"der({in_pin.VC}) * B_{ID} = I_{ID}_cbg_i;"
+            });
+            //input phase to phase
+            equations.Add(new EquationBlock
+            {
+                Equation = $"(der({in_pin.VA}) - der({in_pin.VB})) * Bp_{ID} = I_{ID}_ab_i;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"(der({in_pin.VB}) - der({in_pin.VC})) * Bp_{ID} = I_{ID}_bc_i;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"(der({in_pin.VA}) - der({in_pin.VC})) * Bp_{ID} = I_{ID}_ac_i;"
+            });
+            //output ground voltages for G
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{out_pin.VA} = I_{ID}_ag_o * G_{ID};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{out_pin.VB} = I_{ID}_bg_o * G_{ID};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{out_pin.VC} = I_{ID}_cg_o * G_{ID};"
+            });
+            //output ground voltages for B
+            equations.Add(new EquationBlock
+            {
+                Equation = $"der({out_pin.VA}) * B_{ID} = I_{ID}_abg_o;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"der({out_pin.VB}) * B_{ID} = I_{ID}_bbg_o;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"der({out_pin.VC}) * B_{ID} = I_{ID}_cbg_o;"
+            });
+            //output phase to phase
+            equations.Add(new EquationBlock
+            {
+                Equation = $"(der({out_pin.VA}) - der({out_pin.VB})) * Bp_{ID} = I_{ID}_ab_o;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"(der({out_pin.VB}) - der({out_pin.VC})) * Bp_{ID} = I_{ID}_bc_o;"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"(der({out_pin.VA}) - der({out_pin.VC})) * Bp_{ID} = I_{ID}_ac_o;"
+            });
+            //input to output voltage difference
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{in_pin.VA} - {out_pin.VA} = I_{ID}_a_io * R_{ID} + der(I_{ID}_a_io) * L_{ID};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{in_pin.VB} - {out_pin.VB} = I_{ID}_b_io * R_{ID} + der(I_{ID}_b_io) * L_{ID};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"{in_pin.VC} - {out_pin.VC} = I_{ID}_c_io * R_{ID} + der(I_{ID}_c_io) * L_{ID};"
+            });
+            return equations;
         }
         List<EquationBlock> ITransientElement.GenerateParameters()
         {
@@ -80,7 +203,6 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             });
             return equations;
         }
-
         List<EquationBlock> ISteadyStateElement.GenerateEquations()
         {
             List<EquationBlock> equations = new List<EquationBlock>();
@@ -236,7 +358,6 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             });
             return equations;
         }
-
         List<EquationBlock> ISteadyStateElement.GenerateParameters(double frequency)
         {
             List<EquationBlock> equations = new List<EquationBlock>();
@@ -266,6 +387,18 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
     public class SteadyStateLinePiModel : ISteadyStateElementModel
     {
         public ISteadyStateElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            double r = (elementObject.GetValue("R") as FloatValue).Value;
+            double l = (elementObject.GetValue("L") as FloatValue).Value;
+            double b = (elementObject.GetValue("B") as FloatValue).Value;
+            double g = (elementObject.GetValue("G") as FloatValue).Value;
+            double bp = (elementObject.GetValue("Bp") as FloatValue).Value;
+            return new LinePi((float)r, (float)l, (float)b, (float)g, (float)bp, elementNodes["in"] as Pin3Phase, elementNodes["out"] as Pin3Phase);
+        }
+    }
+    public class TransientLinePIModel : ITransientElementModel
+    {
+        public ITransientElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
         {
             double r = (elementObject.GetValue("R") as FloatValue).Value;
             double l = (elementObject.GetValue("L") as FloatValue).Value;

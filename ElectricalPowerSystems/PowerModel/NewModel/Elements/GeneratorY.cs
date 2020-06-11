@@ -61,15 +61,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{out_pin.VA} - {n_pin.V} = {E} * sin({w} * time + {ph}) - ({IA} * R_{ID} + der({IA}) * L_{ID});"
+                Equation = $"{out_pin.VA} - {n_pin.V} = {E} * sin({w} * t + {ph}) - ({IA} * R_{ID} + der({IA}) * L_{ID});"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{out_pin.VB} - {n_pin.V} = {E} * sin({w} * time + {ph} + pi()*2.0/3.0) - ({IB} * R_{ID} + der({IB}) * L_{ID});"
+                Equation = $"{out_pin.VB} - {n_pin.V} = {E} * sin({w} * t + {ph} + pi()*2.0/3.0) - ({IB} * R_{ID} + der({IB}) * L_{ID});"
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"{out_pin.VC} - {n_pin.V} = {E} * sin({w} * time + {ph} + pi()*4.0/3.0) - ({IC} * R_{ID} + der({IC}) * L_{ID});"
+                Equation = $"{out_pin.VC} - {n_pin.V} = {E} * sin({w} * t + {ph} + pi()*4.0/3.0) - ({IC} * R_{ID} + der({IC}) * L_{ID});"
             });
             return equations;
         }
@@ -82,11 +82,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             });
             equations.Add(new EquationBlock
             {
-                Equation = $"constant w_{ID} = {frequency.ToString(new CultureInfo("en-US"))};"
+                Equation = $"constant w_{ID} = {frequency.ToString(new CultureInfo("en-US"))} * 2.0 * pi();"
             });
             equations.Add(new EquationBlock
             {
                 Equation = $"constant ph_{ID} = {phase.ToString(new CultureInfo("en-US"))};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"constant R_{ID} = {z.Real.ToString(new CultureInfo("en-US"))};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"constant L_{ID} = {z.Imaginary.ToString(new CultureInfo("en-US"))}/baseFrequency;"
             });
             return equations;
         }
@@ -187,6 +195,17 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
     public class SteadyStateGeneratorYModel : ISteadyStateElementModel
     {
         public ISteadyStateElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            double vPeak = (elementObject.GetValue("Peak") as FloatValue).Value;
+            double vPhase = (elementObject.GetValue("Phase") as FloatValue).Value;
+            double frequency = (elementObject.GetValue("Frequency") as FloatValue).Value;
+            Complex32 z = (elementObject.GetValue("Z") as ComplexValue).Value;
+            return new GeneratorY((float)vPeak, (float)vPhase, (float)frequency, z, elementNodes["out"] as Pin3Phase, elementNodes["n"] as Pin1Phase);
+        }
+    }
+    public class TransientGeneratorYModel : ITransientElementModel
+    {
+        public ITransientElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
         {
             double vPeak = (elementObject.GetValue("Peak") as FloatValue).Value;
             double vPhase = (elementObject.GetValue("Phase") as FloatValue).Value;

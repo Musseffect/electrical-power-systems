@@ -135,9 +135,9 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
             if (counter != Steps)
             {
                 //call some method with comparable accuracy
+                previousValues.Insert(0, x);
                 Vector<double> result = solver.IntegrateStep(system, x, t);
                 counter++;
-                previousValues.Insert(0, x);
                 return result;
             }
             //solve f(xn+1,a[0]*xn+1+SUM(a[i]*xn+1-i)/h,t+h)
@@ -145,7 +145,7 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
             Vector<double> _dx = x * a[1];
             for (int j = 0; j < Steps - 1; j++)
             {
-                _dx += previousValues[j] * a[j + 2] / step;
+                _dx += previousValues[j] * a[j + 2];
             }
             for (int i = 0; i < newtonIterations; i++)
             {
@@ -157,7 +157,7 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
                 F = F * alpha;
                 //Vector<double> f = Vector<double>.Build.SparseOfArray(F).Multiply(alpha);
                 Matrix<double> jacobiMatrix;// = Matrix<double>.Build.Sparse(system.Size, system.Size);
-                jacobiMatrix = dFdX.Add(dFddX.Divide(step));
+                jacobiMatrix = dFdX.Add(dFddX.Multiply(a[0]/step));
                 /* for (int m = 0; m < system.Size; m++)
                  {
                      for (int l = 0; l < system.Size; l++)
@@ -196,7 +196,7 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
             base.SetNewtonIterations(iterations);
             (solver as RADAUIIA3).SetNewtonIterations(iterations);
         }
-        public virtual void SetNewtonFAbsTol(float value)
+        public override void SetNewtonFAbsTol(float value)
         {
             base.SetNewtonFAbsTol(value);
             (solver as RADAUIIA3).SetNewtonFAbsTol(value);
@@ -244,10 +244,10 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
                 Matrix<double> dFdX = system.DFdX(xNew, dx, time); //use k as dx
                 Matrix<double> dFddX = system.DFddX(xNew, dx, time);
                 Vector<double> F = system.F(xNew, dx, time);
-                F = F * alpha;
+                F = F * alpha * step;
                 //Vector<double> f = Vector<double>.Build.SparseOfArray(F).Multiply(alpha);
                 Matrix<double> jacobiMatrix;// = Matrix<double>.Build.Sparse(system.Size, system.Size);
-                jacobiMatrix = dFdX.Add(dFddX.Divide(step));
+                jacobiMatrix = dFdX.Multiply(step).Add(dFddX);
                 /* for (int m = 0; m < system.Size; m++)
                  {
                      for (int l = 0; l < system.Size; l++)
@@ -257,7 +257,7 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
                  }*/
                 Vector<double> deltax = jacobiMatrix.Solve(-F);
                 xNew += deltax;
-                if (F.L2Norm() < fAbsTol)
+                if (F.L2Norm()/step < fAbsTol)
                 {
                     return xNew;
                 }
@@ -500,13 +500,13 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
                 },
                 {
                     4.0 / 9.0 - Math.Sqrt(6.0) / 36.0,
-                    4.0 / 9.0 + Math.Sqrt(6.0),
+                    4.0 / 9.0 + Math.Sqrt(6.0) / 36.0,
                     1.0 / 9.0
                 }
             };
             b = new double[3] {
                 4.0 / 9.0 - Math.Sqrt(6.0) / 36.0,
-                4.0 / 9.0 + Math.Sqrt(6.0),
+                4.0 / 9.0 + Math.Sqrt(6.0) / 36.0,
                 1.0 / 9.0
             };
             c = new double[3] {

@@ -1,4 +1,5 @@
-﻿using ElectricalPowerSystems.PowerModel.NewModel.Transient;
+﻿using ElectricalPowerSystems.Equations.DAE;
+using ElectricalPowerSystems.PowerModel.NewModel.Transient;
 using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,24 @@ using System.Threading.Tasks;
 
 namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
 {
+    class ShortCircuitEvent : TransientEvent
+    {
+        string stateName;
+        double newState;
+        public ShortCircuitEvent(string stateName, double newState, double time) : base(time)
+        {
+            this.stateName = stateName;
+            this.newState = newState;
+        }
+        public override bool Execute(TransientState stateValuesx)
+        {
+            return true;
+        }
+        public override List<Parameter> GetParameters()
+        {
+            return new List<Parameter>() { new Parameter(stateName, newState) };
+        }
+    }
     class ShortCircuit : Element,ISteadyStateElement, ITransientElement
     {
         Pin1Phase a_pin;
@@ -282,12 +301,44 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
 
         List<TransientEvent> ITransientEventGenerator.GenerateEvents(double t0, double t1)
         {
+            return new List < TransientEvent>{ new ShortCircuitEvent($"fault_state_{ID}",1.0,this.startTime),new ShortCircuitEvent($"fault_state_{ID}", 0.0, this.endTime)};
             throw new NotImplementedException();
         }
 
         List<EquationBlock> ITransientElement.GenerateEquations()
         {
-            throw new NotImplementedException();
+            List<EquationBlock> equations = new List<EquationBlock>();
+            equations.Add(new CurrentFlowBlock
+            {
+                Equation = I1A,
+                Node1 = in_pin.VA,
+                Node2 = null
+            });
+            equations.Add(new CurrentFlowBlock
+            {
+                Equation = I1B,
+                Node1 = in_pin.VB,
+                Node2 = null
+            });
+            equations.Add(new CurrentFlowBlock
+            {
+                Equation = I1C,
+                Node1 = in_pin.VC,
+                Node2 = null
+            });
+           /* equations.Add(new EquationBlock
+            {
+                Equation = $"fault_state_{ID} = {stateValue.ToString(new CultureInfo("en-US"))};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"fault_state_{ID} = {stateValue.ToString(new CultureInfo("en-US"))};"
+            });
+            equations.Add(new EquationBlock
+            {
+                Equation = $"fault_state_{ID} = {stateValue.ToString(new CultureInfo("en-US"))};"
+            });*/
+            return equations;
         }
     }
     class OpenCircuit : Element,ISteadyStateElement,ITransientElement

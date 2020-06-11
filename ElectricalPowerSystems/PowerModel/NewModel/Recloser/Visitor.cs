@@ -55,6 +55,9 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 case RecloserGrammarLexer.PLUS:
                     node = new AdditionNode();
                     break;
+                case RecloserGrammarLexer.PERCENT:
+                    node = new ModNode();
+                    break;
                 case RecloserGrammarLexer.MINUS:
                     node = new SubtractionNode();
                     break;

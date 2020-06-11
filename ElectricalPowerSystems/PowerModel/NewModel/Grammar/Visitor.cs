@@ -65,6 +65,13 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Grammar
 
         public override Node VisitAssignmentExpression([NotNull] ModelGrammarParser.AssignmentExpressionContext context)
         {
+            return new AssignmentNode
+            {
+                Left = (ExpressionNode)Visit(context.lvalue),
+                Right = (ExpressionNode)Visit(context.rvalue),
+                Line = context.Start.Line,
+                Position = context.Start.Column
+            };
             return base.VisitAssignmentExpression(context);
         }
 
@@ -260,7 +267,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Grammar
             List<ExpressionNode> statements = new List<ExpressionNode>();
             foreach (var statement in context.statement())
             {
-                Node node = VisitStatement(statement);
+                statements.Add((ExpressionNode)VisitStatement(statement));
             }
             List<ElementNode> elements = new List<ElementNode>();
             foreach (var element in context.elementStatement())

@@ -217,6 +217,12 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         {
         }
     }
+    public class ModNode : BinaryOperatorNode
+    {
+        public ModNode() : base(ExpType.Mod)
+        {
+        }
+    }
     public class EqualNode : BinaryOperatorNode
     {
         public EqualNode() : base(ExpType.Equal)
@@ -342,6 +348,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
             Subtraction,
             Multiplication,
             Division,
+            Mod,
             FieldExpression,
             Assignment,
             FunctionCall,

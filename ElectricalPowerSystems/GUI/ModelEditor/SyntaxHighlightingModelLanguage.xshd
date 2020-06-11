@@ -27,7 +27,7 @@
     </Span>
 
     <!--constants-->
-    <Keywords fontWeight="bold" foreground="Yellow">
+    <Keywords fontWeight="bold" foreground="Blue">
       <Word>Dd0</Word>
       <Word>Dd2</Word>
       <Word>Dd4</Word>

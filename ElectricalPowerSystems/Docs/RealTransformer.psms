@@ -1,0 +1,46 @@
+model:
+    /*steadystate{
+	    solver = newton{
+		    iterations = 20,
+		    fAbsTol = 0.005,
+		    alpha = 1.0
+	    },
+        baseFrequency = 50
+	};*/
+    transient{
+	    solver = radauIIA3{
+		    iterations = 30,
+		    fAbsTol = 0.01,
+		    alpha = 1.0,
+            step = 0.001
+	    },
+        baseFrequency = 50,
+        t0 = 0,
+        t1 = 5./60//5 cycles
+	};
+elements:
+    v1 = VoltageSource{
+        Peak = 220,
+        Phase = 0,
+        Frequency = 50 //Hz
+    };
+    scope1 = Scope1p{Label="Primary"};
+    scope2 = Scope1p{Label="Secondary"};
+    g = Ground{};
+    t1 = RealTransformer{
+	    K=1,
+	    Zp = 0.001+j 0.001,
+	    Zs = 0.001+j 0.001,
+	    Xm = 100000.0,
+	    Rc = 100000.10
+    };
+    r1 = Resistor{R = 10000};
+connections:
+    connect(g.in,v1.in);
+    connect(v1.out,scope1.in);
+    connect(scope1.out,t1.in_p);
+    connect(t1.out_p,g.in);
+    connect(scope2.out,r1.in);
+    connect(t1.in_s,scope2.in);
+    connect(g.in,t1.out_s);
+    connect(g.in,r1.out);

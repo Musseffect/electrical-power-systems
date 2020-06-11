@@ -114,6 +114,17 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
         {
             functionTable = new Dictionary<string, List<FunctionDefinition>>()
             {
+                {"sqrt", new List<FunctionDefinition>{
+                    new FunctionDefinition
+                    (
+                        Sqrt,
+                        new FunctionSignature(new List<ArgumentDescription>
+                        {
+                            new ArgumentDescription(Constant.Type.Float)
+                        },false)
+                    )
+                    }
+                },
                 { "radians", new List<FunctionDefinition>{
                     new FunctionDefinition
                     (
@@ -385,6 +396,11 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
         {
             ComplexValue c = args[0] as ComplexValue;
             return new ComplexValue(c.Re, -c.Im);
+        }
+        private static Constant Sqrt(List<Constant> args)
+        {
+            FloatValue value = args[0] as FloatValue;
+            return new FloatValue(Math.Sqrt(value.Value));
         }
         private static Constant E(List<Constant> args)
         {

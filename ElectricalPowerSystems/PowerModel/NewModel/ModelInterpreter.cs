@@ -212,6 +212,11 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     nodeIndicies++;
                 }
                 //create element entry
+                if (elementEntries.ContainsKey(element.Id))
+                {
+                    errors.Add(new ErrorMessage($"Повторное использование идентификатора {element.Id}", element.Line, element.Position));
+                    continue;
+                }
                 elementEntries.Add(element.Id, new ElementEntry(description, obj, elementPins));
                 bool valid = description.Validate(ref obj, ref errors);
                 if (valid)
@@ -336,16 +341,24 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 }
                 FloatValue t0 = Convert(modelParameters.GetValue("t0"), Constant.Type.Float) as FloatValue;
                 FloatValue t1 = Convert(modelParameters.GetValue("t1"), Constant.Type.Float) as FloatValue;
+
+                FloatValue baseFrequency = (FloatValue)Convert(modelParameters.GetValue("baseFrequency"), Constant.Type.Float);
+                model.SetBaseFrequency(baseFrequency.Value);
                 /*if (modelParameters.ContainsKey("exportTo"))
                 {
                     StringValue fileName = Convert(modelParameters.GetValue("exportTo"), Constant.Type.String) as StringValue;
                     model.setExportTo(fileName);
                 }*/
-                /*if (modelParameters.ContainsKey("useInterpolation"))
+                if (modelParameters.ContainsKey("useAdaptiveStep"))
                 {
-                    BoolValue useInterpolation = Convert(modelParameters.GetValue("useInterpolation"), Constant.Type.Bool) as BoolValue;
-                    model.setUseInterpolation(useInterpolation);
-                }*/
+                    BoolValue useAdaptiveStep = Convert(modelParameters.GetValue("useAdaptiveStep"), Constant.Type.Bool) as BoolValue;
+                    model.SetIsAdaptive(useAdaptiveStep.Value);
+                    if (useAdaptiveStep.Value)
+                    {
+                        FloatValue minStep = Convert(modelParameters.GetValue("minStep"), Constant.Type.Float) as FloatValue;
+                        model.SetMinStep(minStep.Value);
+                    }
+                }
                 /*if (modelParameters.ContainsKey("epsilon"))
                 {
                     FloatValue epsilon = Convert(modelParameters.GetValue("epsilon"), Constant.Type.Float) as FloatValue;
@@ -398,6 +411,11 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     nodeIndicies++;
                 }
                 //create element entry
+                if (elementEntries.ContainsKey(element.Id))
+                {
+                    errors.Add(new ErrorMessage($"Повторное использование идентификатора {element.Id}", element.Line, element.Position));
+                    continue;
+                }
                 elementEntries.Add(element.Id, new ElementEntry(description, obj, elementPins));
                 bool valid = description.Validate(ref obj, ref errors);
                 if (valid)
@@ -624,6 +642,23 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Group",new IntType() }
                 }, new Elements.TransientTransformerModel(), new Elements.SteadyStateTransformerModel())
             );
+            elementsMap.Add("RealTransformer", new ElementDescription(
+                new Dictionary<string, ElementDescription.NodeType>
+                {
+                    { "in_p", ElementDescription.NodeType.OnePhase},
+                    { "out_p", ElementDescription.NodeType.OnePhase},
+                    { "in_s", ElementDescription.NodeType.OnePhase},
+                    { "out_s", ElementDescription.NodeType.OnePhase}
+                },
+                new Dictionary<string, IType>()
+                {
+                    { "Zp",new ComplexType() },
+                    { "Zs",new ComplexType() },
+                    { "Xm",new FloatType() },
+                    { "Rc",new FloatType() },
+                    { "K",new FloatType() }
+                }, new Elements.TransientRealTransformerModel(), new Elements.SteadyStateRealTransformerModel())
+            );
             elementsMap.Add("VoltageSource", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>{
                     { "in", ElementDescription.NodeType.OnePhase },
@@ -660,7 +695,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Rc",new FloatType() },
                     { "K",new FloatType() },
                     { "Group",new IntType() }
-                }, null, new Elements.SteadyStateTransformerDdModel())
+                }, new Elements.TransientTransformDdModel(), new Elements.SteadyStateTransformerDdModel())
             );
             elementsMap.Add("TransformerYd", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -677,7 +712,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Rc",new FloatType() },
                     { "K",new FloatType() },
                     { "Group",new IntType() }
-                }, null, new Elements.SteadyStateTransformerYdModel())
+                }, new Elements.TransientTransformYdModel(), new Elements.SteadyStateTransformerYdModel())
             );
             elementsMap.Add("TransformerDy", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -694,7 +729,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Rc",new FloatType() },
                     { "K",new FloatType() },
                     { "Group",new IntType() }
-                }, null, new Elements.SteadyStateTransformerDyModel())
+                }, new Elements.TransientTransformDyModel(), new Elements.SteadyStateTransformerDyModel())
             );
             elementsMap.Add("TransformerYy", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -712,7 +747,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Rc",new FloatType() },
                     { "K",new FloatType() },
                     { "Group",new IntType() }
-                }, null, new Elements.SteadyStateTransformerYyModel())
+                }, new Elements.TransientTransformYyModel(), new Elements.SteadyStateTransformerYyModel())
             );
             elementsMap.Add("LoadY", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -725,7 +760,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "ZA",new ComplexType() },
                     { "ZB",new ComplexType() },
                     { "ZC",new ComplexType() }
-                }, null, new Elements.SteadyStateLoadYModel())
+                }, new Elements.TransientLoadYModel(), new Elements.SteadyStateLoadYModel())
             );
             elementsMap.Add("LoadD", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -737,7 +772,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "ZAB",new ComplexType() },
                     { "ZBC",new ComplexType() },
                     { "ZCA",new ComplexType() }
-                }, null, new Elements.SteadyStateLoadDModel())
+                }, new Elements.TransientLoadDModel(), new Elements.SteadyStateLoadDModel())
             );
             elementsMap.Add("GeneratorY", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -751,7 +786,20 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "Phase",new FloatType() },
                     { "Frequency",new FloatType() },
                     { "Z",new ComplexType() }
-                }, null, new Elements.SteadyStateGeneratorYModel())
+                }, new Elements.TransientGeneratorYModel(), new Elements.SteadyStateGeneratorYModel())
+            );
+            elementsMap.Add("GeneratorD", new ElementDescription(
+                new Dictionary<string, ElementDescription.NodeType>
+                {
+                    { "out", ElementDescription.NodeType.ThreePhase}
+                },
+                new Dictionary<string, IType>()
+                {
+                    { "Peak",new FloatType() },
+                    { "Phase",new FloatType() },
+                    { "Frequency",new FloatType() },
+                    { "Z",new ComplexType() }
+                }, new Elements.TransientGeneratorDModel(), new Elements.SteadyStateGeneratorDModel())
             );
             elementsMap.Add("Switch3P", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>
@@ -789,7 +837,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                     { "B",new FloatType() },
                     { "G",new FloatType() },
                     { "Bp",new FloatType() }
-                }, null, new Elements.SteadyStateLinePiModel())
+                }, new Elements.TransientLinePIModel(), new Elements.SteadyStateLinePiModel())
+            );
+            elementsMap.Add("LineRL", new ElementDescription(
+                new Dictionary<string, ElementDescription.NodeType>
+                {
+                    { "in", ElementDescription.NodeType.ThreePhase},
+                    { "out", ElementDescription.NodeType.ThreePhase}
+                },
+                new Dictionary<string, IType>()
+                {
+                    { "R",new FloatType() },
+                    { "L",new FloatType() }
+                }, new Elements.TransientLineRLModel(), new Elements.SteadyStateLineRLModel())
             );
             elementsMap.Add("RecloserNative", new ElementDescription(
                 new Dictionary<string, ElementDescription.NodeType>

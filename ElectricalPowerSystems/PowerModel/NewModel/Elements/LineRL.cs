@@ -170,4 +170,13 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             return new LineRL((float)r, (float)l, elementNodes["in"] as Pin3Phase, elementNodes["out"] as Pin3Phase);
         }
     }
+    public class TransientLineRLModel : ITransientElementModel
+    {
+        public ITransientElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            double r = (elementObject.GetValue("R") as FloatValue).Value;
+            double l = (elementObject.GetValue("L") as FloatValue).Value;
+            return new LineRL((float)r, (float)l, elementNodes["in"] as Pin3Phase, elementNodes["out"] as Pin3Phase);
+        }
+    }
 }

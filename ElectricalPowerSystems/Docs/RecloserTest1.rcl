@@ -3,7 +3,7 @@ float global1;
 
 float testFunction(in float a,inout int b)
 {
-	b = (int)a + b;
+	b = (int)a + b = b;
 	return a + 1.0;
 }
 bool updateState(in float in1,in float in2)

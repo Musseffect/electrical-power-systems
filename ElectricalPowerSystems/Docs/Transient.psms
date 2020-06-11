@@ -1,12 +1,14 @@
-
 model:
-	steadystate{
-		solver = newton{
-			iterations = 20,
-			fAbsTol = 0.01,
-			alpha = 1.0
-		},
-		baseFrequency = 50
+    transient{
+	    solver = radauIIA3{
+		    iterations = 20,
+		    fAbsTol = 0.01,
+		    alpha = 1.0,
+            step = 0.004
+	    },
+        baseFrequency = 50,
+        t0 = 0,
+        t1 = 5./50//5 cycles
 	};
 elements:
 	generator1 = GeneratorY{

@@ -55,7 +55,7 @@ expression:  LPAREN expression RPAREN #BracketExpression
 | <assoc=right>op=MINUS expression #UnaryOperator
 | <assoc=right>op=NOT expression #UnaryOperator
 | <assoc=right> LPAREN id=ID RPAREN exp=expression #CastOperator
-| left=expression op=(ASTERISK|DIVISION) right=expression #BinaryOperator
+| left=expression op=(ASTERISK|DIVISION|PERCENT) right=expression #BinaryOperator
 | left=expression op=(PLUS|MINUS) right=expression #BinaryOperator
 | left=expression op=(LESS|LESSEQ|GREATER|GREATEREQ) right=expression #BinaryOperator
 | left=expression op=(EQUAL|NOTEQUAL) right=expression #BinaryOperator
@@ -130,6 +130,7 @@ LCRLPAREN			: '{' ;
 RCRLPAREN			: '}' ;
 ANGLE				:'@' ;
 CARET				:'^';
+PERCENT				:'%';
 
 STRING	: '"' .*? '"'|'\'' .*? '\'';
 NEWLINE	: ('\r'? '\n' | '\r')+ -> skip;

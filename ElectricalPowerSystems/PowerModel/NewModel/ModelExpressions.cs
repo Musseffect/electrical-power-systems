@@ -509,7 +509,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel
                 Constant rightConstant = right.GetRValue();
                 if (left is LValue l)
                 {
-                    l.SetValue((Object)right);
+                    l.SetValue(rightConstant);
                     return right;
                 }
             }

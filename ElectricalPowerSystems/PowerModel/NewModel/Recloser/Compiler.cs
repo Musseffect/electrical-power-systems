@@ -1630,6 +1630,31 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                         scope.AddToStackPointer(-1);
                         return;
                     }
+                case ExpressionNode.ExpType.Mod:
+                    {
+                        ModNode _node = expression as ModNode;
+                        Type type = InferType(scope, _node.Left);
+                        CheckType(scope, _node.Right, type);
+                        if (type is FloatType)
+                        {
+                            CompileExpression(scope, _node.Left);
+                            CompileExpression(scope, _node.Right);
+                            Emit(Instruction.FMOD);
+                        }
+                        else if (type is IntType)
+                        {
+                            CompileExpression(scope, _node.Left);
+                            CompileExpression(scope, _node.Right);
+                            Emit(Instruction.IMOD);
+                        }
+                        else
+                        {
+                            throw new Exception("Некорректный тип выражения");
+                        }
+                        //scope.AddToStackPointer((-2+1) * (type as BasicType).GetByteSize());
+                        scope.AddToStackPointer(-1);
+                        return;
+                    }
                 case ExpressionNode.ExpType.Negation://Done
                     {
                         NegationNode _node = expression as NegationNode;
@@ -2060,11 +2085,17 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 case ExpressionNode.ExpType.ArrayAccess:
                     {
                         ArrayAccessNode node = expression as ArrayAccessNode;
+                        CheckType(scope, node.Index, basicTypes["int"]);
                         /*
                          get node.Parent() {isLocal,offset,parentType};
                          get parentType.offset for current
                          load currentType
                          
+                            Compile(scope, node.Index)
+                            Emit(sizeofParent);
+                            Emit(Instruction.IMUL);
+                            Emit(Instruction.IADD);
+                            Emit(Instruction.IRLOAD);
                          */
                         throw new NotImplementedException();
                         if (!(node.Array is IdentifierNode))
@@ -2100,10 +2131,19 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                     {
                         FieldAccessNode node = expression as FieldAccessNode;
                         /*
+                            Emit(Instruction.RCREATE) if local or emit(Instruction.IPUSH) if global
                          get node.Parent() {isLocal,offset,parentType};
                          get parentType.offset for current
                          load currentType
+                         if(isLocal)
+                         {
+                         }else
+                         {
                          
+                        }
+                            Emit(Instruction.IADD);
+                            Emit(new Short((short)fieldOffset));
+                            Emit(Instruction.IRLOAD);
                          */
                         throw new NotImplementedException();
                         ExpressionNode _node = node.Parent;
@@ -2285,6 +2325,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                 case ExpressionNode.ExpType.Subtraction:
                 case ExpressionNode.ExpType.Multiplication:
                 case ExpressionNode.ExpType.Division:
+                case ExpressionNode.ExpType.Mod:
                     {
                         Type type = InferType(scope ,(exp as BinaryOperatorNode).Left);
                         CheckType(scope ,(exp as BinaryOperatorNode).Right,type);

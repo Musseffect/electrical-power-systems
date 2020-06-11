@@ -48,6 +48,15 @@ namespace ElectricalPowerSystems.GUI.ModelEditor.Windows
                 OnPropertyChanged();
             }
         }
+        private bool testFlag;
+        public bool TestFlag
+        {
+            get { return testFlag; }
+            private set {
+                testFlag = value;
+                OnPropertyChanged();
+            }
+        }
         private string outputText;
         public string OutputText {
             get { return outputText; }
@@ -100,7 +109,11 @@ namespace ElectricalPowerSystems.GUI.ModelEditor.Windows
         public MainWindow()
         {
             UIEnabled = true;
-
+#if DEBUG||TEST
+            TestFlag = true;
+#else
+            TestFlag = false;
+#endif
             ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition modelHighlighting;
             ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition recloserHighlighting;
             ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition equationsHighlighting;
@@ -243,40 +256,21 @@ elements:
         Phase = 0,
         Frequency = 60 //Hz
     };
-    scope1 = Scope1p{
-        Label=""V1""
-    };
-    scope2 = Scope1p{
-        Label=""C2""
-    };
-    g = Ground{
-    };
+    scope1 = Scope1p{Label=""V1""};
+    scope2 = Scope1p{Label=""C2""};
+    g = Ground{};
     v2 = VoltageSource{
         Peak = 220,
         Phase = 0,
         Frequency = 60
     };
-    r1 = Resistor{
-        R = 10
-    };
-    r2 = Resistor{
-        R = 10
-    };
-    i1 = Inductor{
-        L = 5    
-    };
-    i2 = Inductor{
-        L = 5
-    };
-    c1 = Capacitor{
-        C = 0.02
-    };
-    c2 = Capacitor{
-        C = 0.04
-    };
-    c3 = Capacitor{
-        C = 0.01
-    };
+    r1 = Resistor{R = 10};
+    r2 = Resistor{R = 10};
+    i1 = Inductor{L = 5};
+    i2 = Inductor{L = 5};
+    c1 = Capacitor{C = 0.02};
+    c2 = Capacitor{C = 0.04};
+    c3 = Capacitor{C = 0.01};
 connections:
     connect(g.in,v1.in);
     connect(v1.out,scope1.in);
@@ -473,7 +467,7 @@ I_l(t0) = 0;
         {
             expanderRow.Height = new GridLength(1, GridUnitType.Star);
         }
-        #region CLICK_METHODS
+#region CLICK_METHODS
         private async void RunNonlinearTest_Click(object sender, RoutedEventArgs e)
         {
             UIEnabled = false;
@@ -531,24 +525,12 @@ elements:
     };
     g = ground{
     };
-    scopeVR = scope1p{
-        Label=""scopeVR""
-    };
-    scopeRL = scope1p{
-        Label=""scopeRL""
-    };
-    scopeLC = scope1p{
-        Label=""scopeLC""
-    };
-    r1 = resistor{
-        R = 10
-    };
-    l1 = inductor{
-        L = 5
-    };
-    c1 = capacitor{
-        C = 0.01
-    };
+    scopeVR = scope1p{Label=""scopeVR""};
+    scopeRL = scope1p{Label=""scopeRL""};
+    scopeLC = scope1p{Label=""scopeLC""};
+    r1 = resistor{R = 10};
+    l1 = inductor{L = 5};
+    c1 = capacitor{C = 0.01};
 connections:
     connect(v1.in, g.in);
     connect(v1.out, scopeVR.in);
@@ -592,29 +574,14 @@ elements:
        Phase = 0,
        Frequency = 50
     };
-    g = ground{
-    };
-    scopeR = scope1p{
-        Label=""scopeR""
-    };
-    scopeL = scope1p{
-        Label=""scopeL""
-    };
-    scopeC = scope1p{
-        Label=""scopeC""
-    };
-    scopeV = scope1p{
-        Label=""scopeV""
-    };
-    r1 = resistor{
-        R = 10
-    };
-    l1 = inductor{
-        L = 5
-    };
-    c1 = capacitor{
-        C = 0.01
-    };
+    g = ground{};
+    scopeR = scope1p{Label=""scopeR""};
+    scopeL = scope1p{Label=""scopeL""};
+    scopeC = scope1p{Label=""scopeC""};
+    scopeV = scope1p{Label=""scopeV""};
+    r1 = resistor{R = 10};
+    l1 = inductor{L = 5};
+    c1 = capacitor{C = 0.01};
 connections:
     connect(v1.in, g.in);
     connect(v1.out, scopeV.in);
@@ -704,21 +671,10 @@ elements:
 		Z = 0.01+ j 0.001,
         Frequency = 60 //in Herz
 	};
-	scope1 = scope3p
-	{
-		Label = ""Generator""
-    };
-    scope2 = scope3p
-	{
-		Label = ""Load""
-    };
-    scope3 = scope1p
-	{
-		Label = ""ground""
-    };
-    resistorGen1 = resistor{
-		R = 1000
-	};
+	scope1 = scope3p{Label = ""Generator""};
+    scope2 = scope3p{Label = ""Load""};
+    scope3 = scope1p{Label = ""ground""};
+    resistorGen1 = resistor{R = 1000};
     line1 = linePiSection{
 		  R = 0.02,
           L = 0.01,
@@ -747,8 +703,7 @@ elements:
 		ZB = 1,
 		ZC = 1
 	};
-	ground = ground{
-	};
+	ground = ground{};
 connections:
 	connect(generator1.n, resistorGen1.in);
     connect(resistorGen1.out,scope3.in);
@@ -793,8 +748,8 @@ connections:
         {
             SaveAllCommand();
         }
-        #endregion
-        #region TASKS
+#endregion
+#region TASKS
         internal void RunNonlinearEquationsTest(MainWindow window)
         {
             FileTabItem tab = null;
@@ -849,7 +804,9 @@ connections:
                 {
                     window.OutputText += exc.Message;
                     window.OutputText += "\n";
+#if TEST||DEBUG
                     window.OutputText += exc.StackTrace;
+#endif
                 });
                 return;
             }
@@ -915,7 +872,9 @@ connections:
                 Dispatcher.Invoke(() => {
                     window.OutputText += exc.Message;
                     window.OutputText += "\n";
+#if TEST||DEBUG
                     window.OutputText += exc.StackTrace;
+#endif
                 });
                 return;
             }
@@ -979,7 +938,9 @@ connections:
                 {
                     window.OutputText += exc.Message;
                     window.OutputText += "\n";
+#if TEST||DEBUG
                     window.OutputText += exc.StackTrace;
+#endif
                 });
                 return;
             }
@@ -1051,7 +1012,9 @@ connections:
                 {
                     window.OutputText += exc.Message;
                     window.OutputText += "\n";
+#if TEST||DEBUG
                     window.OutputText += exc.StackTrace;
+#endif
                 });
                 return;
             }
@@ -1147,7 +1110,9 @@ connections:
                 {
                     window.OutputText += exc.Message;
                     window.OutputText += "\n";
+#if TEST||DEBUG
                     window.OutputText += exc.StackTrace;
+#endif
                 });
                 return;
             }
@@ -1202,7 +1167,9 @@ connections:
                 Dispatcher.Invoke(() => {
                     window.OutputText += exc.Message;
                     window.OutputText += "\n";
+#if TEST||DEBUG
                     window.OutputText += exc.StackTrace;
+#endif
                 });
                 return;
             }
@@ -1221,9 +1188,9 @@ connections:
             );
             return;
         }
-        #endregion
-        #region COMMANDS
-        #region CANEXECUTE
+#endregion
+#region COMMANDS
+#region CANEXECUTE
         private void HelpCommandCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -1265,8 +1232,8 @@ connections:
         {
             return _tabItems.Count > 0;
         }
-        #endregion
-        #region EXECUTE
+#endregion
+#region EXECUTE
         private void HelpCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             bool isWindowOpen = false;
@@ -1358,7 +1325,7 @@ connections:
                 _tabItems.RemoveAt(index);
             }
         }
-        #endregion
-        #endregion
+#endregion
+#endregion
     }
 }

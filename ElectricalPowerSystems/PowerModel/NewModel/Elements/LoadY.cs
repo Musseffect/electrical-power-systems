@@ -216,4 +216,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             return new LoadY(za,zb,zc, elementNodes["in"] as Pin3Phase, elementNodes["n"] as Pin1Phase);
         }
     }
+    public class TransientLoadYModel : ITransientElementModel
+    {
+        public ITransientElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            Complex32 za = (elementObject.GetValue("ZA") as ComplexValue).Value;
+            Complex32 zb = (elementObject.GetValue("ZB") as ComplexValue).Value;
+            Complex32 zc = (elementObject.GetValue("ZC") as ComplexValue).Value;
+            return new LoadY(za, zb, zc, elementNodes["in"] as Pin3Phase, elementNodes["n"] as Pin1Phase);
+        }
+    }
 }

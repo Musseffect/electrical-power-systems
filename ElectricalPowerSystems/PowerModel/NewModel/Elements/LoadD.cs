@@ -214,4 +214,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Elements
             return new LoadD(zab, zbc, zca, elementNodes["in"] as Pin3Phase);
         }
     }
+    public class TransientLoadDModel : ITransientElementModel
+    {
+        public ITransientElement CreateElement(ModelInterpreter.Object elementObject, Dictionary<string, Pin> elementNodes)
+        {
+            Complex32 zab = (elementObject.GetValue("ZAB") as ComplexValue).Value;
+            Complex32 zbc = (elementObject.GetValue("ZBC") as ComplexValue).Value;
+            Complex32 zca = (elementObject.GetValue("ZCA") as ComplexValue).Value;
+            return new LoadD(zab, zbc, zca, elementNodes["in"] as Pin3Phase);
+        }
+    }
 }

@@ -189,21 +189,25 @@
             </MenuItem>
             <MenuItem x:Name="RunMenuButton" Header="{DynamicResource m_menu_Run}" Click="RunMenuButton_Click" IsEnabled="{Binding Path = UIEnabled}">
             </MenuItem>
-            <MenuItem Header="Дополнительный функционал" IsEnabled="True">
-                <MenuItem Header="Схемы">
-                    <MenuItem x:Name="RLCSeriesCircuit" Header="Схема Series RLC" IsEnabled="True" Click="RLCSeriesCircuit_Click"/>
-                    <MenuItem x:Name="RLCParallelCircuit" Header="Схема Parallel RLC" IsEnabled="True" Click="RLCParallelCircuit_Click"/>
-                    <MenuItem x:Name="PowerSystemExample" Header="Схема трёхфазной сети" IsEnabled="True" Click="PowerSystemExample_Click"/>
-                </MenuItem>
-                <MenuItem Header="Уравнения">
-                    <MenuItem x:Name="RunNonlinearTestButton" Header="Решение АУ" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIEnabled}"/>
-                    <MenuItem x:Name="RunNonlinearExpressionTestButton" Header="Разбор и упрощения АУ" IsEnabled="{Binding Path = UIEnabled}" Click="RunNonlinearExpressionTest_Click"/>
-                    <Separator />
-                    <MenuItem x:Name="RunDAEExpressionTestButton" Header="Тестирование разбора и упрощения ДАУ" IsEnabled="{Binding Path = UIEnabled}" Click="RunDAEExpressionTest_Click"/>
-                    <MenuItem x:Name="RunDAETestButton" Header="Решение ДАУ системы" Click="RunDAETest_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
-                    <Separator />
-                    <MenuItem x:Name="GenerateEquationsButtoт" Header="Генерация уравнений" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
-                </MenuItem>
+            <MenuItem Header="Уравнения">
+                <MenuItem x:Name="RunNonlinearTestButton" Header="Решение АУ" Click="RunNonlinearTest_Click" IsEnabled="{Binding Path = UIEnabled}"/>
+                <MenuItem x:Name="RunDAETestButton" Header="Решение ДАУ системы" Click="RunDAETest_Click"  IsEnabled="{Binding Path = UIEnabled}"/>
+                <MenuItem x:Name="GenerateEquationsButtoт" Header="Генерация уравнений для ЭЭС" Click="RunGenerateEquationsButton_Click" IsEnabled="{Binding Path = UIEnabled}"/>
+            </MenuItem>
+            <MenuItem Header="Выключатели">
+                <MenuItem x:Name="CheckSyntax" Header="Проверка синтаксиса" IsEnabled="False"/>
+                <MenuItem x:Name="GenerateBytecode" Header="Генерация байткода" IsEnabled="False"/>
+                <MenuItem x:Name="TestProgram" Header="Тест программы" IsEnabled="False"/>
+            </MenuItem>
+            <MenuItem Header="Примеры" IsEnabled="True">
+                <MenuItem x:Name="RLCSeriesCircuit" Header="Схема Series RLC" IsEnabled="True" Click="RLCSeriesCircuit_Click"/>
+                <MenuItem x:Name="RLCParallelCircuit" Header="Схема Parallel RLC" IsEnabled="True" Click="RLCParallelCircuit_Click"/>
+                <MenuItem x:Name="PowerSystemExample" Header="Схема трёхфазной сети" IsEnabled="True" Click="PowerSystemExample_Click"/>
+            </MenuItem>
+            <MenuItem Header="Тестирование" IsEnabled="True" Visibility="{Binding Path = TestFlag,
+            Converter={StaticResource BoolToVisConverter}}">
+                <MenuItem x:Name="RunNonlinearExpressionTestButton" Header="Разбор и упрощение АУ" IsEnabled="{Binding Path = UIEnabled}" Click="RunNonlinearExpressionTest_Click"/>
+                <MenuItem x:Name="RunDAEExpressionTestButton" Header="Разбор и упрощение ДАУ" IsEnabled="{Binding Path = UIEnabled}" Click="RunDAEExpressionTest_Click"/>
             </MenuItem>
             <MenuItem Header="{DynamicResource m_menu_Help}" IsEnabled="True" Command="ApplicationCommands.Help"></MenuItem>
         </Menu>

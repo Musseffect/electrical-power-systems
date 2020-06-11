@@ -3,6 +3,7 @@ using ElectricalPowerSystems.MathUtils;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -70,9 +71,11 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
         List<TransientEvent> events;
         double t0;
         double t1;
-        double epsilon;
+        double minStep;
+        double baseFrequency;
         Equations.DAE.Implicit.DAEISolver solver;
         List<Pin> nodeList;
+        bool isAdaptive;
         int stateChangedCount;
         int maxPoints = 1024 * 1024;//8MB
         public TransientModel()
@@ -80,6 +83,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
             elements = new List<ITransientElement>();
             events = new List<TransientEvent>();
             nodeList = new List<Pin>();
+            baseFrequency = 50;
         }
         private string GenerateEquations()
         {
@@ -149,6 +153,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
                         equations += eq + Environment.NewLine;
                 }
             }
+            equations += $"constant baseFrequency = {baseFrequency.ToString(new CultureInfo("en-US"))} * 2 * pi();{Environment.NewLine}";
             foreach (var element in elements)
             {
                 var blocks = element.GenerateParameters();
@@ -203,6 +208,31 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
                 }
             }
             return t;
+        }
+        private void UpdateState(Vector<double> x,
+            Dictionary<string, int> variableMap,
+            ref Equations.DAE.Implicit.DAEIAnalytic system)
+        {
+            TransientEvent _event = events.First<TransientEvent>();
+            events.RemoveAt(0);
+            TransientState state = new TransientState(x, variableMap);
+            if (_event.Execute(state))
+            {
+                system.UpdateParameters(_event.GetParameters());
+                double eventTime = _event.Time;
+                while (events.Count > 0)
+                {
+                    _event = events.First<TransientEvent>();
+                    if (_event.Time > eventTime)
+                        break;
+                    events.RemoveAt(0);
+                    if (_event.Execute(state))
+                    {
+                        system.UpdateParameters(_event.GetParameters());
+                    }
+                }
+                stateChangedCount++;
+            }
         }
         private void InitEvents(ref Equations.DAE.Implicit.DAEIAnalytic system)
         {
@@ -263,20 +293,39 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
             {
                 Vector<double> xPrev = x;
                 double tPrev = t;
-                double closestEventTime = GetClosestEventTime();
-                double oldStep = solver.Step;
-                double step = Math.Min(oldStep, closestEventTime - t + epsilon);
-                solver.SetStep(step);
-                //make step
-                x = solver.IntegrateStep(system, x, t);
-                t += solver.Step;
-                solver.SetStep(oldStep);
-                //update t
-                if (events.Count != 0)
+                if (events.Count == 0)
                 {
-                    //if state happened during [tprev,tcurr]
-                    t = UpdateState(tPrev, t, xPrev, x, variableMap, ref system);
-                    x = MathUtils.MathUtils.Interpolate(xPrev, x, (t - tPrev) / solver.Step);
+                    x = solver.IntegrateStep(system, x, t);
+                    t += solver.Step;
+                }
+                else
+                {
+                    double closestEventTime = GetClosestEventTime();
+                    if (closestEventTime > t + solver.Step)
+                    {
+                        x = solver.IntegrateStep(system, x, t);
+                        t += solver.Step;
+                    }else if (closestEventTime - t > minStep)
+                    {
+                        double oldStep = solver.Step;
+                        double step = closestEventTime - t;
+                        solver.SetStep(step);
+                        x = solver.IntegrateStep(system, x, t);
+                        t += solver.Step;
+                        UpdateState(x,variableMap,ref system);
+                        solver.SetStep(oldStep);
+                    }
+                    else
+                    {
+                        double oldStep = solver.Step;
+                        double step = minStep;
+                        solver.SetStep(step);
+                        x = solver.IntegrateStep(system, x, t);
+                        t += solver.Step;
+                        t = UpdateState(tPrev, t, xPrev, x, variableMap, ref system);
+                        x = MathUtils.MathUtils.Interpolate(xPrev, x, (t - tPrev) / solver.Step);
+                        solver.SetStep(oldStep);
+                    }
                 }
                 TransientState currentState = new TransientState(x, variableMap);
                 List<double> currentValues = new List<double>();
@@ -353,7 +402,15 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
         public string Solve()
         {
             string equations = GenerateEquations();
-            TransientSolution solution = this.Solve(equations);
+            TransientSolution solution;
+            if (this.isAdaptive)
+            {
+                solution = this.SolveAdaptiveTimestep(equations);
+            }
+            else
+            {
+                solution = this.Solve(equations);
+            }
             solution.Plot();
             return solution.ToString();
         }
@@ -363,6 +420,14 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
                 return double.PositiveInfinity;
             else
                 return events.First().Time;
+        }
+        public void SetIsAdaptive(bool value)
+        {
+            isAdaptive = value;
+        }
+        public void SetMinStep(double minStep)
+        {
+            this.minStep = minStep;
         }
         public void SetT0(double t0)
         {
@@ -384,6 +449,10 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Transient
         {
             (element as Element).SetIndex(elements.Count);
             elements.Add(element);
+        }
+        public void SetBaseFrequency(double baseFrequency)
+        {
+            this.baseFrequency = baseFrequency;
         }
         public string GetEquations()
         {

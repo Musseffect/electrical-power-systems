@@ -15,16 +15,10 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         ARR_POP,
         DUP,//duplicate last value on stack
         RCREATE,//rcreate index 
-        /*RLOAD,//rload index - load reference
-        RSTORE,//store reference*/
         IRLOAD,//pop int ref | push int from (0 + ref)
         FRLOAD,//pop int ref | push float from (0 + ref)
         IRSTORE,//pop int ref, int value| push int value | save value to (0 + ref)
         FRSTORE,//pop int ref, float value| push float value | save value to (0 + ref)
-        /*GILOAD,//GILOAD index,  push int from stackBottom + index
-        GFLOAD,//GFLOAD index,  push float from stackBottom + index
-        GISTORE,
-        GFSTORE,//GFSTORE index,  pop float to stackBottom + index*/
         ILOAD,//ILOAD index , push int
         FLOAD,//FLOAT index, push float
         ISTORE,//ISTORE index, pop int| push int value
@@ -40,6 +34,7 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
         FADD,
         FSUB,
         FMUL,
+        FMOD,
         FDIV,
         FNEG,
 
@@ -218,6 +213,8 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                     return PrintInstruction("fdiv", offset);
                 case (byte)Instruction.FNEG:
                     return PrintInstruction("fneg", offset);
+                case (byte)Instruction.FMOD:
+                    return PrintInstruction("fmod", offset);
                 case (byte)Instruction.IEQ:
                     return PrintInstruction("ieq", offset);
                 case (byte)Instruction.FEQ:
@@ -519,6 +516,13 @@ namespace ElectricalPowerSystems.PowerModel.NewModel.Recloser
                             Float b = stack.Pop() as Float;
                             Float a = stack.Pop() as Float;
                             stack.Push(new Float(a.Value + b.Value));
+                            break;
+                        }
+                    case (byte)Instruction.FMOD:
+                        {
+                            Float b = stack.Pop() as Float;
+                            Float a = stack.Pop() as Float;
+                            stack.Push(new Float(a.Value % b.Value));
                             break;
                         }
                     case (byte)Instruction.FSUB://Done
