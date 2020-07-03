@@ -9,9 +9,9 @@ Check DAE: done
 New language: done
 Some basic inapp help: done
 Recloser native dynamic algorithm: done
+Transient : done
 
 IN PROGRESS:
-Transient: IN PROGRESS
 
 NOT DONE:
 Dark theme : 
@@ -25,10 +25,12 @@ Recloser dynamic algorithm: TODO
 Make UML: TODO
 
 DAE index reduction : not important
-Variable step dae solver: NOT GONNA HAPPEN
+Variable step dae solver: NOT GONNA HAPPEN BUD
+Trapezoid method : 
+Equation simplification :
 
-ELEMENTS
-STEADY_STATE:
+
+	!!!ELEMENTS:
 Resistor : done
 Capacitor : done
 Inductor : done
@@ -39,10 +41,11 @@ GeneratorY : done
 GeneratorD : done
 LoadD : done
 LoadY : done
-TransformerDd
-TransformerYd
-TransformerDy
-TransformerYy
+TwoPort : done
+TransformerDd : done
+TransformerYd : done
+TransformerDy : done
+TransformerYy : done
 Connection3P1P : done
 LinePi : done
 LineRL : done
@@ -57,7 +60,125 @@ FaultShortCircuit
 DynamicFault
 Break3P : done
 Break1P : done
-Switch2Way : 
+Switch2Way : done
 Recloser3P : done
 
 Recloser language
+
+	!!!RADIAL DISTANCE SIMPLIFICATION:
+http://psimpl.sourceforge.net/douglas-peucker.html
+
+	!!!ELEMENT DEFINITION:
+
+element Impedance{
+pins:
+	Pin1Phase in;
+	Pin1Phase out;
+parameters:
+	Complex Z = 0.1;//impedance value
+steadystate:
+	constant Zre = Z.re;
+	constant Zim = Z.im;
+	in.V.re - out.V.re = I.re * Zre - I.im * Zim * frequency / baseFrequency; 
+	in.V.im - out.V.im = I.im * Zre + I.re * Zim * frequency / baseFrequency;
+	in.I.re = I.re;
+	in.I.im = I.im;
+	out.I.re = - I.re;
+	out.I.im = -I.im;
+transient:
+	in.V - out.V = I * Z.re - Z.im / baseFrequency * der(I);
+	in.I = I;
+	out.I = I;
+}
+
+element VoltageSourceAC
+{
+pins:
+	Pin1Phase in;
+	Pin1Phase out;
+parameters:
+	float E;
+	float Frequency;
+	float PhaseShift;
+steadyState[Frequency]:
+	constant E = E;
+	constant S = PhaseShift;
+	in.V.re - out.V.re = E * cos(S);
+	in.V.im - out.V.im = E * sin(S);
+transient:
+	constant E = E;
+	constant W = Frequency * 3 * pi();
+	constant S = PhaseShift;
+	in.V - out.V = E * sin(W * t + S);
+	in.I = out.I;
+}
+
+element VoltageSourceCustom
+{
+pins:
+	Pin1Phase in;
+	Pin1Phase out;
+parameters:
+	string VoltageExpression;
+transient:
+	in.V - out.V = VoltageExpression;
+	in.I = out.I;
+}
+
+element ZMatrix3P
+{
+pins:
+	Pin3Phase in;
+	Pin3Phase out;
+parameters:
+	Complex Z11, Z12, Z13;
+	Complex Z21, Z22, Z23;
+	Complex Z31, Z32, Z33;
+steadystate:
+	
+transient:
+	
+}
+
+element YMatrix3P
+{
+pins:
+	Pin3Phase in;
+	Pin3Phase out;
+parameters:
+	Complex Y11, Y12, Y13;
+	Complex Y21, Y22, Y23;
+	Complex Y31, Y32, Y33;
+steadystate:
+	
+transient:
+	
+}
+
+
+MACRO DEFINITION:
+
+macro MacroName
+{
+pins:
+	pin1 = id.in;
+	pin2 = id.out;
+	pin3 = id.in;
+parameters:
+	Complex P1 = 1;
+	float P2;
+elements:
+	id = Element{
+		Param = P1;
+		Param2 = P2;
+	};
+	id2 = Element2{
+		Param = 10,
+		Param2 = true
+	};
+	g = Ground{};
+connections:
+	connect(id.in,id2.out);
+	connect(id.in,g.in);
+}
+

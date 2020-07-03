@@ -428,14 +428,14 @@ namespace ElectricalPowerSystems.Equations.DAE.Implicit
                     for (int m = 0; m < system.Size; m++)
                     {
                         int row = m + j * system.Size;
-                        f[row] = F[m]*alpha;
+                        f[row] = F[m]*alpha/step;
                         for (int p = 0; p < Stages; p++)
                         {
                             for (int l = 0; l < system.Size; l++)
                             {
                                 int column = l + p * system.Size;
                                 double dfddx = p == j ? dFddX[m, l]:0.0;
-                                jacobiMatrix[row, column] = dFdX[m, l] * step * a[j, p] + dfddx;
+                                jacobiMatrix[row, column] = dFdX[m, l] * a[j, p] + dfddx / step;
                             }
                         }
                     }

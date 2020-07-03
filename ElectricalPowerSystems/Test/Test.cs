@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ElectricalPowerSystems.PowerModel;
 
 namespace ElectricalPowerSystems.Test
 {
@@ -25,7 +24,7 @@ namespace ElectricalPowerSystems.Test
             try
             {
                 //TestNewModelLanguage();
-                PowerModel.NewModel.Recloser.VirtualMachine.Test();
+                Scheme.Recloser.VirtualMachine.Test();
                 //TestNonlinearEquationParser();
                 //TestNonlinearEquationSolver();
                 //TestCircuitEquationGeneration();
@@ -277,7 +276,7 @@ connections:
             List<ErrorMessage> errorList = new List<ErrorMessage>();
             try
             {
-                MainInterpreter.RunModel(modelPowerSystem, ref errorList,ref output);
+                Scheme.Interpreter.Interpreter.RunModel(modelPowerSystem, ref errorList,ref output);
                 foreach (var o in output)
                 {
                     Stdout.WriteLine(o);

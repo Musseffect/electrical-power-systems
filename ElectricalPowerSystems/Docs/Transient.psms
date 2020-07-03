@@ -1,14 +1,14 @@
 model:
     transient{
-	    solver = radauIIA3{
+	    solver = bdf2{
 		    iterations = 20,
 		    fAbsTol = 0.01,
 		    alpha = 1.0,
-            step = 0.004
+            step = 0.002
 	    },
         baseFrequency = 50,
         t0 = 0,
-        t1 = 5./50//5 cycles
+        t1 = 10./50//5 cycles
 	};
 elements:
 	generator1 = GeneratorY{
@@ -21,6 +21,7 @@ elements:
 	scopeLineBegin = Scope3p{Label = "LineBegin"};
 	scopeLineEnd = Scope3p{Label = "LineEnd"};
 	scope2 = Scope3p{Label = "Load"};
+	scope3 = Scope3p{Label = "Load2"};
 	resistorGen1 = Resistor{R = 1};
 	line1 = LinePiSection{
 		R = 0.001,
@@ -50,6 +51,28 @@ elements:
 		ZB = 100,
 		ZC = 100
 	};
+	load2 = LoadY{
+		ZA = 30,
+		ZB = 30,
+		ZC = 30
+	};
+	con1 = Connection3P1P{};
+	con2 = Connection3P1P{};
+	fault = Break1p{
+		InitialState = false,
+		SwitchTime = 6./50
+	};
+	res2 = Resistor{R=1000};
+	recloser = RecloserNative{
+		Frequency = 150,
+		InitialState = true,
+		T0 = 0.01,
+		CurrentPeakMax = 100,
+		PowerPeakMax = 10e5,
+		Tries = 3,
+		WaitTime = 0.01,
+		RestoreTriesTime = 10
+	};
 	ground = Ground{};
 connections:
 	connect(generator1.n,resistorGen1.in);
@@ -64,3 +87,14 @@ connections:
 	connect(transformer2.in,scope2.in);
 	connect(scope2.out,load1.in);
 	connect(load1.n,ground.in);
+	connect(load2.n,ground.in);
+	connect(load2.in,scope3.out);
+	connect(scope3.in,con2.abc);
+	connect(fault.in,con1.a);
+	connect(fault.out,res2.in);
+	connect(res2.in,ground.in);
+	connect(con1.a,con2.a);
+	connect(con1.b,con2.b);
+	connect(con1.c,con2.c);
+	connect(con1.abc,recloser.out);
+	connect(recloser.in,transformer2.in);

@@ -134,27 +134,31 @@
     <Compile Include="GUI\ModelEditor\Windows\DAESolverDialog.xaml.cs">
       <DependentUpon>DAESolverDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PowerModel\NewModel\Elements\Break1P.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\GeneratorD.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\LineRL.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Switch2Way1P.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\ByteArray.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\Compiler.Old.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\Compiler.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\INativeFunction.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\Interpreter\Interpreter.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\Program.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\RecloserGrammar.g4.lexer.cs">
+    <Compile Include="Scheme\Elements\TwoPort.cs" />
+    <Compile Include="Scheme\Interpreter\Connection.cs" />
+    <Compile Include="Scheme\Interpreter\ElementDescription.cs" />
+    <Compile Include="Scheme\Elements\Break1P.cs" />
+    <Compile Include="Scheme\Elements\GeneratorD.cs" />
+    <Compile Include="Scheme\Elements\LineRL.cs" />
+    <Compile Include="Scheme\Elements\Switch2Way1P.cs" />
+    <Compile Include="Scheme\Interpreter\ElementEntry.cs" />
+    <Compile Include="Scheme\Interpreter\Exceptions.cs" />
+    <Compile Include="Scheme\Interpreter\Types.cs" />
+    <Compile Include="Scheme\Recloser\ByteArray.cs" />
+    <Compile Include="Scheme\Recloser\Compiler.cs" />
+    <Compile Include="Scheme\Recloser\INativeFunction.cs" />
+    <Compile Include="Scheme\Recloser\Interpreter\Interpreter.cs" />
+    <Compile Include="Scheme\Recloser\Program.cs" />
+    <Compile Include="Scheme\Recloser\RecloserGrammar.g4.lexer.cs">
       <DependentUpon>RecloserGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="PowerModel\NewModel\Recloser\RecloserGrammar.g4.parser.cs">
+    <Compile Include="Scheme\Recloser\RecloserGrammar.g4.parser.cs">
       <DependentUpon>RecloserGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="PowerModel\NewModel\Recloser\Test.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\Value.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\VirtualMachine.Old.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\VirtualMachine.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\Visitor.cs" />
+    <Compile Include="Scheme\Recloser\Test.cs" />
+    <Compile Include="Scheme\Recloser\Value.cs" />
+    <Compile Include="Scheme\Recloser\VirtualMachine.cs" />
+    <Compile Include="Scheme\Recloser\Visitor.cs" />
     <Compile Include="GUI\ModelEditor\Windows\HelpWindow.xaml.cs">
       <DependentUpon>HelpWindow.xaml</DependentUpon>
     </Compile>
@@ -168,40 +172,43 @@
     <Compile Include="Equations\Expression\Expression.cs" />
     <Compile Include="Equations\Nonlinear\ASTNode.cs" />
     <Compile Include="Equations\CompilerException.cs" />
-    <Compile Include="PowerModel\NewModel\Grammar\Node.cs" />
+    <Compile Include="Scheme\Grammar\Node.cs" />
     <Compile Include="GUI\ModelEditor\MvvmTextEditor.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\LinePi.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Capacitor.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Fault.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\GeneratorY.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Ground.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Inductor.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Connection1P.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Connection3P.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\LoadD.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\LoadY.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Connection3P1P.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Transformer.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\TransformerDd.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\TransformerDy.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\TransformerYd.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\TransformerYy.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Scope1P.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Scope3P.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Break3P.cs" />
-    <Compile Include="PowerModel\NewModel\Element.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\VoltageSource.cs" />
-    <Compile Include="PowerModel\NewModel\FunctionDictionary.cs" />
-    <Compile Include="PowerModel\NewModel\ModelExpressions.cs" />
-    <Compile Include="PowerModel\NewModel\ModelInterpreter.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Resistor.cs" />
-    <Compile Include="PowerModel\NewModel\Pin.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Recloser3P.cs" />
-    <Compile Include="PowerModel\NewModel\Elements\Switch3P.cs" />
-    <Compile Include="PowerModel\NewModel\Recloser\Node.cs" />
-    <Compile Include="PowerModel\NewModel\SteadyStateModel.cs" />
-    <Compile Include="PowerModel\NewModel\Transient\TransientModel.cs" />
-    <Compile Include="PowerModel\NewModel\SteadyStateSolvers.cs" />
+    <Compile Include="Scheme\Elements\LinePi.cs" />
+    <Compile Include="Scheme\Elements\Capacitor.cs" />
+    <Compile Include="Scheme\Elements\Fault.cs" />
+    <Compile Include="Scheme\Elements\GeneratorY.cs" />
+    <Compile Include="Scheme\Elements\Ground.cs" />
+    <Compile Include="Scheme\Elements\Inductor.cs" />
+    <Compile Include="Scheme\Elements\Connection1P.cs" />
+    <Compile Include="Scheme\Elements\Connection3P.cs" />
+    <Compile Include="Scheme\Elements\LoadD.cs" />
+    <Compile Include="Scheme\Elements\LoadY.cs" />
+    <Compile Include="Scheme\Elements\Connection3P1P.cs" />
+    <Compile Include="Scheme\Elements\Transformer.cs" />
+    <Compile Include="Scheme\Elements\TransformerDd.cs" />
+    <Compile Include="Scheme\Elements\TransformerDy.cs" />
+    <Compile Include="Scheme\Elements\TransformerYd.cs" />
+    <Compile Include="Scheme\Elements\TransformerYy.cs" />
+    <Compile Include="Scheme\Elements\Scope1P.cs" />
+    <Compile Include="Scheme\Elements\Scope3P.cs" />
+    <Compile Include="Scheme\Elements\Break3P.cs" />
+    <Compile Include="Scheme\Interpreter\Element.cs" />
+    <Compile Include="Scheme\Elements\VoltageSource.cs" />
+    <Compile Include="Scheme\Interpreter\FunctionDictionary.cs" />
+    <Compile Include="Scheme\Interpreter\Expressions.cs" />
+    <Compile Include="Scheme\Interpreter\Interpreter.cs" />
+    <Compile Include="Scheme\Elements\Resistor.cs" />
+    <Compile Include="Scheme\Interpreter\Pin.cs" />
+    <Compile Include="Scheme\Elements\Recloser3P.cs" />
+    <Compile Include="Scheme\Elements\Switch3P.cs" />
+    <Compile Include="Scheme\Recloser\Node.cs" />
+    <Compile Include="Scheme\Interpreter\Value.cs" />
+    <Compile Include="Scheme\SteadyState\SteadyStateModel.cs" />
+    <Compile Include="Scheme\SteadyState\SteadyStateSolution.cs" />
+    <Compile Include="Scheme\Transient\TransientEvent.cs" />
+    <Compile Include="Scheme\Transient\TransientModel.cs" />
+    <Compile Include="Scheme\SteadyState\SteadyStateSolvers.cs" />
     <Compile Include="MathUtils\SparseMatrix.cs" />
     <Compile Include="GUI\ModelEditor\Windows\ChartWindow.xaml.cs">
       <DependentUpon>ChartWindow.xaml</DependentUpon>
@@ -239,19 +246,20 @@
     <Compile Include="MathUtils\NewtonRaphsonSolver.cs" />
     <Compile Include="MathUtils\NonlinearEquation.cs" />
     <Compile Include="MathUtils\NonlinearSolver.cs" />
-    <Compile Include="PowerModel\NewModel\Grammar\ModelGrammar.g4.lexer.cs">
+    <Compile Include="Scheme\Grammar\ModelGrammar.g4.lexer.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
-    <Compile Include="PowerModel\NewModel\Grammar\ModelGrammar.g4.parser.cs">
+    <Compile Include="Scheme\Grammar\ModelGrammar.g4.parser.cs">
       <DependentUpon>ModelGrammar.g4</DependentUpon>
     </Compile>
     <Compile Include="GUI\Graph\NodeCanvas.xaml.cs">
       <DependentUpon>NodeCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PowerModel\NewModel\Grammar\Visitor.cs" />
-    <Compile Include="PowerModel\Interpreter.cs" />
+    <Compile Include="Scheme\Grammar\Visitor.cs" />
     <Compile Include="GUI\ModelEditor\TabStyleSelector.cs" />
     <Compile Include="GUI\ModelEditor\TabTemplateSelector.cs" />
+    <Compile Include="Scheme\Transient\TransientSolution.cs" />
+    <Compile Include="Scheme\Transient\TransientState.cs" />
     <Compile Include="Test\Test.cs" />
     <Compile Include="Equations\DAE\Implicit\DAEISystem.cs" />
     <Compile Include="Equations\DAE\Implicit\DAEISolver.cs" />
@@ -322,9 +330,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Antlr4 Include="PowerModel\NewModel\Grammar\ModelGrammar.g4">
+    <Antlr4 Include="Scheme\Grammar\ModelGrammar.g4">
       <Generator>MSBuild:Compile</Generator>
-      <CustomToolNamespace>ElectricalPowerSystems.PowerModel.NewModel</CustomToolNamespace>
+      <CustomToolNamespace>ElectricalPowerSystems.Scheme.Grammar</CustomToolNamespace>
     </Antlr4>
     <None Include="Docs\umlDiagramOld.mdj" />
     <Antlr4 Include="Equations\Nonlinear\EquationGrammar.g4">
@@ -336,9 +344,9 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <Antlr4 Include="PowerModel\NewModel\Recloser\RecloserGrammar.g4">
+    <Antlr4 Include="Scheme\Recloser\RecloserGrammar.g4">
       <Generator>MSBuild:Compile</Generator>
-      <CustomToolNamespace>ElectricalPowerSystems.PowerModel.NewModel.Recloser</CustomToolNamespace>
+      <CustomToolNamespace>ElectricalPowerSystems.Scheme.Recloser</CustomToolNamespace>
     </Antlr4>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -411,7 +419,7 @@
     <Content Include="Help\help.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="PowerModel\NewModel\Recloser\TextFile1.txt" />
+    <Resource Include="Scheme\Recloser\TextFile1.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Docs\ThreePhaseLang.txt" />

@@ -20,12 +20,9 @@ elements:
 	scopeLineEnd = Scope3p{Label = "LineEnd"};
 	scope2 = Scope3p{Label = "Load"};
 	resistorGen1 = Resistor{R = 1};
-	line1 = LinePiSection{
+	line1 = LineRL{
 		R = 0.001,
-		L = 0.001,
-		B = 0.00001,
-		G = 10000.0,
-		Bp = 0.0001
+		L = 0.001
 	};
 	transformer1 = TransformerDy{
 		K = 10/sqrt(3),

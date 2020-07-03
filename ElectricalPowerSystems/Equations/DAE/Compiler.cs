@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ElectricalPowerSystems.MathUtils;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace ElectricalPowerSystems.Equations.DAE
 {
@@ -227,11 +228,31 @@ namespace ElectricalPowerSystems.Equations.DAE
             MathUtils.SparseMatrix<RPNExpression> dfdx = MathUtils.SparseMatrix<RPNExpression>.Build(equations.Count,equations.Count);
             MathUtils.SparseMatrix<RPNExpression> dfddx = MathUtils.SparseMatrix<RPNExpression>.Build(equations.Count, equations.Count);
             Expression.DifferentiationVisitor difVisitor = new Expression.DifferentiationVisitor();
+            //consistent initial values
+            //get algebraic equations
+            //get jacobi matrxi for algebraic equations (probably rectangular)
+            List<RPNExpression> algebraicEquations = new List<RPNExpression>();
+            List<RPNExpression[]> jacobiMatrix = new List<RPNExpression[]>();
+
             for (int j = 0; j < equations.Count; j++)
             {
+                if (!HasDerivative(equations[j]))
+                {
+                    algebraicEquations.Add(equationsRPN[j]);
+                    RPNExpression[] jacobiVector = new RPNExpression[equations.Count];
+                    for (int i = 0; i < equations.Count; i++)
+                    {
+                        Expression.Expression derivative = ExpressionSimplifier.Simplify(difVisitor.Differentiate(equations[j], variableNames[i]));
+
+                        RPNExpression exp = expCompiler.Compile(derivative);
+                        jacobiVector[i] = exp;
+                    }
+                    jacobiMatrix.Add(jacobiVector);
+                }
                 for (int i = 0; i < equations.Count; i++)
                 {
                     Expression.Expression derivative = ExpressionSimplifier.Simplify(difVisitor.Differentiate(equations[i], variableNames[j]));
+
                     if (derivative.Type == ExpressionType.Float)
                     {
                         if ((derivative as Expression.Float).IsZero())
@@ -241,7 +262,7 @@ namespace ElectricalPowerSystems.Equations.DAE
                     }
                     RPNExpression exp = expCompiler.Compile(derivative);
                     //dfdx[i, j] = exp;
-                    dfdx.Add(i,j,exp);
+                    dfdx.Add(i, j, exp);
                 }
             }
             for (int j = 0; j < equations.Count; j++)
@@ -260,6 +281,47 @@ namespace ElectricalPowerSystems.Equations.DAE
                     //dfddx[i, j] = exp;
                     dfddx.Add(i, j, exp);
                 }
+            }
+            int consistencyIterations = 20;
+            double consistencyEpsilon = 0.001;
+            if (algebraicEquations.Count > 0)
+            {
+                //solve dx = J*(JJ*)^-1 where J* = conjugate transpose
+                Vector<double> x = Vector<double>.Build.DenseOfEnumerable(initialValues);
+                double[] variables = new double[initialValues.Count*2 + 1 + parameterValues.Length];
+                variables[0] = constants["t0"];
+                for (int i = 0; i < parameterValues.Length; i++)
+                {
+                    variables[1 + initialValues.Count*2 + i] = parameterValues[i];
+                }
+                for (int i = 0; i < consistencyIterations; i++)
+                {
+                    for (int j = 0; j < initialValues.Count; j++)
+                    {
+                        variables[j+1] = x[j];
+                    }
+                    Matrix<double> J = Matrix<double>.Build.Sparse(algebraicEquations.Count,equations.Count);
+                    Vector<double> F = Vector<double>.Build.Dense(algebraicEquations.Count);
+                    for (int j = 0; j < algebraicEquations.Count; j++)
+                    {
+                        F[j] = algebraicEquations[j].Execute(variables);
+                    }
+                    if (F.L2Norm() < consistencyEpsilon)
+                    {
+                        break;
+                    }
+                    for (int j = 0; j < algebraicEquations.Count; j++)
+                    {
+                        for (int k = 0; k < equations.Count; k++)
+                        {
+                            J.At(j, k, jacobiMatrix[j][k].Execute(variables));
+                        }
+                    }
+                    Matrix<double> JPseudoInverse = J.PseudoInverse();
+                    x = x - JPseudoInverse.Multiply(F);
+                }
+                for (int i = 0; i < initialValues.Count; i++)
+                    initialValues[i] = x[i];
             }
             Implicit.DAEIDescription definition = new Implicit.DAEIDescription(variableNames.ToArray(),
                 parameterNames,

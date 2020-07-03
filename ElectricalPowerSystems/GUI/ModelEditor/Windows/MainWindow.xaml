@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:ElectricalPowerSystems"
         mc:Ignorable="d"
         Name="windowElement"
-        Title="Power System Simulator" Height="360" Width="531.916" MinWidth="600" MinHeight="600">
+        Title="Power System Simulator" Height="360" Width="531.916" MinWidth="300" MinHeight="300">
     <Window.InputBindings>
         <!--<KeyBinding Key="F4" Command="local:Commands.Exit" Modifiers="Alt"></KeyBinding>-->
     </Window.InputBindings>
@@ -251,7 +251,7 @@
                 <Image Source="../../../Resources/Icons/009-paste.png" />
             </Button>
             <Separator />
-            <Button x:Name="Start" Style="{StaticResource ToolBarButtonStyle}" IsEnabled="False">
+            <Button x:Name="Start" Style="{StaticResource ToolBarButtonStyle}" IsEnabled="True" Click="RunMenuButton_Click" >
                 <Image Source="../../../Resources/Icons/play-button.png" />
             </Button>
             <Separator />

@@ -855,7 +855,7 @@ connections:
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
                 Dispatcher.Invoke(() => {
-                    PowerModel.MainInterpreter.RunModel(text, ref errorList, ref outputList);
+                    Scheme.Interpreter.Interpreter.RunModel(text, ref errorList, ref outputList);
                 });
             }
             catch (Equations.CompilerException exc)
@@ -1160,7 +1160,7 @@ connections:
             {
                 string text = "";
                 window.Dispatcher.Invoke(() => { text = tab.Document.Text; });
-                PowerModel.MainInterpreter.EquationGeneration(text, ref errorList, ref outputList);
+                Scheme.Interpreter.Interpreter.EquationGeneration(text, ref errorList, ref outputList);
             }
             catch (Exception exc)
             {
